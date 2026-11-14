@@ -221,3 +221,7 @@ According to grouped cross-validation, our hybrid model has a typical error of a
   answer so a reader can check.
 - To do before submission: re-run scripts/assistant_eval_live.py after the free quota resets (midnight Pacific time)
   and replace this protocol.
+- 2026-11-14 21:00 (ADR-045): retrieval now pins the Overview Moon comparison for Moon/lunar questions, the prompt asks
+  for the answer and its key numbers first (at most 120 words), and the page shows citations as superscript numbers with
+  a numbered source list. Covered by offline tests (tests/test_assistant.py); the live 10-question run above predates
+  this change and has not been repeated yet (no API key on the development machine).

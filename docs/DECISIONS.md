@@ -358,7 +358,7 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Sources: docs/PHYSICS.md sections 3-5; NTRS 20130014061; Wyman, Sloan & Shirley, JCGT 2(2) 2013 (CIE fit); IEC 61966-2-1 (sRGB).
 
 ## ADR-036: Lunar-surface (1/6 g) burning rate as a labelled bound
-- Date/time: 2026-11-14 ~15:20 (UTC+5)
+- Date/time: 2026-11-14, answer received between the 14:57 and 15:23 clock readings (UTC+5)
 - Stage: post-8 stretch S2 (Q6), item 1 of Ruslan's list
 - Context: the Moon-base scenario used the microgravity rate, but a Moon base sits at lunar gravity; PSI has no partial-gravity data (challenge page).
 - Options: A) range: microgravity rate .. Law & Williams correction at g_Moon (physics theory) B) single L&W number C) text only.
@@ -368,13 +368,13 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Sources: NTRS 20250004015, 20210020516, 20260000646; Law & Williams 1972 Eq. (9)
 
 ## ADR-037: Investigation comparison matrix (S5) placement
-- Date/time: 2026-11-14 ~15:20 (UTC+5)
+- Date/time: 2026-11-14, answer received between the 14:57 and 15:23 clock readings (UTC+5)
 - Stage: post-8 stretch S5, item 2
 - Options: A) "Compare" tab on the Investigations page B) separate page C) side-by-side picker of 2-3 investigations.
 - Claude's recommendation: A. Decision (Ruslan): A.
 
 ## ADR-038: Hosting confirmed
-- Date/time: 2026-11-14 ~15:20 (UTC+5)
+- Date/time: 2026-11-14, answer received between the 14:57 and 15:23 clock readings (UTC+5)
 - Context: Ruslan asked why Hugging Face for a NASA hackathon. NASA does not host projects; the form needs a public "Link to Final Project".
 - Options: A) HF Spaces (Claude deploys with Ruslan's write token) B) Streamlit Community Cloud (Ruslan clicks deploy) C) GitHub only.
 - Claude's recommendation: A. Decision (Ruslan): A (ADR-001 unchanged). Deploy brought forward (item 5).

@@ -235,36 +235,46 @@ const vec3 BLUE=vec3(.30,.50,1.);
 void main(){
   vec2 p=(gl_FragCoord.xy-c0)/R; vec3 col=vec3(0.);
   if(micro>.5){
+    // microgravity: soft spherical flame (NASA C-1998-485, FLEX): diffuse blue shell; heptane adds a yellow soot shell
     float r=length(p), a=atan(p.y,p.x);
-    float n=fbm(vec2(cos(a),sin(a))*2.2+vec2(t*.10,-t*.08)+r*1.2);
-    float rw=r+.025*(n-.5);
-    col+=BLUE*(exp(-pow((rw-1.)/.04,2.))*(soot>.5?.40:.42)+exp(-pow((rw-.97)/.15,2.))*(soot>.5?.07:.06));
+    float n=fbm(vec2(cos(a),sin(a))*1.4+vec2(t*.05,-t*.04));
+    float rw=r+.012*(n-.5);
+    float sheet=exp(-pow((rw-1.)/.07,2.))*.30+exp(-pow((rw-.95)/.2,2.))*.07;
+    col+=BLUE*sheet*(soot>.5?.9:1.);
     if(soot>.5){
-      float n2=fbm(vec2(cos(a),sin(a))*1.9+vec2(r*4.,r*2.5)+vec2(t*.16,-t*.11));
-      float sh=exp(-pow((r-.74-.07*(n2-.5))/.12,2.))*(.25+1.05*n2*n2);
-      col+=fire(.52+.48*n2)*mix(vec3(1.),sc,.45)*sh*1.25;
-    } else { col+=vec3(.45,.40,1.)*exp(-pow((r-.86)/.22,2.))*.035; }
+      float n2=fbm(vec2(cos(a),sin(a))*1.3+vec2(t*.08,-t*.06));
+      float sh=exp(-pow((r-.74-.03*(n2-.5))/.14,2.))*(.55+.5*n2);
+      col+=fire(.6+.35*n2)*mix(vec3(1.),sc,.45)*sh*1.05;
+    } else { col+=vec3(.55,.45,1.)*exp(-pow((r-.85)/.25,2.))*.03; }
   } else {
-    float ef=sqrt(max(e,.01)), H=up+dn;
-    float vv=clamp((p.y+dn)/H,0.,1.);                       // 0 bottom of the sheet, 1 tip
-    float n=fbm(vec2(p.x*2.3,p.y*1.5-t*2.6*ef));
-    float sway=.24*e*pow(vv,1.7)*(fbm(vec2(t*1.3*ef,vv*1.9))-.5)*2.;
-    vec2 q=vec2(p.x-sway,p.y);
-    // smooth egg/teardrop: ellipse (half-width hw, depth dn) below the droplet, stretched ellipse (height up) above,
-    // tapering into a tongue as gravity grows; both halves meet at the droplet level without a kink
-    float Yb=q.y<0.?q.y/dn:q.y/(up*(1.+.2*e*(n-.5)*2.));
-    float tap=max(1.-.82*e*pow(max(Yb,0.),1.35),.04);
-    float d=length(vec2(q.x/(hw*tap),Yb))+.25*e*(n-.5)*vv;
-    float sheet=exp(-pow((d-1.)/.07,2.));
-    float fadeUp=soot>.5?1.-smoothstep(.22,.58,vv):1.-.85*smoothstep(.5,1.,vv);
-    col+=BLUE*sheet*fadeUp*(soot>.5?.5:.42);
+    // with gravity: laminar spindle flame as in NASA C-1998-485 (1 g candle): rounded bottom just below the droplet,
+    // widest at about a third of the height, pointed tip; white-yellow core, orange edges, thin red rim, blue lower
+    // fringe, dark zone at the base. Only a gentle flicker.
+    float H=up+dn;
+    float tipf=1.+e*(.035*sin(t*6.3)+.025*sin(t*10.1+1.3));
+    float s=(p.y+dn)/(H*tipf);
+    float sway=e*.05*s*s*sin(t*4.7);
+    float x=p.x-sway;
+    float A=.5, B=mix(.5,.95,e);                                  // e=0: ellipse; e=1: candle spindle
+    float sm=A/(A+B), m=pow(sm,A)*pow(1.-sm,B);
+    float sc_=clamp(s,0.,1.);
+    float W=hw*pow(sc_,A)*pow(1.-sc_,B)/m+.002;
+    float d=abs(x)/W;                                             // 0 axis .. 1 edge
+    float ins=step(0.,s)*step(s,1.);
+    float edge=smoothstep(1.15,.75,d)*ins;                        // soft flame body
     if(soot>.5){
-      float n2=fbm(vec2(q.x*3.2,p.y*2.3-t*3.2*ef)+3.7);
-      float body=smoothstep(1.02,.45,d)*smoothstep(.1,.33,vv)*(1.-.75*smoothstep(.8,1.,vv))*(.45+.95*n2);
-      body*=mix(.45,1.,smoothstep(.1,1.,length(p)/.42));
-      float T=1.04-.62*vv-.22*d+.18*(n2-.5);
-      col+=fire(T)*mix(vec3(1.),sc,.35)*body*1.15;
-    } else { col+=vec3(.35,.45,1.)*(1.-smoothstep(0.,1.,d))*(1.-vv)*.05; }
+      float core=(1.-d*d)*smoothstep(.04,.28,s)*(1.-.55*smoothstep(.75,1.,s));
+      float base=1.-.75*exp(-pow((s-.12)/.12,2.))*exp(-pow(x/(W*.6+.001),2.));   // dark zone near the droplet
+      float T=.98-.38*s-.3*d*d;
+      col+=fire(T)*mix(vec3(1.),sc,.3)*max(core,0.)*base*edge*1.25;
+      col+=vec3(.9,.18,.04)*exp(-pow((d-.93)/.07,2.))*smoothstep(.2,.7,s)*ins*.22;           // thin red rim
+      col+=BLUE*exp(-pow((d-.9)/.13,2.))*(1.-smoothstep(.12,.42,s))*ins*.55;                 // blue lower fringe
+      col+=BLUE*exp(-pow(s/.05,2.))*smoothstep(1.2,.3,d)*.35;                                 // blue bottom
+    } else {
+      float glow=(.35*exp(-pow((d-.86)/.2,2.))+.12*(1.-d*d))*edge*(1.-.7*smoothstep(.45,1.,s));
+      col+=mix(BLUE,vec3(.55,.5,1.),s)*glow*.75;
+      col+=BLUE*exp(-pow(s/.05,2.))*smoothstep(1.2,.3,d)*.3;
+    }
   }
   gl_FragColor=vec4(col*I,1.);
 }`;

@@ -107,3 +107,7 @@ Fetched by scripts/fetch_ntrs_corpus.py into data/raw/ntrs_text/ (list, purpose,
 data/raw/ntrs_text/MANIFEST.tsv; registered in data/catalog.yaml). Only documents whose NTRS copyright determination is
 PUBLIC_USE_PERMITTED, GOV_PUBLIC_USE_PERMITTED or GOV_PERMITTED; documents marked "may include copyright material"
 (e.g. Saffire VI papers) were excluded. Accessed 2026-11-14.
+## 8. Visual reference for the flame animation
+| Source | Used for | Access |
+|---|---|---|
+| NASA Glenn Research Center image C-1998-485 (GRC-1998-C-00485), candle flame in 1 g and in microgravity, https://images.nasa.gov/details/GRC-1998-C-00485 | shape and colours of the illustrative flame drawing (laminar spindle at 1 g, soft blue sphere in microgravity); the image itself is not used in the app | NASA Image and Video Library, 2026-11-14 |

@@ -40,7 +40,7 @@ r = scenario(fuel, round(p_atm, 4), x_o2, x_co2, x_he, d0)
 rel = r["reliability"]
 with c_out:
     st.markdown(t("Status:") + " " + status_badge(rel["status"]), unsafe_allow_html=True)
-    for reason in rel["reasons_ru"] if lang() == "ru" else rel["reasons"]:
+    for reason in rel.get("reasons_ru", rel["reasons"]) if lang() == "ru" else rel["reasons"]:
         st.caption("- " + reason)
     m1, m2, m3 = st.columns(3)
     if r["K_hybrid_mm2_s"] is not None:
@@ -121,7 +121,7 @@ st.caption(
     )
 )
 key = "notes_ru" if lang() == "ru" else "notes"
-for n in dict.fromkeys(left[key] + right[key]):
+for n in dict.fromkeys(left.get(key, left["notes"]) + right.get(key, right["notes"])):
     st.caption("- " + n)
 st.markdown("**" + t("Nearest NASA FLEX tests (measured K, mm²/s)") + "**")
 st.caption(t("K = burning-rate constant, the slope of droplet diameter squared vs time (d²-law); higher K = faster burning."))

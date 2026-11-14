@@ -28,6 +28,7 @@ EVIDENCE_COLORS = {
 STATUS_COLORS = {"in range": "#15803D", "extrapolation": "#B45309", "unreliable": "#B91C1C"}
 STAGE_LABEL = {"prevention": "Prevention", "detection": "Detection", "suppression": "Suppression"}
 PLOT_TEMPLATE = "plotly_white"
+RESULT_SCHEMA = 2  # 2: Russian fields reasons_ru / notes_ru (ADR-041)
 
 
 def badge(text: str, color: str) -> str:
@@ -78,7 +79,8 @@ def investigations() -> pd.DataFrame:
 
 
 @st.cache_data(show_spinner="Computing the scenario...")
-def scenario(fuel, p_atm, x_o2, x_co2, x_he, d0_mm) -> dict:
+def scenario(fuel, p_atm, x_o2, x_co2, x_he, d0_mm, schema: int = RESULT_SCHEMA) -> dict:
+    # schema: bump when the package adds result fields, so a running server never serves cached old dicts
     from fif.insights.scenario import predict
 
     return predict(fuel, p_atm, x_o2, x_co2, x_he, d0_mm)
@@ -96,7 +98,17 @@ def source_note(text: str) -> None:
 
 
 @st.cache_data(show_spinner=False)
-def flame_sim(fuel: str, p_atm: float, x_o2: float, x_co2: float, x_he: float, d0_mm: float, gravity: float, label: str) -> dict:
+def flame_sim(
+    fuel: str,
+    p_atm: float,
+    x_o2: float,
+    x_co2: float,
+    x_he: float,
+    d0_mm: float,
+    gravity: float,
+    label: str,
+    schema: int = RESULT_SCHEMA,
+) -> dict:
     from fif.insights.flame_sim import simulate
 
     return simulate(fuel, p_atm, x_o2, x_co2, x_he, d0_mm, gravity, label)

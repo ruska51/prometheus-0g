@@ -120,3 +120,10 @@ def comparison() -> tuple[pd.DataFrame, dict]:
 
     m = comparison_matrix()
     return m, hardware_groups(m)
+
+
+@st.cache_data(show_spinner=False)
+def moon(fuel: str, schema: int = RESULT_SCHEMA) -> dict:
+    from fif.insights.moon import moon_answer
+
+    return moon_answer(fuel)

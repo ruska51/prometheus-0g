@@ -4,7 +4,7 @@ import math
 
 import pandas as pd
 import streamlit as st
-from common import ROOT, evidence_badge, flex, insights, investigations, validation
+from common import ORANGE, ROOT, evidence_badge, flex, insights, investigations, moon, status_badge, validation
 from i18n import t, tr_insight
 
 st.title(t("Prometheus-0g - Will it burn on the Moon?"))
@@ -16,6 +16,104 @@ st.markdown(
         "NASA's ISS fire experiments, verified and turned into ranked fire-safety insights for spacecraft, stations and Moon bases."
     )
 )
+
+
+# ---- the headline answer (ADR-043): every number from fif.insights.moon
+with st.container(border=True):
+    head, pick = st.columns([3, 1])
+    head.markdown(
+        f"<div style='font-size:1.05rem;color:#6B7280;margin-bottom:-0.4rem'>{t('Will it burn on the Moon?')}</div>"
+        f"<div style='font-size:2.0rem;font-weight:800;color:{ORANGE};line-height:1.25'>"
+        f"{t('Yes - faster, hotter, and less likely to go out by itself.')}</div>",
+        unsafe_allow_html=True,
+    )
+    fuels = {t("Methanol"): "Methanol", t("Heptane"): "Heptane"}  # translated labels as options (no format_func)
+    fuel = fuels[pick.radio(t("Fuel"), list(fuels), horizontal=True)]
+    a = moon(fuel)
+    st.caption(
+        t(
+            "Planned Moon-base / rover air (30 % O2, 10.2 psi) compared with ISS cabin air (21 % O2, 14.7 psi), a 3 mm {fuel} "
+            "droplet as in NASA's FLEX experiment.",
+            fuel=t(fuel).lower(),
+        )
+    )
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric(t("Burning rate vs ISS air"), f"{(a['k_ratio'] - 1) * 100:+.0f} %")
+    c1.markdown(
+        evidence_badge("model")
+        + " "
+        + status_badge(a["status"])
+        + "<br><span style='font-size:0.8rem;color:#6B7280'>"
+        + t("95 % band {lo:+.0f} to {hi:+.0f} %", lo=(a["k_ratio_band"][0] - 1) * 100, hi=(a["k_ratio_band"][1] - 1) * 100)
+        + "</span>",
+        unsafe_allow_html=True,
+    )
+    c2.metric(
+        t("Droplet burns out in"),
+        f"{a['burn_time_moon_s']:.1f} " + t("s"),
+        delta=f"{a['burn_time_moon_s'] - a['burn_time_iss_s']:+.1f} " + t("s vs ISS"),
+        delta_color="normal",
+    )
+    c2.markdown(
+        evidence_badge("model")
+        + " "
+        + evidence_badge("physics theory")
+        + "<br><span style='font-size:0.8rem;color:#6B7280'>"
+        + t("on the lunar surface down to {t:.1f} s (1/6 g upper bound)", t=a["burn_time_lunar_surface_s"])
+        + "</span>",
+        unsafe_allow_html=True,
+    )
+    c3.metric(
+        t("Flames that put themselves out"),
+        f"{a['self_ext_high_o2'] * 100:.0f} %",
+        delta=t("{d:+.0f} points vs O2 <= 21 %", d=(a["self_ext_high_o2"] - a["self_ext_low_o2"]) * 100),
+        delta_color="normal",
+    )
+    c3.markdown(
+        evidence_badge("NASA data")
+        + "<br><span style='font-size:0.8rem;color:#6B7280'>"
+        + t(
+            "FLEX tests at O2 >= 30 %: n = {n1}; at O2 <= 21 %: {p0:.0f} % of {n0}",
+            n1=a["n_high_o2"],
+            p0=a["self_ext_low_o2"] * 100,
+            n0=a["n_low_o2"],
+        )
+        + "</span>",
+        unsafe_allow_html=True,
+    )
+    c4.metric(
+        t("Flame temperature"),
+        f"{a['flame_temperature_moon_K']:.0f} K",
+        delta=f"{a['flame_temperature_moon_K'] - a['flame_temperature_iss_K']:+.0f} K " + t("vs ISS"),
+        delta_color="inverse",
+    )
+    c4.markdown(
+        evidence_badge("physics theory")
+        + "<br><span style='font-size:0.8rem;color:#6B7280'>"
+        + t("equilibrium flame temperature with dissociation")
+        + "</span>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        evidence_badge("NASA literature")
+        + " &nbsp;"
+        + t(
+            "For solid materials NASA expects lunar gravity to be nearly the most flammable condition - possibly worse than "
+            "on Earth (NTRS 20210020516, 20260000646)."
+        ),
+        unsafe_allow_html=True,
+    )
+    by_id = {i["id"]: i for i in insights()["ranked"]}
+    st.markdown(
+        "**"
+        + t("What a Moon base should do")
+        + "**\n"
+        + "\n".join(f"- {tr_insight(by_id[k], 'action')}" for k in ("S4", "D1", "P6") if k in by_id)
+    )
+    l1, l2, l3 = st.columns(3)
+    l1.page_link("views/scenario.py", label=t("See it burn: Moon vs ISS animation"), icon=":material/local_fire_department:")
+    l2.page_link("views/assistant.py", label=t("Ask the data"), icon=":material/forum:")
+    l3.page_link("views/validation.py", label=t("How sure are we?"), icon=":material/fact_check:")
 
 st.markdown(
     t(

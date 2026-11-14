@@ -7,6 +7,7 @@ Evidence badges everywhere: `NASA data` / `model` / `physics theory` / `NASA lit
 ## Pages (proposed order)
 
 ### 1. Overview (home)
+- Headline answer block (ADR-043): "Will it burn on the Moon? Yes - faster, hotter, and less likely to go out by itself." with four computed numbers (burning rate vs ISS with band, 3 mm burn-out time incl. lunar-surface bound, measured self-extinction share, flame temperature), evidence badges, NASA literature on solids, three actions, links to animation / assistant / validation.
 - Goal: in 10 seconds the jury knows the problem, what we built and the headline result.
 - Users: all; jury first.
 - Components: title + tagline; one-paragraph problem statement (microgravity flames, Moon-base atmosphere O2 >= 30 % at <= 10.2 psi); 4 metric tiles; top-3 insight cards with badges; two buttons: "Try the Moon-base scenario", "See how we validated".

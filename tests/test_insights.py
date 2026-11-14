@@ -112,3 +112,25 @@ def test_lunar_bound_between_microgravity_and_earth(insights):
     for gr in (0.1, 1.0, 10.0, 100.0):  # property: 1 < moon factor < earth factor for any Gr
         assert 1.0 < float(buoyancy_factor(gr, G_MOON_RATIO)) < float(buoyancy_factor(gr, 1.0))
     assert insights["P6"].evidence_type == "NASA literature" and insights["P6"].n_tests == 0
+
+
+def test_moon_answer_matches_model_and_insights(insights):
+    from fif.insights.moon import moon_answer
+    from fif.insights.scenario import PRESETS, predict
+
+    for fuel in ("Methanol", "Heptane"):
+        a = moon_answer(fuel)
+        iss, moon = PRESETS["ISS cabin air"], PRESETS["Moon base / rover (planned)"]
+        ratio = (
+            predict(fuel, moon["p_atm"], moon["x_o2"])["K_hybrid_mm2_s"]
+            / predict(fuel, iss["p_atm"], iss["x_o2"])["K_hybrid_mm2_s"]
+        )
+        assert a["k_ratio"] == pytest.approx(ratio)
+        assert a["k_ratio_band"][0] < a["k_ratio"] < a["k_ratio_band"][1]
+        assert a["burn_time_lunar_surface_s"] < a["burn_time_moon_s"] < a["burn_time_iss_s"]  # faster burning -> shorter
+        assert a["burn_time_iss_s"] / a["burn_time_moon_s"] == pytest.approx(a["k_ratio"], rel=1e-6)  # d2-law: t = d0^2 / K
+    a = moon_answer("Methanol")
+    s4 = insights["S4"].effect["value"]  # share without extinction, high O2 / low O2
+    assert (1 - a["self_ext_high_o2"]) / (1 - a["self_ext_low_o2"]) == pytest.approx(s4)
+    p2 = insights["P2"].effect["value"]  # worst-fuel ratio
+    assert max(moon_answer(f)["k_ratio"] for f in ("Methanol", "Heptane")) == pytest.approx(p2, rel=1e-6)

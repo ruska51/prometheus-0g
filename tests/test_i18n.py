@@ -13,7 +13,7 @@ sys.path.insert(0, str(ROOT / "app"))
 
 from i18n import FLAME_RU, RU  # noqa: E402
 
-PAGES = ["overview", "insights", "scenario", "risk_map", "investigations", "data_explorer", "validation", "method"]
+PAGES = ["overview", "insights", "assistant", "scenario", "risk_map", "investigations", "data_explorer", "validation", "method"]
 
 
 def _literal_keys() -> dict[str, str]:

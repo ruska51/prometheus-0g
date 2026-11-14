@@ -305,3 +305,35 @@ datasets:
     files:
       - path: "data/raw/nasa_tr_r132/svehla_1962_extract.csv"
         sha256: 3626f0620cf43b776618975e8f4aaddc41704e06fc5850702d8d0d92288f0546
+
+  - id: ntrs_text
+    title: NASA NTRS full texts for the assistant's report search (public-use documents only)
+    source: https://ntrs.nasa.gov (API full-text downloads, fetched by scripts/fetch_ntrs_corpus.py)
+    license: NTRS copyright determination PUBLIC_USE_PERMITTED / GOV_PUBLIC_USE_PERMITTED / GOV_PERMITTED (per file in MANIFEST.tsv)
+    accessed: '2026-11-14'
+    notes: raw NTRS text layer, unchanged; ADR-042
+    files:
+    - path: data/raw/ntrs_text/20150023456.txt
+      sha256: 60b5c4bbfbd48464cd07f17ec3e619c329aa7e098206899c270a9b1a7335b16c
+    - path: data/raw/ntrs_text/20130014061.txt
+      sha256: 2441230d1cab76a88a035aab900b4e67630e109338226ea2222ca00d66c301d0
+    - path: data/raw/ntrs_text/20205008449.txt
+      sha256: 27331bad27a794d8594e627b3e7ff977ec4e60d38ff5deecc81b96dea9140c63
+    - path: data/raw/ntrs_text/20210011385.txt
+      sha256: 56ee5bd7702b5c8235f9934468bb9d6e4ea143c4570d7eaa1da11d904b42ea3f
+    - path: data/raw/ntrs_text/20210021781.txt
+      sha256: 9d89dd87cfcf844770a67a012b82bc03ea6172914e68a314ea357ba73c0d1727
+    - path: data/raw/ntrs_text/20130000422.txt
+      sha256: 6e1c7e7e959e2106ef8a58267f2a47b6dae1c4b6242bd53d69bb2da7925f21b7
+    - path: data/raw/ntrs_text/20170007283.txt
+      sha256: 5959a93ecfaaba03eff5d72044ae47edf4aa0e687bde48f3a60c49770c06f71f
+    - path: data/raw/ntrs_text/20170008805.txt
+      sha256: e80996828fb3e91af29b0d56f6a0a7bc52d84d897be30c7520c23a18b8d763de
+    - path: data/raw/ntrs_text/20210020516.txt
+      sha256: ddf5a691bce432c6abd02794ece99b3959d8f5601c6b6b91f0c5cc96d78612ab
+    - path: data/raw/ntrs_text/20260000646.txt
+      sha256: 1d70caa43cf9bb7704c8a69a0c4adeafffa82256739e6ee76f047cb7b046f7b3
+    - path: data/raw/ntrs_text/20250010653.txt
+      sha256: 1b6d8425e340f1c4f738b3bad0cff843c5fe6509148c51ac3dee182fed47ac2f
+    - path: data/raw/ntrs_text/20240008623.txt
+      sha256: 870d11c16ba49cfb206361bf2d86a1467423fa481b4710a56da6f7679a05841a

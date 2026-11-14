@@ -101,3 +101,9 @@ Not in PSI Combustion Science: SoFIE (NTRS presentation 20200000361 only), PSI-1
 | NTRS 20250004015, "Simulated Lunar Gravity Testing of VIPER Loop Heat Pipe" (NASA) | g_Moon / g_Earth = 1/6 | NTRS API, 2026-11-14 |
 | NTRS 20210020516, "Fire on the Moon: Solid Fuel Combustion Experiments" (NASA GRC) | insight P6 quote | NTRS API, 2026-11-14 |
 | NTRS 20260000646, Ferkul, Kralik, Liao, "Material Flammability at Lunar and Martian Gravity", LPSC 2026 | insight P6 quote, FM2 | NTRS API, 2026-11-14 |
+
+## 7. NASA NTRS report texts for the assistant (ADR-042)
+Fetched by scripts/fetch_ntrs_corpus.py into data/raw/ntrs_text/ (list, purpose, copyright status and sha256:
+data/raw/ntrs_text/MANIFEST.tsv; registered in data/catalog.yaml). Only documents whose NTRS copyright determination is
+PUBLIC_USE_PERMITTED, GOV_PUBLIC_USE_PERMITTED or GOV_PERMITTED; documents marked "may include copyright material"
+(e.g. Saffire VI papers) were excluded. Accessed 2026-11-14.

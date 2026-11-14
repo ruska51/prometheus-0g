@@ -13,3 +13,4 @@ streamlit==1.67.0
 pytest==9.2.0
 pdfplumber==0.11.7
 cantera==3.2.0
+google-genai==3.3.0  # stage 9 assistant (ADR-042), Google Gemini API

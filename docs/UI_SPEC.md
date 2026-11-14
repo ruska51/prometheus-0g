@@ -52,7 +52,7 @@ Evidence badges everywhere: `NASA data` / `model` / `physics theory` / `NASA lit
 ### 8. Method & sources
 - Pipeline diagram (data -> physics -> models -> validation -> insights), physics summary (Law & Williams prescription), resources R1-R7 and how each is used, licenses, use of AI, limitations, links to repository docs.
 
-AI assistant: not built (stage 9 optional, CLAUDE.md section 9).
+AI assistant: page "Ask the data" (stage 9, ADR-042) - chat answering only from our results and public NASA NTRS excerpts with checked citations; Google Gemini; disabled with a clear message when no key is configured; 10 questions per session.
 
 ## Visual style options
 

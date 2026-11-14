@@ -22,6 +22,7 @@ language_selector()
 pages = [
     st.Page("views/overview.py", title=t("Overview"), icon=":material/home:", default=True),
     st.Page("views/insights.py", title=t("Insights"), icon=":material/insights:"),
+    st.Page("views/assistant.py", title=t("Ask the data"), icon=":material/forum:"),
     st.Page("views/scenario.py", title=t("Moon-base scenario"), icon=":material/science:"),
     st.Page("views/risk_map.py", title=t("Risk map"), icon=":material/map:"),
     st.Page("views/investigations.py", title=t("Investigations"), icon=":material/table_view:"),

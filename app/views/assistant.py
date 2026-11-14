@@ -60,6 +60,13 @@ for turn in chat:
         st.markdown(turn["text"])
         if turn.get("uncited"):
             st.warning(t("This answer has no source citations - treat it with caution."))
+        if turn.get("unsupported"):
+            st.warning(
+                t(
+                    "Numbers not found in the cited sources: {nums} - check them against the sources below.",
+                    nums=", ".join(turn["unsupported"]),
+                )
+            )
         if turn.get("sources"):
             with st.expander(t("Sources ({n})", n=len(turn["sources"]))):
                 for s in turn["sources"]:
@@ -92,6 +99,7 @@ if q:
                     "q": q,
                     "text": r["answer"] or t("No answer was returned."),
                     "uncited": r["uncited"],
+                    "unsupported": r.get("unsupported_numbers", []),
                     "sources": [{"id": s.id, "title": s.title, "text": s.text, "url": s.url} for s in r["sources"]],
                 }
             )

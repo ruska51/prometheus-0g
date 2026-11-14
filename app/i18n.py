@@ -449,6 +449,7 @@ RU = {
     "O2 >= 0.30 (Moon-like O2)": "O2 >= 0.30 (как на лунной базе)",
     "O2 <= 0.15": "O2 <= 0.15",
     # assistant page (ADR-042)
+    "Numbers not found in the cited sources: {nums} - check them against the sources below.": "Числа, которых нет в процитированных источниках: {nums} - сверьте их с источниками ниже.",
     "Technical detail:": "Техническая деталь:",
     "Ask the data": "Спросить данные",
     "Ask a question about NASA microgravity fire experiments. The assistant answers only from this dashboard's verified results and from public NASA technical reports (NTRS), cites a source after every statement, and says so when the data do not cover the question.": "Задайте вопрос об экспериментах NASA с огнём в невесомости. Ассистент отвечает только по проверенным результатам этого дашборда и публичным техническим отчётам NASA (NTRS), ставит ссылку на источник после каждого утверждения и прямо говорит, если данных нет.",

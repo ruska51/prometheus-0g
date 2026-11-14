@@ -39,7 +39,9 @@ combustion data. Rules, in order of priority:
 6. Be specific: give the concrete numbers from the context (values with units, ranges, number of tests) rather than
    general statements. If the context has numbers for a closely related case (for example measured FLEX burn times for
    the same fuel, or our model's prediction for a 3 mm droplet), give them and state their conditions.
-7. Be concise: at most 180 words. Answer in the language of the question (English or Russian); keep block ids,
+7. Copy every number together with its own label exactly as in the context (median, percentile, range, number of
+   tests, confidence interval); never move a number to a different label.
+8. Be concise: at most 180 words. Answer in the language of the question (English or Russian); keep block ids,
    chemical formulas and units as they are."""
 
 
@@ -136,19 +138,41 @@ def gemini_generate(key: str, model: str = DEFAULT_MODEL) -> Callable[[str, str]
     return gen
 
 
-def ask(question: str, generate: Callable[[str, str], str], k: int = 10) -> dict:
+def ask(question: str, generate: Callable[[str, str], str], k: int = 12) -> dict:
     """Retrieve, generate, check citations. ``generate(system, prompt) -> text`` is injectable for tests."""
     blocks = search(question, k=k)
     text = generate(SYSTEM, build_prompt(question, blocks)).strip()
     known = {b.id: b for b in [CORE_FACTS, *blocks]}
     ids = cited_ids(text)
+    sources = [known[i] for i in ids if i in known]
     return {
         "answer": text,
-        "sources": [known[i] for i in ids if i in known],
+        "sources": sources,
+        "unsupported_numbers": unsupported_numbers(text, sources),
         "unknown_citations": [i for i in ids if i not in known],
         "uncited": not ids,
         "retrieved": [b.id for b in blocks],
     }
+
+
+NUM = re.compile(r"(?<![\w.])[-+]?\d+(?:[.,]\d+)?")
+
+
+def unsupported_numbers(text: str, sources: list[Block]) -> list[str]:
+    """Numbers in the answer (outside citation brackets) that appear in none of the cited blocks. Catches invented
+    numbers; a number moved to a wrong label is not caught. Small integers (<= 12) are ignored (list markers, counts)."""
+    body = CITE.sub(" ", text)
+    pool = {n.replace(",", ".").lstrip("+") for b in [CORE_FACTS, *sources] for n in NUM.findall(b.title + " " + b.text)}
+    out = []
+    for n in NUM.findall(body):
+        v = n.replace(",", ".").lstrip("+")
+        try:
+            small = float(v) == int(float(v)) and abs(float(v)) <= 12
+        except ValueError:
+            continue
+        if not small and v not in pool and v.lstrip("-") not in pool:
+            out.append(n)
+    return list(dict.fromkeys(out))
 
 
 def friendly_error(e: Exception) -> str:

@@ -28,7 +28,7 @@ def test_block_ids_unique_and_reports_registered():
         ("Замедляет ли гелий горение?", "D:insight-S2"),
         ("What happens to solid materials at lunar gravity?", "D:insight-P6"),
         ("Сколько CO выделяется при горении твёрдых материалов?", "D:insight-D1"),
-        ("Moon base burning rate of methanol", "D:scenario-cabins"),
+        ("Moon base burning rate of methanol", "D:sim-moon-base--rover-methanol"),
     ],
 )
 def test_retrieval_finds_the_relevant_result(q, expected):
@@ -99,3 +99,16 @@ def test_error_reason_never_contains_the_key():
     assert "AIza" not in _reason(e)
     assert friendly_error(AllModelsFailed([("m1", "ClientError 429 RESOURCE_EXHAUSTED")])) == "quota"
     assert friendly_error(AllModelsFailed([("m1", "ServerError 503 overloaded")])) == "other"
+
+
+def test_unsupported_numbers_flags_invented_values_only():
+    from fif.assistant.llm import unsupported_numbers
+
+    src = [b for b in kb.index()[0] if b.id == "D:insight-D1"]
+    assert unsupported_numbers("CO rose by a median 45 ppm, 90th percentile 413 ppm [D:insight-D1].", src) == []
+    assert unsupported_numbers("CO rose by 999 ppm [D:insight-D1].", src) == ["999"]
+
+
+def test_search_mixes_results_and_reports():
+    ids = [b.id for b in kb.search("How was the droplet burning-rate constant determined in the FLEX experiment?")]
+    assert any(i.startswith("D:") for i in ids) and any(i.startswith("R:") for i in ids)

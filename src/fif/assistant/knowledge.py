@@ -424,14 +424,19 @@ def index() -> tuple[list[Block], list[Counter], dict[str, float], float]:
     return blocks, docs, idf, avg
 
 
-def search(query: str, k: int = 8, k1: float = 1.5, b: float = 0.75, data_boost: float = 1.3) -> list[Block]:
-    """BM25 top-k blocks for the query; our own data blocks get a mild boost over report excerpts."""
+def search(query: str, k: int = 12, k1: float = 1.5, b: float = 0.75) -> list[Block]:
+    """BM25: the best half of the blocks from our results and the best half from NASA report excerpts, so a question
+    is always answered with both kinds of evidence when both match."""
     blocks, docs, idf, avg = index()
     q = _tokens(expand_query(query))
     scores = []
-    for blk, d in zip(blocks, docs, strict=True):
+    for d in docs:
         dl = sum(d.values())
-        sc = sum(idf.get(w, 0.0) * d[w] * (k1 + 1) / (d[w] + k1 * (1 - b + b * dl / avg)) for w in q if w in d)
-        scores.append(sc * (data_boost if blk.kind == "data" else 1.0))
-    order = sorted(range(len(blocks)), key=lambda i: scores[i], reverse=True)
-    return [blocks[i] for i in order[:k] if scores[i] > 0]
+        scores.append(sum(idf.get(w, 0.0) * d[w] * (k1 + 1) / (d[w] + k1 * (1 - b + b * dl / avg)) for w in q if w in d))
+    order = [i for i in sorted(range(len(blocks)), key=lambda i: scores[i], reverse=True) if scores[i] > 0]
+    data = [i for i in order if blocks[i].kind == "data"]
+    rep = [i for i in order if blocks[i].kind == "report"]
+    half = k // 2
+    pick = data[:half] + rep[:half]
+    pick += [i for i in order if i not in pick][: k - len(pick)]  # fill up if one kind has few matches
+    return [blocks[i] for i in sorted(pick, key=lambda i: scores[i], reverse=True)]

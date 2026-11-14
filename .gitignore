@@ -23,3 +23,6 @@ Thumbs.db
 
 # Large NASA reports: fetched on demand, checksum in data/catalog.yaml (in_git: false)
 data/raw/ntrs/*.pdf
+
+# Copyrighted papers (e.g. Elsevier PDFs) - local reference only, never in the public repo
+data/raw/literature/

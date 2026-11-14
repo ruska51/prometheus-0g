@@ -96,3 +96,6 @@ Figures: `flex_conditions.png` (O2 vs pressure, Moon-base box), `flex_outcomes.p
 1. Tests 70/73 (193F001): two real tests per TP Figs. 74/77; row 73 is internally inconsistent (K*t_burn/(d0^2-d_ext^2) = 1.52 vs typical 1.05) -> excluded; row 70 kept (ADR-019). New flag KTB_INCONSISTENT for ratio outside 0.8-1.5: 11 rows, kept.
 2. FLEX-216 and FLEX-230 added from the TP (ADR-020): FLEX = 276 rows, 274 used for modeling; extinction class 190 / 37 / 49 NA.
 3. Blank vs dash: kept as ADR-018 for now (ADR-021).
+
+## Catalog-only tables: notes (2026-11-14)
+- PSI-23 ACME s-Flame, column 'Atmosphere': values '~21% O2 with N3' ... 'N6' next to 'N2' - spreadsheet autofill artefacts for N2. Table used only for the comparison matrix (column presence), values not used.

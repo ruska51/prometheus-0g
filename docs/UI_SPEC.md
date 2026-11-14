@@ -36,6 +36,7 @@ Evidence badges everywhere: `NASA data` / `model` / `physics theory` / `NASA lit
 - Users: P3.
 - Components: relevance ranking by habitat need and fire-safety stage (rule in ADR-034), filters (stage, fuel type, platform, has data table), table (acronym, title, platform, hardware, dates, tests in table, publications, DOI, PSI link), detail panel (objective, approach, research impacts).
 - 10-second message: "All 24 NASA combustion investigations in one searchable, ranked table."
+- "Compare investigations" tab (S5, ADR-037): matrix investigation x recorded variable (conditions blue, measured outcomes orange) detected from the PSI table headers, computed summary (which tables record O2 and pressure, which hold outcomes, which have no table), shared-hardware families, CSV download.
 
 ### 6. Data explorer
 - Goal: transparency - every number traceable.

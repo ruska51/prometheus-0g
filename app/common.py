@@ -86,3 +86,10 @@ def source_note(text: str) -> None:
 def flame_sim(fuel: str, p_atm: float, x_o2: float, x_co2: float, x_he: float, d0_mm: float, gravity: float, label: str) -> dict:
     from fif.insights.flame_sim import simulate
     return simulate(fuel, p_atm, x_o2, x_co2, x_he, d0_mm, gravity, label)
+
+
+@st.cache_data(show_spinner=False)
+def comparison() -> tuple[pd.DataFrame, dict]:
+    from fif.insights.compare import comparison_matrix, hardware_groups
+    m = comparison_matrix()
+    return m, hardware_groups(m)

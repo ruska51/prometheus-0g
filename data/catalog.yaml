@@ -60,3 +60,178 @@ datasets:
         sha256: eb9f705d758daa14658fdf8e289031e08badd62f8c4bedf7bb5bfe3ac7688cd2
       - path: "data/raw/psi_metadata/SAME EIRD Rev 2.00 02-25-05 HIgh Q.pdf"
         sha256: 941dca3ccf7132913bfd73e8a408f3ea558eaa822486dd53ffcdfa26127461cb
+
+  - id: psi_records
+    title: PSI investigation records (JSON, gzip) for 24 Combustion Science investigations + repository search response
+    source: https://psi.nasa.gov/geode-py/ws/repo/ (fetched by scripts/fetch_psi.py)
+    license: CC0-1.0 (per record; PSI-10 record has no license field)
+    accessed: 2026-11-14
+    files:
+      - path: "data/raw/psi_records/PSI-10.json.gz"
+        sha256: 2fd60c708f6ab95fd8f8de596763d9340d971f3f61189cc685fc790453bfa323
+      - path: "data/raw/psi_records/PSI-100.json.gz"
+        sha256: 590bb53d12933bdd7bc6055efd73cfaac10b1fba789e211fa7d63b0077b47cc9
+      - path: "data/raw/psi_records/PSI-101.json.gz"
+        sha256: 6809703db4c02ea2eb414ee8e0a98fdb5f87bfaec37ad0fbf26f76c8228d816b
+      - path: "data/raw/psi_records/PSI-102.json.gz"
+        sha256: 852d30cdcb2e9b536b9d00f5746054303c5bedf8107d541085763167e4d6fc57
+      - path: "data/raw/psi_records/PSI-106.json.gz"
+        sha256: 268bb73a05bc81b3f4399ef042e0476cdd707ff65599a68203c6525f942685f5
+      - path: "data/raw/psi_records/PSI-107.json.gz"
+        sha256: f186e1d7ede20ea08b4b7783ae867563413ac891193018ed03e5855b15fefa43
+      - path: "data/raw/psi_records/PSI-115.json.gz"
+        sha256: 1a7d62571e6a12d1b470fe617c78166aae245b469ce2d8acda9b8439fce7c26f
+      - path: "data/raw/psi_records/PSI-117.json.gz"
+        sha256: 28a855df78e8148c1f38c8dec3bf88c5858fe1f5933e0460d793613059a3ec09
+      - path: "data/raw/psi_records/PSI-142.json.gz"
+        sha256: bb9c0e6c4946b36123afce45959042822a6cb636e7efb0ae86f352b963b372a3
+      - path: "data/raw/psi_records/PSI-159.json.gz"
+        sha256: d02931bfd4342d3a67051867853a259eb727eb0873b91c50d99fee0eac6e207d
+      - path: "data/raw/psi_records/PSI-20.json.gz"
+        sha256: 5da1820f9a649b6c81f2bed1ae35cc6bfec57a6c697a1bbef65d2a0ac369bcc1
+      - path: "data/raw/psi_records/PSI-21.json.gz"
+        sha256: 387ba2666d1b6119b8620b9ba9442cb92ffc0cfafb293a24f87aebadf0f547d7
+      - path: "data/raw/psi_records/PSI-22.json.gz"
+        sha256: f15c854f8eedc44a3df6f2a2b07a4c901239cf4fdc318d92cb936a9f4985618a
+      - path: "data/raw/psi_records/PSI-23.json.gz"
+        sha256: c7352e8d82c6fa59899b38eff17c7afb3349da6bc44ab303cdca86f56a8311c4
+      - path: "data/raw/psi_records/PSI-25.json.gz"
+        sha256: 9a63de58b76cbe29bf7bca9b39a844a8d79d7a2e7c9fe8a6466e4ca64247de8b
+      - path: "data/raw/psi_records/PSI-26.json.gz"
+        sha256: 4dd0f64fe85a3765553a874f53f03f69d29833eec5e04cc31fa4d8bb2048b03d
+      - path: "data/raw/psi_records/PSI-39.json.gz"
+        sha256: 55aeec230250191cb2f52c017520b0c33594f8d499b53b8a36196928c0821ce2
+      - path: "data/raw/psi_records/PSI-47.json.gz"
+        sha256: efa9c4ff3a01693f44c649739c745913a5ea4ae738345a950b94ee15ec009058
+      - path: "data/raw/psi_records/PSI-60.json.gz"
+        sha256: 0dbc4015e6a6717af8c7870d459a353a225996093b950b3fc8740fd07c77dd33
+      - path: "data/raw/psi_records/PSI-62.json.gz"
+        sha256: 59d1826f28d122edf867532dde4cd0116fa0202722f67f48beab70bbfde0ef2a
+      - path: "data/raw/psi_records/PSI-68.json.gz"
+        sha256: 79e9b91be39cddd060366aa6732f67363ac9ff410107a0fa1d410188076127d2
+      - path: "data/raw/psi_records/PSI-69.json.gz"
+        sha256: 1b67ca04916cf0133c24d470fc8a4b343b01339427e91489ba8a793bfa7a1cb8
+      - path: "data/raw/psi_records/PSI-98.json.gz"
+        sha256: c0425166399f00a6a70270f1427d8461ce3eff5c7c438ba5f14be66d410c7da9
+      - path: "data/raw/psi_records/PSI-99.json.gz"
+        sha256: 95c3811a1586f3a15030c73ab04233ff5a3a1a6e6ffe47f2bf0ecc9ea4dd486c
+      - path: "data/raw/psi_records/search_all.json.gz"
+        sha256: a0128972963977e7a4f2e52f0da71fd72fb5e3338bf0cab127458afe36af5465
+
+  - id: psi_tables
+    title: PSI Experimental Table CSVs (22 files, 20 investigations)
+    source: https://psi.nasa.gov/geode-py/ws/studies/<PSI-id>/download (fetched by scripts/fetch_psi.py)
+    license: CC0-1.0
+    accessed: 2026-11-14
+    notes: sizes checked against file_size in each PSI record (data/raw/psi_tables/MANIFEST.tsv)
+    files:
+      - path: "data/raw/psi_tables/PSI-10_Experimental table_Flame Design_Normal Flame.csv"
+        psi_id: PSI-10
+        bytes: 26933
+        sha256: 4a663292bd3f65201943cc71bd661a70383639276a9176f64105b285bf0b6deb
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-10_Experimental table_Flame Design_Inverse Flame.csv"
+        psi_id: PSI-10
+        bytes: 17314
+        sha256: 97933ee9ae0b9ebc6b948a67485a0fe2f8218f753253a4f2be93c40d374c44e4
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-20_Experimental table_ACME BRE.csv"
+        psi_id: PSI-20
+        bytes: 1113
+        sha256: 4aa5d3f98708ceacced5c620d46858b9965f8d4d941b203229f46467d53e5ab7
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-21_Experimental table_CLD Flame.csv"
+        psi_id: PSI-21
+        bytes: 2454
+        sha256: 9fafbc5b3dddaf715ce8025ed9154ce297803f7b69a935f077ec26c8249e44c0
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-22_Experimental table_ACME E-FIELD Flames.csv"
+        psi_id: PSI-22
+        bytes: 2475
+        sha256: 69090c357b83ae38d161d29001d1d32b40fd77b13324ca6585ee990cdceef524
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-23_Experimental table_ACME s-Flame.csv"
+        psi_id: PSI-23
+        bytes: 2456
+        sha256: 16cd10f50bd2e962887c8eb4077e5a9b3e790c78de8e0361c0b77e19300be7cf
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-25_Experimental table_BASS-II.csv"
+        psi_id: PSI-25
+        bytes: 16590
+        sha256: 71e792bf6b5fb5ea620c5dd70fbbac05515992e12aefcf5dff47312caa48c042
+        role: stretch (ADR-012)
+      - path: "data/raw/psi_tables/PSI-26_Experimental table_BASS.csv"
+        psi_id: PSI-26
+        bytes: 4726
+        sha256: ccfc3c54d948b64a1c5d2596a63c7c8019e51df0c91a1d62f039f48fa28c300f
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-39_Experimental table_CFI.csv"
+        psi_id: PSI-39
+        bytes: 7792
+        sha256: fb898e28762353aa132c16b886dbd207a024b1dd3c9bed5928d70d8036d2ec7e
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-47_Experimental table_DAFT.csv"
+        psi_id: PSI-47
+        bytes: 518
+        sha256: d9d1a436c6e7bbc410b433e04575fe7dedaff763b5237d688089929b7393b5c0
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-68_Experimental table_Flex2.csv"
+        psi_id: PSI-68
+        bytes: 1029
+        sha256: cc57ad1bd9977aa13e7ac6c3aa618303012686e232b36c052c6a9f1a74e5f528
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-69_Experimental table_FLEX.csv"
+        psi_id: PSI-69
+        bytes: 24776
+        sha256: 37c88ce8ae9391b7544ff630a45ce87543d04d317cdbfbed104fe7d5c27e1b96
+        role: primary (ADR-012)
+      - path: "data/raw/psi_tables/PSI-98_Experimental table_SAFFIRE-1.csv"
+        psi_id: PSI-98
+        bytes: 469
+        sha256: c01f29c62455f0a3b512290ab85e5687ecded326733189f002f580368402308d
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-99_Experimental table_SAFFIRE-2.csv"
+        psi_id: PSI-99
+        bytes: 1973
+        sha256: 3c24390b9ef86f3d1ebaab911a1a3cc95a8759aebf42062371370e6d4b31b8ac
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-100_Experimental table_SAFFIRE-3.csv"
+        psi_id: PSI-100
+        bytes: 239
+        sha256: 4d3c717ec20dd0247db670b2784a9fd7d746788bc54a936f80693e48eb8cd117
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-101_Experimental table_SAME-R.csv"
+        psi_id: PSI-101
+        bytes: 5674
+        sha256: 87164b7dc9168a4273c159f7a9f23699afbd06ad97b77974377e79b9bf8a3bef
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-102_Experimental table_SAME.csv"
+        psi_id: PSI-102
+        bytes: 331
+        sha256: 268d1e121d2f211b124407dd32b9475617bd269ede2c2d1749441da3e949a2af
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-106_Experimental table_Slice.csv"
+        psi_id: PSI-106
+        bytes: 734
+        sha256: 89ef980810ca6d9aa8be817b42e36cd2adff23f5e9058361b5a33d18b4363f4d
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-107_Experimental table_Spice.csv"
+        psi_id: PSI-107
+        bytes: 31205
+        sha256: fb0d7e60cf5367afb429089e9901d27288f78038efd26c8de1db4fbe04117136
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-142_Experimental table_Data Summary Table.csv"
+        psi_id: PSI-142
+        bytes: 727
+        sha256: c66d135b0053590d239f06b9e8627d826e3d726b8443fd2cbccc37484b6a8e7f
+        role: catalog only (ADR-013)
+      - path: "data/raw/psi_tables/PSI-159_Experimental table_CFI-G_Normal Flames.csv"
+        psi_id: PSI-159
+        bytes: 22166
+        sha256: d95a621c3fbd27d204dd32ed29fa17d68f2b779d6a523cde8479ed7ebaa5251a
+        role: auxiliary (ADR-012)
+      - path: "data/raw/psi_tables/PSI-159_Experimental table_CFI-G_Inverse Flames.csv"
+        psi_id: PSI-159
+        bytes: 39422
+        sha256: d4d44f8b9896936728748e34d1b6ad0812032a92fa5289599b708c138e3a9b39
+        role: auxiliary (ADR-012)

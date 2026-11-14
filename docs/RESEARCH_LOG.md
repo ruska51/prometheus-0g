@@ -93,3 +93,27 @@ URL: https://spinoff.nasa.gov/node/9918 (accessed 2026-11-14)
   - ACME CFI-G (PSI-159): spherical diffusion flames, multiple fuels, dilutions, flows, pressures.
 - NTRS (title search, page.size=4): "FLEX droplet extinction" 1 hit (20130014061, methanol droplet combustion in O2-inert, microgravity); "BASS flame spread microgravity" 8 (e.g. 20160000593 BASS-II results presentation); "Saffire flame spread" 12; "Smoke Aerosol Measurement Experiment" 16 (20130000422 SAME-2 particle morphology and size); "Burning Rate Emulator microgravity" 2.
 - Conclusion: catalog-level questions are answerable now from metadata; quantitative questions depend on tables in PSI files or NTRS papers (stage 2 confirms).
+
+## 2026-11-14 ~11:35 | Stage 2: can R1 (PSI) be read without the browser?
+- Where: PSI page bundle `https://psi.nasa.gov/physci/repo/main.5216219a85b99359.js`.
+- Found: the page calls public JSON endpoints `/geode-py/ws/repo/search`, `/geode-py/ws/repo/filter-options`, `/geode-py/ws/repo/investigations/<id>`, `/geode-py/ws/studies/<id>/download?file=...&redirect=false` (returns a pre-signed S3 URL). No login required; no block circumvented (same calls as the page).
+- Query: `GET /geode-py/ws/repo/search?from=0&size=500` -> 133 investigations in the whole repository (`q=combustion` also returns all 133). By Research Area: Materials Science 35, Complex Fluids 34, Fluid Physics 27, **Combustion Science 24**, Biophysics 7, Fundamental Physics 6.
+- Combustion Science list: PSI-10, 20, 21, 22, 23, 25, 26, 39, 47, 60, 62, 68, 69, 98, 99, 100, 101, 102, 106, 107, 115, 117, 142, 159. Compared with Ruslan's metadata set: PSI-101 SAME-R missing there; PSI-108 and PSI-181 there are not Combustion Science.
+- Conclusion: R1 fully readable via its own web service; catalog source = investigation records.
+
+## 2026-11-14 ~11:40 | Stage 2: do PSI investigations have data tables?
+- Where: investigation records, field `experimentalTable`.
+- Found: 20 of 24 have Experimental Table CSVs (22 files, 239 B - 39.4 KB); PSI-60, 62, 115, 117 have none. All records `restricted=False`; license CC0-1.0 in 23 records, PSI-10 has an empty license field.
+- Downloaded all 22 to scratch via the download endpoint; every size equals `file_size` in the record.
+- FLEX (PSI-69): 274 rows; columns FLEX Test #, identifier, date, GMT, fuel, pressure mmHg, O2/N2/CO2/He mole fractions, d0 mm, visible flame extinction diameter mm, burning rate ("mm" in header), burn time s, test end. Fuel: methanol 157, heptane 117. Test end: Extinction 186, Disruption 61, Completion 27. Ranges: O2 0.12-0.34, CO2 0-0.70 (123 tests > 0), He 0-0.45 (50 tests > 0), d0 1.1-4.67 mm (262 values).
+- CFI-G (PSI-159): normal 179 rows (XO2 0.18-0.40, p 0.51-3.04 bar; hot ignition Yes 132 / No 47; SE 102, FT 31, "-" 46), inverse 154 rows (XO2 0.12-0.85, p 0.50-3.31 bar; hot ignition Yes 114, yes 17, No 13, flash 8, no 2; SE 81, FT 58, "-" 15).
+- BASS-II (PSI-25): 129 rows, 51 distinct material strings; initial O2 13.6-22.2 %, final O2 0.6-40.4 %, CO -3 to 950 ppm.
+- Others: see DATA_SOURCES.md section 2.
+- Anomaly flags for stage 3 (DATA_QUALITY.md): FLEX pressure minimum 0.0 mmHg and extinction diameter 0.0 mm; FLEX burning-rate header unit "mm" vs "mm2/s" in NASA/TP-2015-216046 Table IX; BASS-II final O2 40.4 % > initial maximum 22.2 % and CO -3 ppm; CFI-G inconsistent case ("Yes"/"yes"); SPICE first two data rows identical.
+- Q5 note: FLEX includes tests at O2 0.30 and 0.34 near 540 mmHg (e.g. FLEX-019..027, NASA/TP-2015-216046 Table IX). 539.1 mmHg x 14.696 psia / 760 mmHg = 10.42 psia (conversion per FORMULAS.md section 1). The challenge's Moon-base atmosphere is "30% or greater" O2 at "10.2 psi or less".
+
+## 2026-11-14 ~11:44 | Stage 2: NTRS reports with result tables
+- Where: NTRS API, 10 queries from the stage-2 prompt, `page.size=6`; PDFs downloaded to scratch, text via `pdftotext -layout`, captions matched by `^Table|TABLE <n>`.
+- Query totals: "Flame Extinguishment Experiment FLEX results" 2; "FLEX-2" 42 (mostly unrelated: "flex" bearings/packaging); "Cool Flames Investigation" 8; "ACME Advanced Combustion via Microgravity Experiments" 5; "BASS-II Burning and Suppression of Solids" 6; "SoFIE Solid Fuel Ignition and Extinction" 1; "Saffire spacecraft fire safety" 26; "SAME smoke aerosol measurement" 13 (half unrelated atmospheric aerosol); "microgravity flame spread" 194; "spacecraft fire safety" 318.
+- Reports with relevant tables: 20150023456 (NASA/TP-2015-216046 FLEX, Tables I-IX), 20210011385 (BASS-II Summary TM, Tables 2.1, 4.1, 4.2, 5.1, 7.1), 20180005168 (Saffire, Table 1), 20170001636 (Saffire, Tables 1-5), 20130000422 (SAME-2, Table 1). Detail in DATA_SOURCES.md section 3.
+- Conclusion: PSI CSVs are the primary numeric source; NTRS TP-FLEX is the cross-check; NTRS reports for other investigations only for stretch items.

@@ -127,3 +127,33 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Decision (Ruslan): A.
 - Consequences: Name "Prometheus-0g"; tagline "Physics-first, AI-assisted fire-safety insights from NASA microgravity combustion experiments." Used in README, app title, SUBMISSION.md.
 - Sources: -
+
+## ADR-012: Model datasets
+- Date/time: 2026-11-14 11:48 (UTC+5)
+- Stage: 2
+- Context: Of 24 PSI Combustion Science investigations, only FLEX (274 tests) and CFI-G (333 tests) have Experimental Tables with numeric outcomes and enough tests; BASS-II has partial outcomes (O2/CO/CO2 changes) and no spread rates.
+- Options: A) FLEX primary + CFI-G auxiliary B) FLEX only C) FLEX + CFI-G + BASS-II.
+- Claude's recommendation: A - FLEX answers Q2/Q3/Q5 with outcomes and d2-law theory; CFI-G adds tested O2 up to 0.85 for Q5 as an ignition/self-extinction map without a separate ML model.
+- Decision (Ruslan): "For now FLEX + CFI-G; if time remains we add BASS-II."
+- Consequences: Stage 3 parses PSI-69 and PSI-159 to model-ready tables; BASS-II becomes a stretch item after S5. Model = FLEX; CFI-G = data map with Tad/Zst from the table.
+- Sources: docs/DATA_SOURCES.md sections 2 and 4; docs/RESEARCH_LOG.md 2026-11-14 stage 2
+
+## ADR-013: Datasets without numeric outcomes
+- Date/time: 2026-11-14 11:48 (UTC+5)
+- Stage: 2
+- Context: SPICE, ACME Flame Design, CFI, FLEX-2, SAME/SAME-R, Saffire I-III, SLICE, DAFT and others hold test conditions but no usable outcomes.
+- Options: A) catalog/overview only B) drop.
+- Claude's recommendation: A - the challenge asks to display fuels, O2, airflow and within-investigation variables (CH-10).
+- Decision (Ruslan): A.
+- Consequences: Their Experimental Tables feed the M1 catalog (condition ranges, number of tests); never model inputs.
+- Sources: docs/DATA_SOURCES.md section 2
+
+## ADR-014: Who downloads PSI files
+- Date/time: 2026-11-14 11:48 (UTC+5)
+- Stage: 2
+- Context: CLAUDE.md section 3.1 assumed Ruslan downloads PSI files manually. The files turned out to be open (CC0-1.0, no login) through the public web service the PSI page uses.
+- Options: A) Claude downloads via the API with a reproducible script B) Ruslan downloads manually.
+- Claude's recommendation: A - reproducible, checksummed, no manual work.
+- Decision (Ruslan): A.
+- Consequences: `scripts/fetch_psi.py` writes `data/raw/psi_records/*.json.gz` (raw responses, gzip only) and `data/raw/psi_tables/*.csv` + `MANIFEST.tsv`; sha256 in `data/catalog.yaml`. Changes the CLAUDE.md 3.1 assumption for open PSI files only; login-protected files would still go through Ruslan.
+- Sources: scripts/fetch_psi.py

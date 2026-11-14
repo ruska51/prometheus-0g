@@ -11,11 +11,11 @@ Stage-1 mapping: MVP items M1-M6, stretch S1-S6 and product questions Q1-Q8 are 
 | ID | Requirement | Origin | Pri | How we close it | MVP / stretch | Status |
 |---|---|---|---|---|---|---|
 | CH-1 | Web-based dashboard, AI-powered | CH Objectives | M | Streamlit app on HF Spaces (ADR-001); physics-informed ML layer (stages 5-6) | M3, M6 | open |
-| CH-2 | Summarize combustion science investigations | CH Objectives | M | Catalog of all combustion investigations from PSI ISA metadata in `data/raw/psi_metadata/` | M1 | open |
+| CH-2 | Summarize combustion science investigations | CH Objectives | M | Catalog of all 24 PSI Combustion Science investigations from PSI records + Experimental Tables (`data/raw/psi_records/`, `data/raw/psi_tables/`) | M1 | partial |
 | CH-3 | Rank investigations | CH Objectives | M | Relevance ranking by habitat and fire-safety stage; formula approved by Ruslan (FORMULAS.md section 8 is a draft) | M2 (Q1) | open |
 | CH-4 | Interpret investigations -> foundational fire-safety insights | CH Objectives | M | Insight engine (stage 7), each insight tagged with evidence type and N tests | M5 | open |
 | CH-5 | Identify investigations most relevant to habitable crew environments (spacecraft, stations, lunar/Martian bases, pressurized rovers) | CH Objectives | S | Habitat filter in the ranking; rockets/propellants out of scope (CH footnote) | M2 (Q1) | open |
-| CH-6 | Extract data that supports predictive modeling of flammability and fire scenarios | CH Objectives | S | Data layer (stage 3) + calibrated hybrid model (stages 4-5); downloadable tables | M3 (Q2, Q3) | open |
+| CH-6 | Extract data that supports predictive modeling of flammability and fire scenarios | CH Objectives | S | FLEX (PSI-69) primary, CFI-G (PSI-159) auxiliary (ADR-012); raw CSVs in data/raw/psi_tables; data layer (stage 3) + hybrid model (stages 4-5); downloadable tables | M3 (Q2, Q3) | partial |
 | CH-7 | Highlight research informing next-generation fire-safety controls/equipment | CH Objectives | S | Insights grouped by prevention / detection / suppression | M5 (Q8) | open |
 | CH-8 | (Optional) Applications of PSI data to fire safety on Earth | CH Objectives | C | Insights tagged `NASA spinoff` (R5-R7) in MVP; dedicated page is stretch; water-mist source still to find | M5, S6 | open |
 | CH-9 | Audience: professors, students, aerospace researchers and engineers | CH Considerations | C | Personas P1-P3 (ADR-008); technical language, units shown, links to sources | all | open |

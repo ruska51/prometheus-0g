@@ -5,3 +5,4 @@
 | Date | Stage | Tool | What was generated / assisted | Human review |
 |---|---|---|---|---|
 | 2026-11-14 | 0 | Claude Code (Anthropic, Claude Opus) | Repository skeleton, module stubs, documentation templates, resource summaries in RESEARCH_LOG.md | Ruslan Sharafutdinov (decisions, review) |
+| 2026-11-14 | 2 | Claude Code (Anthropic, Claude Opus) | PSI/NTRS data reconnaissance, fetch script, candidate assessment in DATA_SOURCES.md | Ruslan Sharafutdinov (dataset decisions ADR-012..014) |

@@ -38,3 +38,16 @@ Open items:
 
 2026-11-14 11:33 | 1 | 00_PROJECT_BRIEF.md filled; 01_REQUIREMENTS.md traceability mapped to M/S/Q; README name + tagline; CH-12 no longer carries "21% O2" (not in the challenge text, was from memory) | docs/00_PROJECT_BRIEF.md, docs/01_REQUIREMENTS.md, README.md | stage 2: data recon
 - Stage 1 duration: 11:27-11:33 (clock).
+
+## Stage 2 - started 2026-11-14 11:34
+
+2026-11-14 ~11:40 | 2 | PSI read through its public web service: 133 investigations, 24 Combustion Science; 20 have Experimental Table CSVs (22 files, CC0) | docs/RESEARCH_LOG.md | assess candidates
+
+2026-11-14 ~11:44 | 2 | NTRS: 10 queries, PDFs scanned for tables; NASA/TP-2015-216046 (FLEX) Table IX = cross-check for PSI-69 | docs/RESEARCH_LOG.md, docs/DATA_SOURCES.md | -
+
+2026-11-14 11:48 | 2 | Decisions ADR-012 (FLEX primary, CFI-G auxiliary, BASS-II if time), ADR-013 (no-outcome datasets = catalog only), ADR-014 (Claude downloads open PSI files via API) | docs/DECISIONS.md | fetch
+
+2026-11-14 12:02 | 2 | scripts/fetch_psi.py: 25 raw JSON responses (gzip) + 22 CSVs + MANIFEST.tsv; all sizes match PSI records; byte-identical to the first scratch download; first run failed on a DNS error -> retries added, records stored gzip (raw PSI-23 record alone was 8.1 MB due to a file change log) | scripts/fetch_psi.py, data/raw/psi_records/, data/raw/psi_tables/, data/catalog.yaml | stage 3: parse FLEX + CFI-G
+
+2026-11-14 12:02 | 2 | DATA_SOURCES.md rewritten (registered sources, 24 candidates rated, NTRS tables, selection); stage closed | docs/DATA_SOURCES.md | -
+- Stage 2 duration: 11:34-12:02 (clock), budget 60 min.

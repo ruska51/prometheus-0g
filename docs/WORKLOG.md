@@ -51,3 +51,12 @@ Open items:
 
 2026-11-14 12:02 | 2 | DATA_SOURCES.md rewritten (registered sources, 24 candidates rated, NTRS tables, selection); stage closed | docs/DATA_SOURCES.md | -
 - Stage 2 duration: 11:34-12:02 (clock), budget 60 min.
+
+## Stage 3 - started 2026-11-14 12:03
+
+2026-11-14 12:10 | 3 | venv (Python 3.12) with pinned packages; anomaly scan of FLEX and CFI-G; decisions ADR-015..018 | requirements.txt, docs/DECISIONS.md | parsers
+2026-11-14 ~12:13 | 3 | data layer: catalog, parsers (flex, cfig, psi_catalog), clean, schema (pandera), features, build; scripts/build_data.py | src/fif/data/, scripts/build_data.py, data/interim, data/processed | verification
+2026-11-14 ~12:17 | 3 | FLEX CSV vs NASA/TP-2015-216046 Table IX: pdftotext showed false diffs (text layer shifted) -> rendered pages checked by eye + pdfplumber word-coordinate parser; 3288 cells, 0 differences; numbering offset, 2 TP-only tests, blank-vs-dash finding | scripts/verify_flex_vs_tp.py, docs/verification/flex_vs_tp.tsv, docs/DATA_QUALITY.md | tests
+2026-11-14 ~12:19 | 3 | tests (13, built into tmp dirs; live processed mtime unchanged), EDA + 4 figures | tests/test_data_flex.py, scripts/eda.py, docs/figures/ | docs
+2026-11-14 12:22 | 3 | DATA_DICTIONARY, DATA_QUALITY, ARCHITECTURE (data layer + Mermaid), DATA_SOURCES; correction: Moon-base atmosphere is just outside the FLEX tested pressure range (0.694 vs >= 0.703 atm), not inside as said in stage 2 | docs/* | stage 4
+- Stage 3 duration: 12:03-12:22 (clock), budget 90 min.

@@ -157,3 +157,43 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Decision (Ruslan): A.
 - Consequences: `scripts/fetch_psi.py` writes `data/raw/psi_records/*.json.gz` (raw responses, gzip only) and `data/raw/psi_tables/*.csv` + `MANIFEST.tsv`; sha256 in `data/catalog.yaml`. Changes the CLAUDE.md 3.1 assumption for open PSI files only; login-protected files would still go through Ruslan.
 - Sources: scripts/fetch_psi.py
+
+## ADR-015: Handling of data anomalies (FLEX, CFI-G)
+- Date/time: 2026-11-14 12:10 (UTC+5)
+- Stage: 3
+- Context: FLEX anomalies all appear identically in NASA/TP-2015-216046 Table IX, so no second source can correct them: test 114 pressure 0; 6 tests mole-fraction sum 0.98; 8 tests extinction diameter 0; test 129 d_ext 3.34 > d0 3.33; burn times "~6", "~9"; identifier 193F001 used twice; burning-rate header unit "mm" (TP: mm^2/s). CFI-G: #DIV/0! / #VALUE! in 4 cells (Tad, Zst, peak T), "Yes"/"yes" case variants.
+- Options: A) default package B) exclude every flagged row from modeling C) keep everything incl. P = 0.
+- Claude's recommendation: A.
+- Decision (Ruslan): A, "default package".
+- Consequences: test 114 `use_in_model = False` (kept in catalog); other anomalies kept with flags, no renormalisation; d_ext = 0 -> d_ext target missing; K unit mm^2/s per TP App. A.1; spreadsheet errors -> NaN; case normalised, originals kept. Implemented in `src/fif/data/clean.py`; list in DATA_QUALITY.md.
+- Sources: NASA/TP-2015-216046 Table IX and App. A.1; data/processed/quality_flags.tsv
+
+## ADR-016: Cross-validation groups (FLEX)
+- Date/time: 2026-11-14 12:10 (UTC+5)
+- Stage: 3
+- Context: repeats of one test regime must never be split between train and test.
+- Options: A) regime = fuel x pressure (50 mmHg) x O2/CO2/He (0.01), 81 groups B) test day, 80 groups C) union of regime and day.
+- Claude's recommendation: A - tests prediction for a new atmosphere, which is what Q5 needs.
+- Decision (Ruslan): A.
+- Consequences: column `cv_group` (81 groups, 11 singletons, max 17 tests); used by GroupKFold in stage 6.
+- Sources: src/fif/data/clean.py `regime_group`
+
+## ADR-017: Targets
+- Date/time: 2026-11-14 12:10 (UTC+5)
+- Stage: 3
+- Context: which measured outcomes the models predict / the dashboard maps.
+- Options (multi): FLEX burning-rate constant K; FLEX extinction yes/no; FLEX d_ext/d0; CFI-G ignition and self-extinction.
+- Claude's recommendation: K, extinction yes/no, CFI-G ignition/self-extinction; d_ext/d0 optional.
+- Decision (Ruslan): all four ("FLEX: K, extinction yes/no, d_ext/d0, CFI-G ignition and SE, all").
+- Consequences: targets `K_m2_s`, `extinct_finite_d`, `d_ext_over_d0` (FLEX) and `ignited`, `self_extinguished` (CFI-G, data map only per ADR-012). Post-ignition columns listed in `src/fif/data/features.py` and never used as features.
+- Sources: docs/DATA_DICTIONARY.md
+
+## ADR-018: Definition of the FLEX extinction class
+- Date/time: 2026-11-14 12:10 (UTC+5)
+- Stage: 3
+- Context: `Test end` disagrees with the extinction diameter in 35 tests and is not defined in the TP; the TP defines the en dash in the diameter column as "flame extinction did not occur" (burned to completion or ended by disruption).
+- Options: A) from the diameter: 1 = d_ext > 0, 0 = en dash or 0, NA = blank B) from Test end, Disruption excluded C) from Test end, Disruption = no extinction.
+- Claude's recommendation: A.
+- Decision (Ruslan): A first; "if time remains, all the others" (B and C as sensitivity checks in validation).
+- Consequences: `extinct_finite_d` = 189 / 36 / 49 NA. Caveat found after the decision (DATA_QUALITY.md section 3): all 49 CSV blanks are printed as en dashes in the TP, where the dash also covers "not listed"; open question to Ruslan.
+- Sources: NASA/TP-2015-216046 App. A.1; docs/DATA_QUALITY.md

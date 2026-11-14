@@ -20,3 +20,6 @@ Thumbs.db
 
 # NOTE: data/raw is intentionally NOT ignored. Whether small public raw files
 # are committed is Ruslan's decision (see docs/DECISIONS.md).
+
+# Large NASA reports: fetched on demand, checksum in data/catalog.yaml (in_git: false)
+data/raw/ntrs/*.pdf

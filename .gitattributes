@@ -1,2 +1,5 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Raw data must stay byte-identical (sha256 in data/catalog.yaml): no line-ending conversion
+data/raw/** -text

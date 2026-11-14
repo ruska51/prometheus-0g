@@ -117,3 +117,10 @@ URL: https://spinoff.nasa.gov/node/9918 (accessed 2026-11-14)
 - Query totals: "Flame Extinguishment Experiment FLEX results" 2; "FLEX-2" 42 (mostly unrelated: "flex" bearings/packaging); "Cool Flames Investigation" 8; "ACME Advanced Combustion via Microgravity Experiments" 5; "BASS-II Burning and Suppression of Solids" 6; "SoFIE Solid Fuel Ignition and Extinction" 1; "Saffire spacecraft fire safety" 26; "SAME smoke aerosol measurement" 13 (half unrelated atmospheric aerosol); "microgravity flame spread" 194; "spacecraft fire safety" 318.
 - Reports with relevant tables: 20150023456 (NASA/TP-2015-216046 FLEX, Tables I-IX), 20210011385 (BASS-II Summary TM, Tables 2.1, 4.1, 4.2, 5.1, 7.1), 20180005168 (Saffire, Table 1), 20170001636 (Saffire, Tables 1-5), 20130000422 (SAME-2, Table 1). Detail in DATA_SOURCES.md section 3.
 - Conclusion: PSI CSVs are the primary numeric source; NTRS TP-FLEX is the cross-check; NTRS reports for other investigations only for stretch items.
+
+## 2026-11-14 12:19 | Stage 3: correction of the stage-2 Q5 note
+- The stage-2 note listed FLEX tests at O2 0.30-0.34 near 540 mmHg. Processed data: all 24 tests with O2 >= 0.30 are N2-diluted at 0.703-0.714 atm (10.33-10.49 psia) or ~1.01 atm. The challenge's Moon-base atmosphere is O2 >= 0.30 at <= 10.2 psi (0.694 atm), so it lies just outside the tested pressure range (by ~1-3 %), not inside. Predictions there are labelled extrapolation.
+
+## 2026-11-14 ~12:17 | Stage 3: FLEX CSV vs NASA/TP-2015-216046 Table IX
+- Where: TP PDF (NTRS 20150023456), pages 20-27 rendered and read; pdfplumber word coordinates for all rows.
+- Found: 0 value differences in 3288 cells; TP skips FLEX-156, -213, -228 (CSV renumbered); TP-only tests FLEX-216 N03H201 and FLEX-230 H01H103; all CSV blanks are en dashes in the TP. Details in DATA_QUALITY.md section 3.

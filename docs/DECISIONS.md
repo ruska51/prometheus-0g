@@ -35,7 +35,7 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Options: A) public GitHub now B) private, open at the end C) local only until stage 11.
 - Claude's recommendation: A - deploy and public link can be checked early.
 - Decision (Ruslan): A, public from the start.
-- Consequences: Publishing the repository (GitHub remote creation + push) is pending; see WORKLOG.
+- Consequences: Ruslan published the repository at https://github.com/ruska51/prometheus-0g on 2026-11-14. Commits are pushed after each step.
 - Sources: -
 
 ## ADR-003: Code license

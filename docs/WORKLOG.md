@@ -17,6 +17,8 @@ Format: `YYYY-MM-DD HH:MM | stage | what was done | files | next`. Times UTC+5 (
 
 2026-11-14 11:35 | 0 | Repository skeleton per CLAUDE.md section 5 (repo root `prometheus-0g` plays the role of `flame-in-freefall/`); module stubs with docstrings; requirements.txt, pyproject.toml, Makefile, .gitignore; doc templates; CHALLENGE.md with R1-R7 | all | wait for challenge text -> 01_REQUIREMENTS.md, tag stage-0
 
+2026-11-14 11:45 | 0 | Ruslan's FORMULAS.md (sections 1-9: gas mixture, d2-law, extinction, solid flame spread, jet flames, gravity correction, cabin fire, hybrid model/metrics/ranking, constants table) moved to docs/FORMULAS.md as the file itself instructs. Note: it entered commit 521f993 before Claude had read it. Not yet verified against primary sources | docs/FORMULAS.md | stage 4: verify each formula -> PHYSICS.md
+
 Open items:
 - `NASA PSI data/` not committed yet: whether raw files go into git (and moving them to `data/raw/psi_metadata/`) is Ruslan's decision.
 - GitHub publication pending (no gh CLI, no remote).

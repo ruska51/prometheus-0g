@@ -84,6 +84,6 @@ _Not provided in the pasted text (the Resources tab was not included). Ruslan to
 ## Notes
 
 - "SI-powered" in Objectives is reproduced verbatim from the page; the challenge title says "AI-Powered".
-- The pasted text names two investigations not in `NASA PSI data/`: SAME-R and the fine-water-mist work (no PSI-id given). It also names LUCI and FM2 as future partial-gravity sources (no data in PSI yet).
-- R1 is a JavaScript single-page app; a static fetch returns an empty shell (checked 2026-11-14). Study metadata was downloaded by Ruslan into `NASA PSI data/`.
+- The pasted text names two investigations not in `data/raw/psi_metadata/`: SAME-R and the fine-water-mist work (no PSI-id given). It also names LUCI and FM2 as future partial-gravity sources (no data in PSI yet).
+- R1 is a JavaScript single-page app; a static fetch returns an empty shell (checked 2026-11-14). Study metadata was downloaded by Ruslan into `data/raw/psi_metadata/`.
 - R2-R7 are context only (evidence types `NASA history` / `NASA spinoff`), never model data (CLAUDE.md section 3.0).

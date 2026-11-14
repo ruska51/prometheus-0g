@@ -11,5 +11,5 @@ Format: ID | full reference | URL / DOI | what we took | license / terms | acces
 | R5 | NASA Spinoff, "Fireman's Air Tanks" (1976) | https://spinoff.nasa.gov/node/9582 | Impact context (NASA spinoff) | NASA web content | 2026-11-14 |
 | R6 | NASA Spinoff, "Fire Detector" (1978) | https://spinoff.nasa.gov/node/9407 | Detection + Impact context (NASA spinoff) | NASA web content | 2026-11-14 |
 | R7 | NASA Spinoff, "New Technology for the Fire Attire" (1982) | https://spinoff.nasa.gov/node/9918 | Impact context (NASA spinoff) | NASA web content | 2026-11-14 |
-| PSI-meta | 25 PSI ISA-Tab metadata archives (PSI-10 ... PSI-181), downloaded by Ruslan | local `NASA PSI data/` | Study descriptions, publication lists | NASA data; terms to verify | 2026-11-14 |
+| PSI-meta | 25 PSI ISA-Tab metadata archives (PSI-10 ... PSI-181), downloaded by Ruslan | `data/raw/psi_metadata/` | Study descriptions, publication lists | NASA data; terms to verify | 2026-11-14 |
 | NTRS | NASA Technical Reports Server API | https://ntrs.nasa.gov/api/citations/search | Report search | Public, no login | 2026-11-14 |

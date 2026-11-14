@@ -67,3 +67,13 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Decision (Ruslan): B - read the training files, most important in the folder `NASA PSI data`; Ruslan will also send the formulas he thinks should be used.
 - Consequences: `NASA PSI data/` (25 PSI ISA-Tab metadata archives + SAME EIRD PDF) is the starting inventory for stage 2. Formulas from Ruslan go to PHYSICS.md with sources checked.
 - Sources: NASA PSI data/ (see RESEARCH_LOG.md, 2026-11-14)
+
+## ADR-006: Commit the PSI metadata to git
+- Date/time: 2026-11-14 11:27 (UTC+5)
+- Stage: 1 (start)
+- Context: `NASA PSI data/` (25 ISA-Tab zips + SAME EIRD PDF, 5.5 MB, public NASA material) was untracked; CLAUDE.md leaves committing raw data to Ruslan.
+- Options: A) move to `data/raw/psi_metadata/` and commit B) keep out of git.
+- Claude's recommendation: A - small, public, makes the pipeline reproducible from the repo.
+- Decision (Ruslan): "Yes, move the folder and commit; the data is open anyway."
+- Consequences: Folder renamed to `data/raw/psi_metadata/` (older log entries keep the old name as history); sha256 of every file in `data/catalog.yaml`.
+- Sources: data/catalog.yaml

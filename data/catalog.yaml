@@ -1,4 +1,62 @@
 # Dataset registry. One entry per dataset; filled from stage 2/3.
-# Fields: id, title, source (PSI-id / NTRS id / URL), files (path + sha256),
-#         license / terms, accessed (YYYY-MM-DD), notes.
-datasets: []
+# Fields: id, title, source, files (path + sha256), license, accessed, notes.
+datasets:
+  - id: psi_metadata
+    title: NASA PSI ISA-Tab metadata for 25 investigations + SAME EIRD PDF
+    source: https://psi.nasa.gov/ (downloaded manually by Ruslan Sharafutdinov)
+    license: NASA public data; terms to verify
+    accessed: 2026-11-14
+    notes: metadata only, no measurement tables (see docs/RESEARCH_LOG.md)
+    files:
+      - path: "data/raw/psi_metadata/PSI-100_metadata_PSI-168_SAFFIRE-III.zip"
+        sha256: 663cfdec4feffed118edd8f4435ed189f1f76464c7bc289cee33c37039fc94c3
+      - path: "data/raw/psi_metadata/PSI-102_metadata_PSI-170_SAME.zip"
+        sha256: 809127b7c6578263dc829d8ef8b15fa98fd1626dcf9c9d44d832a48974e146c6
+      - path: "data/raw/psi_metadata/PSI-106_metadata_PSI-174_SLICE.zip"
+        sha256: a3e2c30f0e6f379599638534571de281f504abbc407c3058f86a411df5008550
+      - path: "data/raw/psi_metadata/PSI-107_metadata_PSI-176_SPICE.zip"
+        sha256: 2ebc6e168e4f2614e205addfb9d0643b18d0c3f019109e8a75cda73dac935995
+      - path: "data/raw/psi_metadata/PSI-108_metadata_PSI-178_STDCE-1.zip"
+        sha256: cd7c5d1e57a99156b93a84d4a9e90258d9b9925c667e56f5781c83491051162c
+      - path: "data/raw/psi_metadata/PSI-10_metadata_PSI-10-ISA.zip"
+        sha256: 611b404c92125223ae099f086727ba1f5f031abf22d31eaa58d066a825f87b56
+      - path: "data/raw/psi_metadata/PSI-115_metadata_PSI-185_Utilization of the S.zip"
+        sha256: 695779b4681f16a295dfbc15b11d4138a603567d1a984fcf845434c5b33a9b1d
+      - path: "data/raw/psi_metadata/PSI-117_metadata_NEWID-13_Effect of External T.zip"
+        sha256: a9698dbe10629c226dc498610d62ab8c5c7f15e2668412e831164ab74df99222
+      - path: "data/raw/psi_metadata/PSI-142_metadata_PSI-164_Quantitative Studies.zip"
+        sha256: 249c00928f2c9102e17eb0734fddceb169f8847478c990196a12e9a677fa94d7
+      - path: "data/raw/psi_metadata/PSI-159_metadata_PSI-159-ISA.zip"
+        sha256: 0ef60d1ee8d4d53bbe58139d56fa99e9500ca48dd7913b25ac85dc853d6710ab
+      - path: "data/raw/psi_metadata/PSI-181_metadata_PSI-181-ISA.zip"
+        sha256: e5325d4caab2daab14395c8776ac65da65ae6c5c9b8f4307db682fd6c7ae0415
+      - path: "data/raw/psi_metadata/PSI-20_metadata_PSI-96_ACME BRE.zip"
+        sha256: f3e85d8acff7a83de65f0974fa60e8b6b9fb07591c56b9749503517280ce0ff9
+      - path: "data/raw/psi_metadata/PSI-21_metadata_PSI-97_ACME CLD Flame.zip"
+        sha256: 97d964b416eabcc6186e0780fb0077f5482d61457edbb0bbb2a68cf27fa1a5ca
+      - path: "data/raw/psi_metadata/PSI-22_metadata_ACME E-FIELD Flames.zip"
+        sha256: af6f1a4473fce0677cf6861ad265d4040f8c3c674da21b277f354cdea68fcdbb
+      - path: "data/raw/psi_metadata/PSI-23_metadata_PSI-99_ACME s-Flame.zip"
+        sha256: f27e04049fdabd83421e189b8ed12366adcb000723cf4e00cd9fa5f4d0d3ee2f
+      - path: "data/raw/psi_metadata/PSI-25_metadata_PSI_metadata_PSI-101_BASS-II.zip"
+        sha256: 629faf104a8ff0e8d335f2527c019e740380163ea7f74b8ad754ae71f7da2559
+      - path: "data/raw/psi_metadata/PSI-26_metadata_PSI-102_BASS.zip"
+        sha256: 1167ee239db24e7d73508b2d472e9bab9382211b596312167a2a6d24b4bcfc59
+      - path: "data/raw/psi_metadata/PSI-39_metadata_PSI-118_CFI.zip"
+        sha256: 9fbb9b18160e36dcdd930eb0f19db1f764e7c9d44d804da4fe5c8a8fd936650f
+      - path: "data/raw/psi_metadata/PSI-47_metadata_PSI-126_DAFT_DAFT-2.zip"
+        sha256: 5f748234d51b3ce28b3fd66b1acc8472645ad40b991c11ec9a6598bde3a98214
+      - path: "data/raw/psi_metadata/PSI-60_metadata_NEWID-5_Computational and Ex.zip"
+        sha256: c51022d75ca50928673dd2864ec39d9cce9feeaad006bd574e406a276a77ff7d
+      - path: "data/raw/psi_metadata/PSI-62_metadata_NEWID-7_Concurrent Flame Spr.zip"
+        sha256: e8f984349473da4763818a424719afcb212c4876e35961792aefc3604aa9ea7a
+      - path: "data/raw/psi_metadata/PSI-68_metadata_PSI-132_FLEX-2.zip"
+        sha256: 914253706ecde55d3f497f3f081ecb2f0f0ed1a7a19136b3926d7d37848b8d78
+      - path: "data/raw/psi_metadata/PSI-69_metadata_PSI-133_FLEX.zip"
+        sha256: 3ff0e8a61bc58e79756b4a860cdf0616889f95f03fe48536b62e600ced2c0337
+      - path: "data/raw/psi_metadata/PSI-98_metadata_PSI-166_SAFFIRE-I.zip"
+        sha256: ac398e9688f2b003fdbcdcc754d0d7703a006b6fb8b7a6afa598447bb5d72d0e
+      - path: "data/raw/psi_metadata/PSI-99_metadata_PSI-167_SAFFIRE-II.zip"
+        sha256: eb9f705d758daa14658fdf8e289031e08badd62f8c4bedf7bb5bfe3ac7688cd2
+      - path: "data/raw/psi_metadata/SAME EIRD Rev 2.00 02-25-05 HIgh Q.pdf"
+        sha256: 941dca3ccf7132913bfd73e8a408f3ea558eaa822486dd53ffcdfa26127461cb

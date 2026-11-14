@@ -9,7 +9,7 @@ Status: `open` / `partial` / `done`. Priority: **M** = must (core objective or s
 | ID | Requirement | Origin | Pri | How we close it | Status |
 |---|---|---|---|---|---|
 | CH-1 | Web-based dashboard, AI-powered | CH Objectives | M | Streamlit app on HF Spaces (ADR-001); physics-informed ML layer (stages 5-6) | open |
-| CH-2 | Summarize combustion science investigations | CH Objectives | M | Investigation catalog from PSI ISA metadata (25 studies in `NASA PSI data/`) + extracted test conditions; summary page | open |
+| CH-2 | Summarize combustion science investigations | CH Objectives | M | Investigation catalog from PSI ISA metadata (25 studies in `data/raw/psi_metadata/`) + extracted test conditions; summary page | open |
 | CH-3 | Rank investigations | CH Objectives | M | Relevance ranking to fire-safety needs; formula is Ruslan's decision (FORMULAS.md section 8 is a draft) | open |
 | CH-4 | Interpret investigations -> foundational fire-safety insights | CH Objectives | M | Insight engine (stage 7), each insight tagged with evidence type and N tests | open |
 | CH-5 | Identify investigations most relevant to habitable crew environments (spacecraft, stations, lunar/Martian bases, pressurized rovers) | CH Objectives | S | Relevance filter by environment; rockets/propellants out of scope (CH footnote) | open |

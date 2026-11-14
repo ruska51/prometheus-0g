@@ -27,3 +27,7 @@ Format: `YYYY-MM-DD HH:MM | stage | what was done | files | next`. Times UTC+5 (
 
 Open items:
 - `NASA PSI data/` not committed: whether raw files go into git (and moving them to `data/raw/psi_metadata/`) is Ruslan's decision.
+
+## Stage 1 - started 2026-11-14 11:27
+
+2026-11-14 11:27 | 1 | `NASA PSI data/` -> `data/raw/psi_metadata/` (ADR-006); sha256 per file in data/catalog.yaml; live docs repointed | data/raw/psi_metadata/, data/catalog.yaml, docs/* | stage 1 analysis

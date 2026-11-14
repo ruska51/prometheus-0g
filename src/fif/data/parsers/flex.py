@@ -43,20 +43,47 @@ NUMERIC = {  # interim name: header
 }
 
 
+TP_SOURCE_ID = "NTRS-20150023456"
+
+
+def parse_supplement(path: Path) -> pd.DataFrame:
+    """Tests printed in NASA/TP-2015-216046 Table IX but absent from the PSI CSV (ADR-020).
+
+    ``data/raw/ntrs/flex_tp_supplement.csv``: hand transcription from TP p. 26, same columns as the
+    PSI CSV plus "Source"; verified against a pdfplumber parse of the PDF (stage 4 WORKLOG).
+    ``test_no`` is left empty (the PSI numbering has no slot for them); ``tp_test_no`` keeps the TP number.
+    """
+    _, rows = read_csv_text(path)
+    header = [c.strip() for c in rows[0]]
+    if header[:-1] != EXPECTED_HEADER or header[-1] != "Source":
+        raise ValueError(f"unexpected supplement header: {header}")
+    df = _parse_rows(rows[1:], header, path.name, TP_SOURCE_ID)
+    df["tp_test_no"] = df.pop("test_no")
+    df["test_no"] = pd.array([pd.NA] * len(df), dtype="Int64")
+    return df
+
+
 def parse(path: Path) -> pd.DataFrame:
     """Parse the FLEX CSV; raises ValueError if the header differs from the expected one."""
     _, rows = read_csv_text(path)
     header = [c.strip() for c in rows[0]]
     if header != EXPECTED_HEADER:
         raise ValueError(f"unexpected FLEX header: {header}")
+    df = _parse_rows(rows[1:], header, path.name, SOURCE_ID)
+    df["test_no"] = df["test_no"].astype("Int64")
+    df["tp_test_no"] = pd.array([pd.NA] * len(df), dtype="Int64")
+    return df
+
+
+def _parse_rows(rows: list[list[str]], header: list[str], file_name: str, source_id: str) -> pd.DataFrame:
     out = []
-    for i, r in enumerate(rows[1:], start=1):
+    for i, r in enumerate(rows, start=1):
         if not any(c.strip() for c in r):
             continue
         cell = dict(zip(header, (c.strip() for c in r)))
         rec = {
-            "source_id": SOURCE_ID,
-            "source_file": path.name,
+            "source_id": source_id,
+            "source_file": file_name,
             "row_id": i,  # 1-based data row (CSV line = row_id + 1)
             "test_no": int(cell["FLEX Test #"]),
             "flex_identifier": cell["FLEX Identifier"],

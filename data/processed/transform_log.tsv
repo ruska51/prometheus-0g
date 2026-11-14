@@ -1,21 +1,24 @@
 dataset	step	n_rows	detail
-all	verify	74	sha256 of all registered raw files match data/catalog.yaml
-flex	parse	274	raw CSV -> interim (no corrections)
+all	verify	75	sha256 of all registered raw files match data/catalog.yaml
+flex	parse	276	PSI CSV (274) + TP supplement (2, ADR-020) -> interim (no corrections)
 cfig	parse	333	raw CSVs (normal + inverse) -> interim (no corrections)
 catalog	parse	24	PSI records -> interim catalog
-flex	unit	274	p_Pa = p_mmHg * 101325/760; d0_m = d0_mm*1e-3; K_m2_s = burning rate * 1e-6 (CSV header unit 'mm' read as mm^2/s per NASA/TP-2015-216046 App. A.1, ADR-015)
+flex	unit	276	p_Pa = p_mmHg * 101325/760; d0_m = d0_mm*1e-3; K_m2_s = burning rate * 1e-6 (CSV header unit 'mm' read as mm^2/s per NASA/TP-2015-216046 App. A.1, ADR-015)
 flex	flag+exclude	1	pressure <= 0 (test 114, same in TP Table IX) -> use_in_model=False (ADR-015)
 flex	flag	6	|sum of O2+N2+CO2+He - 1| > 0.011; kept, not renormalised (ADR-015)
 flex	flag	8	extinction diameter = 0 -> d_ext target set missing; counted as 'no finite-diameter extinction' (ADR-015, ADR-018)
 flex	flag	1	extinction diameter > initial diameter; kept (ADR-015)
 flex	parse+flag	2	burn time '~x' -> x with APPROX_BURN_TIME flag (ADR-015)
 flex	flag	2	FLEX identifier used by more than one test; kept (ADR-015)
+flex	flag	11	K*t_burn / (d0^2 - d_ext^2) outside 0.8-1.5; kept (ADR-019)
+flex	flag+exclude	1	193F001 second row (CSV test 73) excluded; test 70 row kept (ADR-019)
+flex	flag	2	rows added from NASA/TP-2015-216046 Table IX, absent from the PSI CSV (ADR-020)
 flex	flag	12	initial diameter missing ('' or en dash)
 flex	flag	0	rows identical except row/test number
 flex	flag	1	burning rate robust |z| > 3.5 within fuel; kept
-flex	target	274	extinct_finite_d: 1 if d_ext>0 (189), 0 if en dash or 0 (36), NA if blank (49) (ADR-018)
-flex	flag	35	'Test end' label disagrees with extinction-diameter code (kept for display only)
-flex	derive	274	diluent class, p_atm, p_o2_Pa = x_o2*p_Pa, x_inert = 1-x_o2, fuel_methanol
+flex	target	276	extinct_finite_d: 1 if d_ext>0 (190), 0 if en dash or 0 (37), NA if blank (49) (ADR-018)
+flex	flag	36	'Test end' label disagrees with extinction-diameter code (kept for display only)
+flex	derive	276	diluent class, p_atm, p_o2_Pa = x_o2*p_Pa, x_inert = 1-x_o2, fuel_methanol
 flex	group	81	cv_group = fuel x P(50 mmHg) x O2/CO2/He(0.01) (ADR-016)
 cfig	flag	2	tad_K: spreadsheet error code -> NaN (ADR-015)
 cfig	flag	2	z_st: spreadsheet error code -> NaN (ADR-015)

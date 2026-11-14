@@ -91,8 +91,8 @@ CFI-G outcomes: normal 102 self-extinguished, 30 flow-terminated, 47 no ignition
 
 Figures: `flex_conditions.png` (O2 vs pressure, Moon-base box), `flex_outcomes.png`, `flex_coverage.png`, `cfig_map.png`.
 
-## 5. Open questions for Ruslan
+## 5. Questions to Ruslan and answers (stage 4)
 
-1. Tests 70/73 (193F001, identical timestamp): keep both, or keep one?
-2. Add the two TP-only tests (FLEX-216, FLEX-230) from the TP?
-3. ADR-018 class "no finite-diameter extinction" currently = en dash (28) + zero (8); blanks (49) = unknown. The TP prints all 77 as dashes with a double meaning. Keep, or treat all 77 as unknown (class 0 would then be the 8 zeros only)?
+1. Tests 70/73 (193F001): two real tests per TP Figs. 74/77; row 73 is internally inconsistent (K*t_burn/(d0^2-d_ext^2) = 1.52 vs typical 1.05) -> excluded; row 70 kept (ADR-019). New flag KTB_INCONSISTENT for ratio outside 0.8-1.5: 11 rows, kept.
+2. FLEX-216 and FLEX-230 added from the TP (ADR-020): FLEX = 276 rows, 274 used for modeling; extinction class 190 / 37 / 49 NA.
+3. Blank vs dash: kept as ADR-018 for now (ADR-021).

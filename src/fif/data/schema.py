@@ -19,7 +19,8 @@ PROVENANCE = {
 FLEX = DataFrameSchema(
     {
         **PROVENANCE,
-        "test_no": Column(int, Check.in_range(1, 274), unique=True),
+        "test_no": Column("Int64", Check.in_range(1, 274), nullable=True, description="PSI CSV numbering; NA for TP-supplement rows"),
+        "tp_test_no": Column("Int64", nullable=True, description="NASA/TP Table IX number (supplement rows only)"),
         "fuel": Column(str, Check.isin(["Methanol", "Heptane"])),
         "p_Pa": Column(float, Check.in_range(0, 5e5), description="ambient pressure, Pa (0 only with P_NONPOSITIVE)"),
         "x_o2": Column(float, Check.in_range(0, 1)),

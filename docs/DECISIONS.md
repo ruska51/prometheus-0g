@@ -197,3 +197,31 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Decision (Ruslan): A first; "if time remains, all the others" (B and C as sensitivity checks in validation).
 - Consequences: `extinct_finite_d` = 189 / 36 / 49 NA. Caveat found after the decision (DATA_QUALITY.md section 3): all 49 CSV blanks are printed as en dashes in the TP, where the dash also covers "not listed"; open question to Ruslan.
 - Sources: NASA/TP-2015-216046 App. A.1; docs/DATA_QUALITY.md
+
+## ADR-019: Duplicate identifier 193F001 and K-burn-time consistency
+- Date/time: 2026-11-14 12:30 (UTC+5)
+- Stage: 4 (data follow-up)
+- Context: CSV tests 70 and 73 carry the same identifier, date and GMT. TP Table IV (test matrix) and Figs. 74 and 77 show two different tests on 3/23/10, both with an unintended very large droplet that hit the igniter and left the field of view; the shared timestamp is likely a table copy error.
+- Options: A) keep both B) keep one, chosen by evidence C) drop both.
+- Claude's recommendation: B. Check of the d2-law record: K x t_burn / (d0^2 - d_ext^2) has median 1.05 and 90 % of 188 tests within 0.95-1.25; test 70 gives 1.01, test 73 gives 1.52 (above the 97th percentile).
+- Decision (Ruslan): "check the results, interpret them and choose the most truthful" (delegated).
+- Consequences: test 73 `use_in_model = False` (flag DUP_ID_LESS_CONSISTENT); test 70 kept. New general flag KTB_INCONSISTENT for ratio outside 0.8-1.5 (11 rows, kept, no exclusion).
+- Sources: NASA/TP-2015-216046 Table IV, Table IX p. 22, Figs. 74 and 77 (pp. 97, 100)
+
+## ADR-020: Add the two TP-only FLEX tests
+- Date/time: 2026-11-14 12:30 (UTC+5)
+- Stage: 4 (data follow-up)
+- Context: FLEX-216 (N03H201) and FLEX-230 (H01H103) are in TP Table IX but not in the PSI CSV.
+- Options: A) add from the TP B) leave out.
+- Claude's recommendation: A, with a flag.
+- Decision (Ruslan): "Yes".
+- Consequences: `data/raw/ntrs/flex_tp_supplement.csv` (transcribed from TP p. 26, verified cell by cell against the pdfplumber parse), source_id NTRS-20150023456, flag FROM_TP_SUPPLEMENT, `test_no` empty, `tp_test_no` 216 / 230. FLEX now 276 rows, 274 used for modeling.
+- Sources: NASA/TP-2015-216046 Table IX p. 26
+
+## ADR-021: Extinction class kept as in ADR-018 for now
+- Date/time: 2026-11-14 12:30 (UTC+5)
+- Stage: 4
+- Context: open question 3 of DATA_QUALITY.md (blank vs dash).
+- Decision (Ruslan): "Keep it for now, we will see later."
+- Consequences: no change; revisit in validation (stage 6) with the ADR-018 sensitivity variants.
+- Sources: docs/DATA_QUALITY.md section 5

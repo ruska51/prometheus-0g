@@ -98,6 +98,24 @@ def clean_flex(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
     _flag(df, dup, "DUP_IDENTIFIER")
     log.add("flex", "flag", dup.sum(), "FLEX identifier used by more than one test; kept (ADR-015)")
 
+    # internal consistency of the d^2 law record: K * t_burn should be close to d0^2 - d_ext^2
+    # (stage-4 check, ADR-019): median ratio 1.05, 90 % of tests within 0.95-1.25
+    dd2 = df["d0_mm"] ** 2 - df["d_ext_mm"].where(df["d_ext_mm"] > 0) ** 2
+    df["ktb_ratio"] = df["burning_rate_raw_value"] * df["burn_time_s"] / dd2
+    m = (df["ktb_ratio"] < 0.8) | (df["ktb_ratio"] > 1.5)
+    _flag(df, m, "KTB_INCONSISTENT")
+    log.add("flex", "flag", m.sum(), "K*t_burn / (d0^2 - d_ext^2) outside 0.8-1.5; kept (ADR-019)")
+
+    # duplicated identifier 193F001: two real tests (TP Figs. 74, 77) with the same timestamp in Table IX;
+    # the row of CSV test 73 is internally inconsistent (ratio 1.52) -> excluded (ADR-019, delegated by Ruslan)
+    m = (df["flex_identifier"] == "193F001") & (df["test_no"] == 73)
+    _flag(df, m, "DUP_ID_LESS_CONSISTENT"); df.loc[m.fillna(False), "use_in_model"] = False
+    log.add("flex", "flag+exclude", int(m.fillna(False).sum()), "193F001 second row (CSV test 73) excluded; test 70 row kept (ADR-019)")
+
+    m = df["source_id"] != "PSI-69"
+    _flag(df, m, "FROM_TP_SUPPLEMENT")
+    log.add("flex", "flag", m.sum(), "rows added from NASA/TP-2015-216046 Table IX, absent from the PSI CSV (ADR-020)")
+
     m = df["d0_mm"].isna()
     _flag(df, m, "D0_MISSING")
     log.add("flex", "flag", m.sum(), "initial diameter missing ('' or en dash)")

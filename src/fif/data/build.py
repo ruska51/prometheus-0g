@@ -26,11 +26,13 @@ def build(repo_root: Path = catalog.REPO_ROOT, out_root: Path | None = None) -> 
     log.add("all", "verify", n_checked, "sha256 of all registered raw files match data/catalog.yaml")
 
     tables = repo_root / "data" / "raw" / "psi_tables"
-    flex_i = flex.parse(catalog.raw_path("psi_tables", "PSI-69_", repo_root))
+    flex_i = pd.concat([flex.parse(catalog.raw_path("psi_tables", "PSI-69_", repo_root)),
+                        flex.parse_supplement(catalog.raw_path("ntrs_flex_tp_supplement", "flex_tp_supplement", repo_root))],
+                       ignore_index=True)
     cfig_i = cfig.parse(catalog.raw_path("psi_tables", "CFI-G_Normal", repo_root),
                         catalog.raw_path("psi_tables", "CFI-G_Inverse", repo_root))
     cat_i = psi_catalog.parse(repo_root / "data" / "raw" / "psi_records", tables)
-    log.add("flex", "parse", len(flex_i), "raw CSV -> interim (no corrections)")
+    log.add("flex", "parse", len(flex_i), "PSI CSV (274) + TP supplement (2, ADR-020) -> interim (no corrections)")
     log.add("cfig", "parse", len(cfig_i), "raw CSVs (normal + inverse) -> interim (no corrections)")
     log.add("catalog", "parse", len(cat_i), "PSI records -> interim catalog")
 

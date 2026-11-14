@@ -246,3 +246,13 @@ datasets:
     files:
       - path: "data/raw/ntrs/20150023456.pdf"
         sha256: b4f6ca983e2792c33a0b92220a791a818f426bb635b94f7fd33dc8c9c471e79d
+
+  - id: ntrs_flex_tp_supplement
+    title: "FLEX-216 and FLEX-230 transcribed from NASA/TP-2015-216046 Table IX p. 26 (absent from the PSI CSV)"
+    source: https://ntrs.nasa.gov/citations/20150023456
+    license: NASA technical report (public, NTRS)
+    accessed: 2026-11-14
+    notes: "hand transcription by Claude, verified cell by cell against a pdfplumber parse of the PDF (ADR-020)"
+    files:
+      - path: "data/raw/ntrs/flex_tp_supplement.csv"
+        sha256: 69abefd47df0cef8b7fb155ad047d3ae0fac78b52954d1400af46ef05e983a25

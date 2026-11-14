@@ -111,6 +111,12 @@ RU_EN = {
     "аполлон": "apollo",
     "мир": "mir",
     "экипаж": "crew",
+    "врем": "time duration burn time",
+    "долг": "time duration",
+    "секунд": "seconds time",
+    "сколько": "how much",
+    "быстр": "fast rate",
+    "медлен": "slow rate",
     "вентиляц": "ventilation flow",
     "поток": "flow",
     "окислител": "oxidizer",
@@ -313,7 +319,83 @@ def data_blocks() -> list[Block]:
             "data",
         )
     )
+    blocks += flex_stats_blocks(fx) + scenario_blocks()
     return blocks
+
+
+def _q(x: pd.Series, nd: int = 2) -> str:
+    x = x.dropna()
+    if x.empty:
+        return "n/a"
+    return f"median {x.median():.{nd}f} (middle half {x.quantile(0.25):.{nd}f}-{x.quantile(0.75):.{nd}f}, range {x.min():.{nd}f}-{x.max():.{nd}f})"
+
+
+def flex_stats_blocks(fx: pd.DataFrame) -> list[Block]:
+    """Measured FLEX statistics per fuel and diluent, and for ISS cabin air (O2 0.20-0.22, 0.95-1.05 atm, N2)."""
+    used = fx[fx["use_in_model"]]
+    out = []
+    groups = [
+        (f"{fuel} in {dil}", (used["fuel"] == fuel) & (used["diluent"] == dil))
+        for fuel in ("Methanol", "Heptane")
+        for dil in ("N2", "CO2", "He")
+    ]
+    groups += [
+        (
+            f"{fuel} in ISS cabin air (O2 0.20-0.22, 0.95-1.05 atm, N2)",
+            (used["fuel"] == fuel)
+            & (used["diluent"] == "N2")
+            & used["x_o2"].between(0.20, 0.22)
+            & used["p_atm"].between(0.95, 1.05),
+        )
+        for fuel in ("Methanol", "Heptane")
+    ]
+    for name, m in groups:
+        g = used[m]
+        if g.empty:
+            continue
+        ext = g["extinct_finite_d"].dropna()
+        ends = ", ".join(f"{k} {v}" for k, v in g["test_end"].value_counts().items())
+        out.append(
+            Block(
+                "D:flex-" + name.split(" (")[0].lower().replace(" ", "-"),
+                f"FLEX measured results (NASA ISS data): {name} - burning rate K, burn time, extinction",
+                f"{len(g)} tests; O2 {g['x_o2'].min():.2f}-{g['x_o2'].max():.2f}; pressure {g['p_atm'].min():.2f}-"
+                f"{g['p_atm'].max():.2f} atm; initial droplet diameter d0 {_q(g['d0_mm_orig'], 2)} mm; measured burning-rate "
+                f"constant K {_q(g['K_mm2_s_orig'], 3)} mm2/s; measured burn time (ignition to flame end) {_q(g['burn_time_s'], 1)} s; "
+                f"flame extinguished at a finite diameter in {ext.mean() * 100:.0f} % of {len(ext)} labelled tests; extinction "
+                f"diameter relative to d0 {_q(g['d_ext_over_d0'], 2)}; test end: {ends}.",
+                "data",
+            )
+        )
+    return out
+
+
+def scenario_blocks() -> list[Block]:
+    """Model predictions per cabin atmosphere and fuel for a 3 mm droplet, including the burn time from the d2-law."""
+    from fif.insights.flame_sim import ATMOSPHERES, simulate
+
+    out = []
+    for name, a in ATMOSPHERES.items():
+        for fuel in ("Methanol", "Heptane"):
+            r = simulate(fuel, a["p_atm"], a["x_o2"], d0_mm=3.0, gravity=a["g"])
+            out.append(
+                Block(
+                    f"D:sim-{name.split(' (')[0].lower().replace(' ', '-').replace('/', '')}-{fuel.lower()}",
+                    f"Model prediction (our model, 3 mm {fuel.lower()} droplet): {name} - burning rate and burn time",
+                    f"{name}: O2 {a['x_o2']:.2f}, {a['p_atm'] * 14.696:.1f} psi, gravity {a['g']:.3g} g. Burning-rate constant "
+                    f"K {r['K_mm2_s']:.2f} mm2/s ({r['K_source']}); predicted time to burn the 3 mm droplet "
+                    f"{r['t_end_s']:.1f} s"
+                    + (
+                        f" until the flame goes out with {r['unburned_fraction'] * 100:.0f} % of the fuel left"
+                        if r["extinguishes"]
+                        else ""
+                    )
+                    + f"; flame temperature {r['T_f_K']:.0f} K; reliability label: {r['status']}. "
+                    + " ".join(r["notes"]),
+                    "data",
+                )
+            )
+    return out
 
 
 CORE_FACTS = Block(

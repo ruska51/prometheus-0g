@@ -73,11 +73,20 @@ q = st.chat_input(
     max_chars=MAX_QUESTION_CHARS,
     disabled=left <= 0,
 )
-st.caption(t("Questions left in this session: {n} of {total}. Model: {m} (Google Gemini).", n=left, total=LIMIT, m=model))
+st.caption(
+    t(
+        "Questions left in this session: {n} of {total}. Model: {m} (Google Gemini).",
+        n=left,
+        total=LIMIT,
+        m=st.session_state.get("model_used", model),
+    )
+)
 if q:
     with st.spinner(t("Searching the data and NASA reports...")):
         try:
-            r = ask(q, _generator(key, model))
+            gen = _generator(key, model)
+            r = ask(q, gen)
+            st.session_state["model_used"] = getattr(gen, "model", model)
             chat.append(
                 {
                     "q": q,

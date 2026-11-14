@@ -4,7 +4,8 @@ The model sees only the context blocks retrieved by fif.assistant.knowledge and 
 sentence. Answers are checked after generation: citations to ids that were not in the context are removed from the
 source list and reported, an answer without any citation is flagged. The API key comes only from the environment
 (``GEMINI_API_KEY``) or Streamlit secrets - never from the repository. The model is ``GEMINI_MODEL`` (environment /
-secrets) or DEFAULT_MODEL.
+secrets); with the default "auto" the newest text Flash model that the key can use is chosen from the live model
+list (names of free-tier models change often), and the next candidate is tried if one is unavailable or out of quota.
 """
 
 from __future__ import annotations
@@ -15,9 +16,10 @@ from collections.abc import Callable
 
 from .knowledge import CORE_FACTS, Block, search
 
-DEFAULT_MODEL = "gemini-flash-latest"
+DEFAULT_MODEL = "auto"
 MAX_QUESTION_CHARS = 600
-MAX_OUTPUT_TOKENS = 1500
+MAX_OUTPUT_TOKENS = 4096  # room for model-internal thinking; the prompt limits answers to 180 words
+EXCLUDE = ("image", "tts", "audio", "live", "embedding", "robotics", "computer", "learnlm", "gemma", "veo", "imagen")
 CITE = re.compile(r"\[((?:D|R):[^\[\]\s,;]+)\]")
 
 SYSTEM = """You are the "Ask the data" assistant of Prometheus-0g, a fire-safety dashboard built on NASA microgravity
@@ -52,20 +54,59 @@ def api_key(secrets: dict | None = None) -> str | None:
     return (os.environ.get("GEMINI_API_KEY") or "").strip() or None
 
 
-def gemini_generate(key: str, model: str) -> Callable[[str, str], str]:
+def rank_models(names: list[str]) -> list[str]:
+    """Text 'flash' models first, stable before preview/experimental, full before lite, newest version first."""
+
+    def key(n: str) -> tuple:
+        v = re.search(r"gemini-(\d+(?:\.\d+)?)", n)
+        return (
+            any(x in n for x in ("preview", "exp")),
+            "lite" in n,
+            -(float(v.group(1)) if v else 0.0),
+            n,
+        )
+
+    cands = [n for n in names if "flash" in n and not any(x in n for x in EXCLUDE)]
+    return sorted(cands, key=key)
+
+
+def gemini_generate(key: str, model: str = DEFAULT_MODEL) -> Callable[[str, str], str]:
     from google import genai
-    from google.genai import types
+    from google.genai import errors, types
 
     client = genai.Client(api_key=key)
+    if model == "auto":
+        names = [
+            m.name.removeprefix("models/")
+            for m in client.models.list()
+            if m.name and "generateContent" in (m.supported_actions or [])
+        ]
+        candidates = rank_models(names) or names
+    else:
+        candidates = [model]
+    if not candidates:
+        raise RuntimeError("no Gemini model with generateContent available for this key")
 
     def gen(system: str, prompt: str) -> str:
-        r = client.models.generate_content(
-            model=model,
-            contents=prompt,
-            config=types.GenerateContentConfig(system_instruction=system, temperature=0.1, max_output_tokens=MAX_OUTPUT_TOKENS),
-        )
-        return r.text or ""
+        last = None
+        for name in list(dict.fromkeys([gen.model, *candidates])):
+            try:
+                r = client.models.generate_content(
+                    model=name,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system, temperature=0.1, max_output_tokens=MAX_OUTPUT_TOKENS
+                    ),
+                )
+                gen.model = name
+                return r.text or ""
+            except errors.ClientError as e:  # 404 model gone, 429 quota of this model: try the next candidate
+                last = e
+                if getattr(e, "code", None) not in (404, 429):
+                    raise
+        raise last
 
+    gen.model = candidates[0]
     return gen
 
 

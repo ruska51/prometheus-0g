@@ -72,3 +72,19 @@ def test_no_api_keys_in_tracked_files():
             if pat.search(p.read_text(encoding="utf-8", errors="ignore")):
                 hits.append(f)
     assert not hits
+
+
+def test_model_ranking_prefers_newest_stable_text_flash():
+    from fif.assistant.llm import rank_models
+
+    names = [
+        "gemini-2.5-flash",
+        "gemini-3.5-flash",
+        "gemini-3.5-flash-lite",
+        "gemini-3.8-flash-preview",
+        "gemini-2.5-pro",
+        "gemini-3.5-flash-image",
+        "gemini-3.5-flash-tts",
+        "gemma-4-27b-it",
+    ]
+    assert rank_models(names) == ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-3.8-flash-preview"]

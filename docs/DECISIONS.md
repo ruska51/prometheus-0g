@@ -270,3 +270,13 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Decision (Ruslan): "fix it and make everything correct before stage 5" - implemented A; Q stays the LHV (19.90 / 44.56 MJ/kg), HHV 22.65 / 48.07 MJ/kg shown in PHYSICS.md section 6 - Ruslan to confirm LHV vs HHV.
 - Consequences: median K_meas/K_theory 0.52 -> 1.36 (methanol), 0.24 -> 0.89 (heptane). Old version kept as K_theory_ambient_cp. New raw files data/raw/nist/thermo_gas_C67561.html, thermo_gas_C142825.html. Tag stage-4.1 (stage-4 left unchanged).
 - Sources: Law & Williams, Combust. Flame 19 (1972) 393-405, Eq. (1) and following paragraph; NIST SRD 69 gas-phase cp (TRC 1997; Scott 1974)
+
+## ADR-027: Law & Williams (1972) property prescription for the burning-rate constant
+- Date/time: 2026-11-14 13:07 (UTC+5)
+- Stage: 4 (rework requested by Ruslan: "find out why it is computed so crudely and find something proper but applicable"; "honest physics without deviations")
+- Context: ADR-026 (c_1 = fuel vapour, lambda = ambient) left methanol at 1.36 and heptane at 0.89 with a strong He effect. Ruslan supplied the full L&W paper. NASA (NTRS 20205008449) states that the constant-property QS theory needs an empirical property prescription and that it follows L&W.
+- Options: A) L&W prescription as written (c_1 fuel vapour; lambda_1 = 0.4 lambda_F1 + 0.6 lambda_air; at T_1 = (T_b+T_f)/2; T_f equilibrium with dissociation) B) variable-property integration with Chapman-Enskog properties (no fitted constant, ~1.5 h, not done) C) keep ADR-026 + calibration.
+- Claude's recommendation: A.
+- Decision (Ruslan): A ("in general the recommendation ... I am for honest physics without deviations").
+- Consequences: new physics/flame.py (Cantera HP equilibrium, NASA Glenn thermo); lambda_F1 from NASA TR R-132 (methanol table; heptane via Svehla Eq. 2 with C5/C6 -> C7 viscosity extrapolation, as L&W did for hexadecane); L&W buoyancy correction f_B = 0.533 Gr^0.52 replaces the Nu-based estimate (outside its fitted range for 256 of 274 FLEX rows, flagged). Result: median K_meas/K_theory 0.97 (methanol, 74 % within 15 %), 0.73 (heptane); residual trend with d0 for both fuels. Deviations from L&W stated as assumptions A8 (actual ambient mixture instead of air), A9 (heptane lambda_F1), A10 (Earth correction range). q = LHV still to be confirmed by Ruslan. Tag stage-4.2.
+- Sources: L&W 1972 pp. 394-396, 399, 403-404; NASA TR R-132; NASA TM-4513; NTRS 20205008449; NIST SRD 69

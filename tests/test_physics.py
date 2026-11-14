@@ -79,9 +79,43 @@ def test_more_oxygen_burns_faster_and_hotter(fuel):
 
 
 def test_flame_temperature_limits():
-    # no oxygen -> Z_st = 0 -> T_f = T_inf
+    # no oxygen -> no flame: equilibrium T_f undefined (NaN), Burke-Schumann reference -> T_inf
     r = droplet.evaluate(np.array(["methanol"]), np.array([101325.0]), _x(o2=0.0, n2=1.0))
-    assert r["Z_st"][0] == 0 and r["T_f"][0] == pytest.approx(droplet.T_INF)
+    assert np.isnan(r["T_f"][0])
+    assert r["T_f_burke_schumann"][0] == pytest.approx(droplet.T_INF)
+
+
+def test_dissociation_lowers_flame_temperature_vs_burke_schumann():
+    r = droplet.evaluate(np.array(["methanol", "heptane"]), np.full(2, 101325.0), _x(o2=0.30, n2=0.70, rows=2))
+    assert np.all(r["T_f"] < r["T_f_burke_schumann"])
+    assert np.all((r["T_f"] > 1800) & (r["T_f"] < 2800))
+
+
+def test_helium_raises_flame_temperature_co2_lowers_it():
+    from fif.physics import flame
+    tb = float(pr.t_sat("methanol", 101325))
+    t_n2 = flame.adiabatic_flame_temperature("methanol", tb, np.array([0.21, 0.79, 0, 0]), 298.15, 101325)
+    t_he = flame.adiabatic_flame_temperature("methanol", tb, np.array([0.21, 0.49, 0, 0.30]), 298.15, 101325)
+    t_co2 = flame.adiabatic_flame_temperature("methanol", tb, np.array([0.21, 0.49, 0.30, 0]), 298.15, 101325)
+    assert t_he > t_n2 > t_co2  # molar cp: He (monatomic) < N2 < CO2
+
+
+def test_svehla_eq2_reproduces_methanol_table():
+    t = pr.svehla_table("CH3OH")
+    M = 0.03204  # Svehla Table III header
+    lam = pr.svehla_lambda(t["eta_poise"] * 0.1, t["cp_over_R"] * 8.314462618 / M, M)
+    assert np.allclose(lam, t["lambda_cal"] * pr.CAL_CM_S_K_TO_W_M_K, rtol=2e-3)
+
+
+def test_fuel_vapor_conductivity_exceeds_air_at_flame_zone_temperatures():
+    air = mixing.mixture_conductivity(_x(), SP, 1300.0)[0]
+    for fuel in ("methanol", "heptane"):
+        assert pr.fuel_vapor_conductivity(fuel, 1300.0) > air
+
+
+def test_law_williams_lambda1_mix():
+    r = droplet.evaluate(np.array(["heptane"]), np.array([101325.0]), _x())
+    assert r["lambda_1"][0] == pytest.approx(0.4 * r["lambda_F1"][0] + 0.6 * r["lambda_a1"][0])
 
 
 def test_units_and_ranges_for_air():
@@ -92,17 +126,19 @@ def test_units_and_ranges_for_air():
     assert np.all(r["flame_standoff"] > 1)
 
 
-def test_lower_heating_value_below_higher():
-    for fuel in ("methanol", "heptane"):
-        hhv = -pr.DELTA_C_H_LIQ_KJ_MOL[fuel][0] * 1000 / pr.molar_mass(fuel)
-        assert 0.85 * hhv < droplet.lower_heating_value(fuel) < hhv
+def test_heating_values_from_nist():
+    # HHV = 725.7 kJ/mol / 32.0419 g/mol = 22.65 MJ/kg (methanol); LHV subtracts 2 mol H2O x L_water(298.15 K)
+    assert droplet.higher_heating_value("methanol") == pytest.approx(22.648e6, rel=1e-4)
+    assert droplet.lower_heating_value("methanol") == pytest.approx(19.904e6, rel=1e-4)
+    assert droplet.higher_heating_value("heptane") == pytest.approx(48.073e6, rel=1e-4)
+    assert droplet.lower_heating_value("heptane") == pytest.approx(44.562e6, rel=1e-4)
 
 
 def test_earth_gravity_increases_burning_rate():
     r = droplet.evaluate(np.array(["heptane"] * 2), np.full(2, 101325.0), _x(rows=2), d0_m=np.array([1e-3, 4e-3]))
-    assert np.all(r["Nu_earth"] > 2)
+    assert np.all(r["f_B"] > 0)
     assert np.all(r["K_earth_theory"] > r["K_theory"])
-    assert r["Nu_earth"][1] > r["Nu_earth"][0]  # bigger droplet -> stronger buoyancy
+    assert r["Gr"][1] > r["Gr"][0]  # bigger droplet -> stronger buoyancy (Gr ~ d^3)
 
 
 def test_physics_uses_only_pre_ignition_inputs():
@@ -121,5 +157,5 @@ def test_fuel_vapor_cp_matches_nist_printed_values():
 def test_inner_region_cp_lowers_K_vs_ambient_cp():
     # ADR-026: c_1 (fuel vapour) > cp of air at flame-zone temperatures -> lower K
     r = droplet.evaluate(np.array(["methanol", "heptane"]), np.full(2, 101325.0), _x(rows=2))
-    assert np.all(r["c1_fuel_vapor"] > r["cp_g"])
+    assert np.all(r["c1"] > r["cp_g"])
     assert np.all(r["K_theory"] < r["K_theory_ambient_cp"])

@@ -60,7 +60,9 @@ Every processed row carries provenance: `source_id`, `source_file`, `row_id`, `q
 flowchart LR
     N["data/raw/nist/*<br/>NIST SRD 69 tables<br/>(scripts/fetch_nist.py)"] --> PR["physics/properties.py<br/>gas cp, mu, lambda(T); T_sat(P), L, rho_l;<br/>M, Delta_c H"]
     PR --> MX["physics/mixing.py<br/>NASA RP-1311 Eqs. 5.3-5.6"]
-    PR & MX --> DR["physics/droplet.py<br/>B, T_f (Burke-Schumann), K_theory (L2),<br/>proxies (L3), Nu_earth"]
+    PR & MX --> DR["physics/droplet.py<br/>Law & Williams 1972: c_1, lambda_1, T_1;<br/>B, K_theory, proxies, f_B (Earth)"]
+    FL["physics/flame.py<br/>T_f with dissociation (Cantera)"] --> DR
+    SV["data/raw/nasa_tr_r132<br/>Svehla 1962 lambda, eta"] --> PR
     FP["data/processed/flex.csv<br/>pre-ignition columns only"] --> DR
     DR --> CMP["scripts/physics_vs_data.py<br/>figures + physics_vs_data.tsv"]
     DR --> ML["models (stage 5):<br/>calibration c_f + ML residual"]
@@ -70,7 +72,8 @@ flowchart LR
 |---|---|---|
 | `fif.physics.properties` | read NIST raw tables; interpolation; molar masses, heats of combustion | raw files -> arrays (SI) |
 | `fif.physics.mixing` | mole/mass fractions, mixture viscosity, conductivity, cp | x (rows x species), T -> arrays |
-| `fif.physics.droplet` | L2 theory + L3 proxies + Earth estimate; `evaluate_flex(df)` | fuel, p, x, d0 -> DataFrame |
+| `fif.physics.flame` | stoichiometric adiabatic flame temperature with dissociation (Cantera HP equilibrium, NASA Glenn thermo) | fuel, T_b, x, T_inf, p -> T_f |
+| `fif.physics.droplet` | burning-rate constant with the Law & Williams (1972) prescription, extinction proxies, L&W buoyancy correction; `evaluate_flex(df)` | fuel, p, x, d0 -> DataFrame |
 
 ## Models, validation, insights, app
 

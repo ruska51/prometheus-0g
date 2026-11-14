@@ -56,7 +56,11 @@ def main() -> None:
         c = {k: round(float(np.corrcoef(g[k], np.log(g["ratio"]))[0, 1]), 2)
              for k in ["x_o2", "p_atm", "d0_mm_orig", "T_f", "x_he", "x_co2"] if g[k].notna().all() and g[k].std() > 0}
         print(f"corr(log ratio, X) {fuel}:", c)
-    print("T_bar capped at 1500 K:", int(m["T_bar_capped"].sum()), "rows")
+    print("T_1 capped:", int(m["T_1_capped"].sum()), "rows; Gr > 1 (outside L&W buoyancy fit):", int(m["Gr_above_fit_range"].sum()))
+    for col in ["K_theory_ambient_cp", "K_theory_c1_only", "K_theory"]:
+        r = m["K_mm2_s_orig"] / (m[col] * 1e6)
+        print(f"variant {col:22} median by fuel {r.groupby(m['fuel']).median().round(3).to_dict()}"
+              f"  share within +-15% {((r > 0.85) & (r < 1.15)).groupby(m['fuel']).mean().round(2).to_dict()}")
 
     colors = {"N2": "#1f77b4", "CO2": "#d62728", "He": "#2ca02c"}
     marks = {"Methanol": "o", "Heptane": "^"}
@@ -66,7 +70,7 @@ def main() -> None:
                    label=f"{fuel}, {dil}")
     lim = [0, max(m["K_theory_mm2_s"].max(), 1.1)]
     ax.plot(lim, lim, "k--", lw=1, label="1:1")
-    ax.set_xlabel("K theory (L2, quasi-steady), mm$^2$/s"); ax.set_ylabel("K measured (FLEX), mm$^2$/s")
+    ax.set_xlabel("K theory (quasi-steady, Law & Williams 1972 prescription), mm$^2$/s"); ax.set_ylabel("K measured (FLEX), mm$^2$/s")
     ax.set_title("FLEX burning-rate constant: raw theory vs ISS data"); ax.legend(fontsize=7)
     fig.tight_layout(); fig.savefig(FIG / "physics_K_parity.png", dpi=130); plt.close(fig)
 
@@ -85,7 +89,7 @@ def main() -> None:
         for cls, gg in g.groupby("extinct_finite_d"):
             ax.scatter(gg["chi_rad_proxy"], gg["T_f"], s=20, alpha=0.6,
                        label={1: "extinguished at finite d", 0: "no finite-d extinction"}[int(cls)])
-        ax.set_xscale("log"); ax.set_xlabel("radiative-loss proxy chi/kappa, Pa m (log)"); ax.set_ylabel("T_f (Burke-Schumann), K")
+        ax.set_xscale("log"); ax.set_xlabel("radiative-loss proxy chi/kappa, Pa m (log)"); ax.set_ylabel("T_f (equilibrium, with dissociation), K")
         ax.set_title(f"{fuel}: extinction vs physics proxies"); ax.legend(fontsize=7)
     fig.tight_layout(); fig.savefig(FIG / "physics_extinction_proxies.png", dpi=130); plt.close(fig)
 

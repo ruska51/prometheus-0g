@@ -73,3 +73,7 @@ Open items:
 2026-11-14 12:49 | 4 | Rework after Ruslan's review: Q checked (19.90 = LHV, HHV 22.65 MJ/kg - both from NIST); cause of the 2x/4x error = ambient-gas cp instead of the inner-region C_1 of L&W Eq. (1) | - | fix
 2026-11-14 12:51 | 4 | C_1 = NIST fuel-vapour cp (TRC 1997 / Scott 1974); K_meas/K_theory methanol 1.36, heptane 0.89; 34 tests green; PHYSICS.md sections 2, 5, 6, 7 updated; ADR-026; tag stage-4.1 | src/fif/physics, data/raw/nist/thermo_gas_*, docs/PHYSICS.md | stage 5
 - Stage 4 rework: 12:49-12:52 (clock).
+2026-11-14 12:53 | 4 | Ruslan: "why is it so crude, find something proper"; NASA statement found (NTRS 20205008449): QS theory needs an empirical property prescription (L&W) | docs/RESEARCH_LOG.md | decision
+2026-11-14 ~12:58 | 4 | Full L&W paper received; prescription extracted (pp. 394-395, 399, 404) | - | implement
+2026-11-14 ~13:02 | 4 | NASA TR R-132 (Svehla) transcribed (CH3OH table, C5/C6 viscosity), Eq. (2) self-check 0.1 %; Cantera 3.2.0 + NASA Glenn thermo for equilibrium T_f | data/raw/nasa_tr_r132, src/fif/physics/flame.py | droplet rewrite
+2026-11-14 13:07 | 4 | droplet.py rewritten to the L&W prescription; K_meas/K_theory methanol 0.97 (74 % within 15 %), heptane 0.73; size trend confirmed; 39 tests green; PHYSICS.md rewritten; ADR-027; tag stage-4.2 | src/fif/physics, tests/test_physics.py, docs/PHYSICS.md | stage 5

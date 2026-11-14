@@ -295,3 +295,13 @@ datasets:
         sha256: d525694693923373f1aa98da65310bab0e66d4275575e4523317ece762827338
       - path: "data/raw/nist/thermo_gas_C67561.html"
         sha256: 78af2f8e85908d71e465d880860fc4b582de3dd74cc571a5bfc9e82614926d6c
+
+  - id: nasa_tr_r132_extract
+    title: "Svehla 1962, NASA TR R-132: CH3OH Table III p. 56 (cp/R, eta, lambda', lambda'', lambda at 300-2000 K) and n-C5H12, n-C6H14 viscosity Table IV p. 119"
+    source: https://ntrs.nasa.gov/citations/19630012982
+    license: NASA technical report (public)
+    accessed: 2026-11-14
+    notes: "hand transcription from rendered pages; methanol rows checked against Svehla Eq. (2) to the printed precision (tests/test_physics.py)"
+    files:
+      - path: "data/raw/nasa_tr_r132/svehla_1962_extract.csv"
+        sha256: 3626f0620cf43b776618975e8f4aaddc41704e06fc5850702d8d0d92288f0546

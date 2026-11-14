@@ -137,3 +137,46 @@ def fuel_vapor_cp(fuel: str, T) -> np.ndarray:
     """cp of fuel vapour [J/(kg K)] at T [K] (NIST ideal-gas table, linear interpolation, clamped at ends)."""
     t, cp = fuel_vapor_cp_table(fuel)
     return np.interp(np.asarray(T, dtype=float), t, cp)
+
+
+# --- Fuel-vapour thermal conductivity (Law & Williams lambda_F1), ADR-027 -----------------------------
+SVEHLA = ROOT / "data" / "raw" / "nasa_tr_r132" / "svehla_1962_extract.csv"
+CAL_CM_S_K_TO_W_M_K = 418.4  # 1 cal/(cm s K) = 4.184 J/cal * 100 cm/m (thermochemical calorie)
+R_CAL = 1.98726  # cal/(mol K), reproduces Svehla's Table III columns to the printed precision (tests)
+
+
+@functools.lru_cache(maxsize=None)
+def svehla_table(species: str) -> dict[str, np.ndarray]:
+    """Transcription of NASA TR R-132 (Svehla 1962): Table III p. 56 (CH3OH), Table IV p. 119 (n-C5H12, n-C6H14)."""
+    import csv
+    rows = [r for r in csv.DictReader(open(SVEHLA, encoding="utf-8")) if r["species"] == species]
+    def col(k):
+        return np.array([float(r[k]) if r[k] else np.nan for r in rows])
+    return {"T": col("T_K"), "cp_over_R": col("cp_over_R"), "eta_poise": col("eta_x1e6_poise") * 1e-6,
+            "lambda_cal": col("lambda_x1e6_cal_cm_s_K") * 1e-6}
+
+
+def svehla_lambda(eta_Pa_s, cp_J_kg_K, M_kg_mol) -> np.ndarray:
+    """Svehla (1962) Eq. (2): lambda = (R/M) [15/4 + 1.32 (Cp/R - 5/2)] eta  [W/(m K)], SI inputs."""
+    R = 8.314462618
+    cp_over_R = cp_J_kg_K * M_kg_mol / R
+    return (R / M_kg_mol) * (15 / 4 + 1.32 * (cp_over_R - 2.5)) * eta_Pa_s
+
+
+def fuel_vapor_conductivity(fuel: str, T) -> np.ndarray:
+    """lambda_F1 [W/(m K)] of fuel vapour at T [K] (clamped to 300-2000 K).
+
+    methanol: Svehla Table III total conductivity (interpolated).
+    n-heptane: not tabulated by Svehla. Viscosity extrapolated linearly in carbon number from n-C5H12 and
+    n-C6H14 (Svehla Table IV), following Law & Williams p. 399 ("extrapolating values for n-alkanes with
+    lower carbon-atom contents"); conductivity from Svehla Eq. (2) with the NIST ideal-gas cp of n-heptane.
+    """
+    T = np.clip(np.asarray(T, dtype=float), 300.0, 2000.0)
+    if fuel == "methanol":
+        t = svehla_table("CH3OH")
+        return np.interp(T, t["T"], t["lambda_cal"]) * CAL_CM_S_K_TO_W_M_K
+    if fuel == "heptane":
+        c5, c6 = svehla_table("n-C5H12"), svehla_table("n-C6H14")
+        eta7 = 2 * np.interp(T, c6["T"], c6["eta_poise"]) - np.interp(T, c5["T"], c5["eta_poise"])
+        return svehla_lambda(eta7 * 0.1, fuel_vapor_cp("heptane", T), molar_mass("heptane"))
+    raise ValueError(fuel)

@@ -1,134 +1,157 @@
-"""Quasi-steady droplet combustion (level L2 + L3 proxies, ADR-022). Vectorised, SI units.
+"""Quasi-steady droplet combustion with the Law & Williams (1972) property prescription (ADR-027).
 
-Burning-rate constant (NTRS 20130014061, Nayagam, Dietrich, Hicks & Williams, Eqs. 1-2; same form as
-Law & Williams 1972 Eq. 1 with inner-region properties lambda_1, C_1 - ADR-026):
-    K = 8 lambda_g / (rho_l cp_g) * ln(1 + B),
-    B = (q_f Y_O,inf nu_f + cp_g (T_inf - T_b)) / L,
-with nu_f the stoichiometric fuel-to-oxygen mass ratio (= 1 / nu_s below).
-L2 additions (ADR-022): T_b(P) from the NIST saturation curve; lambda_g, cp_g of the ambient
-O2 + diluent mixture (NASA RP-1311 mixing rules) at T_bar = (T_b + T_f)/2, capped at 1500 K
-(ADR-023); flame temperature from the Burke-Schumann flame sheet (docs/FORMULAS.md section 2):
-    T_f = T_inf + Z_st [(T_s - T_inf) + (Q - L)/cp],  Z_st = Y_O,inf / (Y_O,inf + nu_s),  T_s = T_b.
-L3 proxies (ADR-022): flame-standoff ratio, radiative-loss proxy, residence-time proxy.
-Gravity (ADR-024): base = microgravity (Nu = 2); Earth estimate K_1g/K_0g = Nu/2 with
-Nu = 2 + 0.6 Gr^(1/4) Pr^(1/3) (docs/FORMULAS.md section 6; textbook source not checked by Claude).
-Ambient temperature T_inf = 298.15 K (FLEX-2 PSI-68 Experimental Table lists 25 C; FLEX CSV has
-no temperature column) - assumption A1 in docs/PHYSICS.md.
+Law & Williams, Combust. Flame 19 (1972) 393-405 (L&W), Eq. (1), pp. 394-395, 399, 404:
+    k0 = (8 / rho_F) (lambda_1 / c_1) ln(1 + B),   B = [Y_O,inf q / i - c_1 (T_b - T_inf)] / L
+    c_1      = heat capacity of the fuel vapour                                   (p. 394)
+    lambda_1 = x lambda_F1 + (1 - x) lambda_a1,  x = 0.4                          (pp. 394-395)
+    c_1, lambda_F1, lambda_a1 evaluated at T_1 = (T_b + T_f) / 2                  (p. 395)
+    T_f      = adiabatic flame temperature of the stoichiometric system, fuel at T_b, air at T_inf,
+               dissociation included                                               (pp. 395, 399)
+    q from thermochemical tables, not reduced for dissociation; rho_F and L at T_b (p. 395)
+Buoyancy (Earth) correction, L&W Eqs. (4), (9) and p. 404:
+    k = k0 (1 + f_B),  f_B = 0.533 Gr^0.52,  Gr = (g rho_2^2 d^3 / mu_2^2)(Delta T_2 / T_2),
+    T_2 = (T_f + T_inf)/2, Delta T_2 = T_f - T_inf, rho_2, mu_2 of the ambient gas at T_2 (p. 396);
+    fitted for Gr <~ 1 (p. 403) - rows with Gr > 1 are flagged.
+
+Data sources: NIST SRD 69 (saturation, fuel-vapour cp, ambient-gas properties), NASA TR R-132
+(Svehla 1962, fuel-vapour conductivity), NASA Glenn thermo data via Cantera (flame temperature),
+NASA RP-1311 (gas mixing rules). FLEX generalisation (assumption A8): "air" -> the actual ambient
+O2 + N2/CO2/He mixture for lambda_a1, T_f, rho_2, mu_2.
+
+Earlier stage-4 variants are kept for comparison: ``K_theory_ambient_cp`` (cp of ambient gas,
+Burke-Schumann T_f) and ``K_theory_c1_only`` (c_1 = fuel vapour, lambda_1 = ambient, Burke-Schumann T_f).
+Ambient temperature T_inf = 298.15 K (assumption A1). Units: SI.
 """
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 
-from . import mixing
-from .properties import (DELTA_C_H_LIQ_KJ_MOL, fuel_vapor_cp, fuel_vapor_cp_table, gas_T_range, molar_mass,
-                         sat_prop, t_sat)
+from . import flame, mixing
+from .properties import (DELTA_C_H_LIQ_KJ_MOL, fuel_vapor_conductivity, fuel_vapor_cp, fuel_vapor_cp_table,
+                         gas_T_range, molar_mass, sat_prop, t_sat)
 
 T_INF = 298.15
-G0 = 9.80665  # standard gravity, m/s^2 (CGPM 1901 definition)
-SIGMA = 5.670374419e-8  # Stefan-Boltzmann, W/(m^2 K^4) (CODATA 2018 exact-derived value)
-R_U = 8.314462618  # J/(mol K) (CODATA 2018)
+G0 = 9.80665  # standard gravity, m/s^2
+SIGMA = 5.670374419e-8  # W/(m^2 K^4), CODATA 2018
+R_U = 8.314462618  # J/(mol K), CODATA 2018
 SPECIES = ["O2", "N2", "CO2", "He"]
+X_FUEL_REGION1 = 0.4  # L&W pp. 394-395
 
 # Global stoichiometry: CH3OH + 1.5 O2 -> CO2 + 2 H2O ; C7H16 + 11 O2 -> 7 CO2 + 8 H2O
 STOICH = {"methanol": {"n_o2": 1.5, "n_h2o": 2}, "heptane": {"n_o2": 11.0, "n_h2o": 8}}
 
 
 def nu_s(fuel: str) -> float:
-    """Stoichiometric O2 mass per unit fuel mass [-]."""
+    """Stoichiometric O2 mass per unit fuel mass (L&W 'i') [-]."""
     return STOICH[fuel]["n_o2"] * molar_mass("O2") / molar_mass(fuel)
 
 
+def higher_heating_value(fuel: str) -> float:
+    """HHV [J/kg]: -Delta_c H (liquid fuel, liquid water), NIST."""
+    return -DELTA_C_H_LIQ_KJ_MOL[fuel][0] * 1000.0 / molar_mass(fuel)
+
+
 def lower_heating_value(fuel: str) -> float:
-    """Q [J/kg fuel]: -Delta_c H(liquid, NIST) minus vaporisation of product water at 298.15 K (NIST)."""
-    hhv = -DELTA_C_H_LIQ_KJ_MOL[fuel][0] * 1000.0  # J/mol fuel, liquid water in products
+    """LHV q [J/kg]: HHV minus vaporisation of the product water at 298.15 K (NIST water saturation table)."""
     h_fg_w = float(sat_prop("water", "h_fg", 298.15)) * molar_mass("water")  # J/mol water
-    return (hhv - STOICH[fuel]["n_h2o"] * h_fg_w) / molar_mass(fuel)
+    return higher_heating_value(fuel) - STOICH[fuel]["n_h2o"] * h_fg_w / molar_mass(fuel)
 
 
-def evaluate(fuel, p_Pa, x, d0_m=None, n_iter: int = 30) -> pd.DataFrame:
-    """Physics for each test row.
+def _burke_schumann_tf(Tb, L, Q, zst, xm, t_hi, n_iter=30):
+    """Constant-cp flame sheet without dissociation (FORMULAS.md section 2); kept for comparison."""
+    Tf = np.full(len(Tb), 2000.0)
+    for _ in range(n_iter):
+        cp = mixing.mixture_cp(xm, SPECIES, np.minimum(0.5 * (Tb + Tf), t_hi))
+        Tf = T_INF + zst * ((Tb - T_INF) + (Q - L) / cp)
+    return Tf
 
-    fuel: array of 'methanol'/'heptane'; p_Pa: pressure [Pa]; x: mole fractions (rows x 4) in SPECIES order;
-    d0_m: initial droplet diameter [m] (only for the L3 proxies and the gravity estimate).
-    Returns a DataFrame with SI columns (see docs/DATA_DICTIONARY.md, physics section).
-    """
+
+def evaluate(fuel, p_Pa, x, d0_m=None) -> pd.DataFrame:
+    """Physics for each row. fuel: 'methanol'/'heptane'; p_Pa [Pa]; x: ambient mole fractions (rows x 4,
+    SPECIES order, summing to 1); d0_m: initial droplet diameter [m] (proxies and Earth correction)."""
     fuel = np.asarray(fuel)
     p = np.asarray(p_Pa, dtype=float)
     x = np.asarray(x, dtype=float)
     n = len(p)
-    out = {k: np.full(n, np.nan) for k in
-           ["T_b", "L", "rho_l", "Q", "nu_s", "Y_O2", "Z_st", "T_f", "T_bar", "cp_g", "lambda_g",
-            "mu_g", "rho_g", "B", "K_theory", "flame_standoff", "alpha_g", "chi_rad_proxy",
-            "tau_res_proxy", "Gr", "Pr", "Nu_earth", "K_earth_theory", "c1_fuel_vapor",
-            "B_ambient_cp", "K_theory_ambient_cp"]}
-    out["T_bar_capped"] = np.zeros(n, dtype=bool)
-    out["c1_T_capped"] = np.zeros(n, dtype=bool)
-    Y = mixing.mass_fractions(x, SPECIES)
+    cols = ["T_b", "L", "rho_l", "Q", "nu_s", "Y_O2", "Z_st", "T_f", "T_1", "c1", "lambda_F1", "lambda_a1",
+            "lambda_1", "B", "K_theory", "T_f_burke_schumann", "K_theory_ambient_cp", "K_theory_c1_only",
+            "cp_g", "lambda_g", "mu_g", "rho_g", "alpha_g", "flame_standoff", "chi_rad_proxy", "tau_res_proxy",
+            "T_2", "rho_2", "mu_2", "Gr", "f_B", "K_earth_theory"]
+    out = {k: np.full(n, np.nan) for k in cols}
+    for k in ("T_1_capped", "Gr_above_fit_range"):
+        out[k] = np.zeros(n, dtype=bool)
+    Y = mixing.mass_fractions(np.nan_to_num(x), SPECIES)
     y_o2 = Y[:, 0]
     M_mix = mixing.mixture_molar_mass(x, SPECIES)
-    t_hi = min(gas_T_range(s)[1] for s in SPECIES)
+    t_hi_gas = min(gas_T_range(s)[1] for s in SPECIES)
     for f in ("methanol", "heptane"):
-        m = fuel == f
+        m = (fuel == f) & np.isfinite(p)
         if not m.any():
             continue
-        Tb = t_sat(f, p[m])
+        xm, pm = x[m], p[m]
+        Tb = t_sat(f, pm)
         L = sat_prop(f, "h_fg", Tb)
         rho_l = sat_prop(f, "rho_l", Tb)
         Q = lower_heating_value(f)
         ns = nu_s(f)
-        zst = y_o2[m] / (y_o2[m] + ns)
-        xm = x[m]
-        Tf = np.full(m.sum(), 2000.0)
-        for _ in range(n_iter):  # fixed point: cp depends on T_bar, which depends on T_f
-            Tbar = np.minimum(0.5 * (Tb + Tf), t_hi)
-            cp = mixing.mixture_cp(xm, SPECIES, Tbar)
-            Tf = T_INF + zst * ((Tb - T_INF) + (Q - L) / cp)
-        Tbar_raw = 0.5 * (Tb + Tf)
-        Tbar = np.minimum(Tbar_raw, t_hi)
-        cp = mixing.mixture_cp(xm, SPECIES, Tbar)
-        lam = mixing.mixture_conductivity(xm, SPECIES, Tbar)
-        mu = mixing.mixture_viscosity(xm, SPECIES, Tbar)
-        rho_g = p[m] * M_mix[m] / (R_U * Tbar)
-        # Law & Williams (1972) Eq. (1): k0 = (8/rho_F)(lambda_1/C_1) ln(1+B), B = [Y_O q/i - c_1(T_b - T_inf)]/L,
-        # index 1 = gas region inside the flame (fuel vapour side). c_1 = NIST ideal-gas cp of the fuel vapour
-        # at T_bar; lambda_1 = lambda of the ambient mixture (L&W elementary assumption lambda_1 = lambda_2). ADR-026.
-        t_hi_fuel = float(fuel_vapor_cp_table(f)[0].max())
-        c1 = fuel_vapor_cp(f, np.minimum(0.5 * (Tb + Tf), t_hi_fuel))
-        B = (Q * y_o2[m] / ns + c1 * (T_INF - Tb)) / L
-        K = 8 * lam / (rho_l * c1) * np.log1p(B)
-        B_amb = (Q * y_o2[m] / ns + cp * (T_INF - Tb)) / L  # stage-4 first version: ambient-gas cp (kept for comparison)
-        K_amb = 8 * lam / (rho_l * cp) * np.log1p(B_amb)
-        fs = np.log1p(B) / np.log1p(y_o2[m] / ns)
-        alpha = lam / (rho_g * cp)
-        for k, v in dict(T_b=Tb, L=L, rho_l=rho_l, Q=np.full(m.sum(), Q), nu_s=np.full(m.sum(), ns),
-                         Y_O2=y_o2[m], Z_st=zst, T_f=Tf, T_bar=Tbar, cp_g=cp, c1_fuel_vapor=c1, lambda_g=lam,
-                         mu_g=mu, rho_g=rho_g, B=B, K_theory=K, B_ambient_cp=B_amb, K_theory_ambient_cp=K_amb,
-                         flame_standoff=fs, alpha_g=alpha).items():
+        yo = y_o2[m]
+        zst = yo / (yo + ns)
+        # --- L&W prescription
+        Tf = flame.adiabatic_flame_temperatures(np.full(m.sum(), f), Tb, xm, T_INF, pm)
+        T1_raw = 0.5 * (Tb + Tf)
+        t_hi = min(t_hi_gas, float(fuel_vapor_cp_table(f)[0].max()))
+        T1 = np.minimum(T1_raw, t_hi)
+        c1 = fuel_vapor_cp(f, T1)
+        lamF = fuel_vapor_conductivity(f, T1)
+        lama = mixing.mixture_conductivity(xm, SPECIES, T1)
+        lam1 = X_FUEL_REGION1 * lamF + (1 - X_FUEL_REGION1) * lama
+        B = (yo * Q / ns - c1 * (Tb - T_INF)) / L
+        K = 8 * lam1 / (rho_l * c1) * np.log1p(B)
+        # --- earlier variants (comparison only)
+        Tf_bs = _burke_schumann_tf(Tb, L, Q, zst, xm, t_hi_gas)
+        Tbar_bs = np.minimum(0.5 * (Tb + Tf_bs), t_hi_gas)
+        cp_bs = mixing.mixture_cp(xm, SPECIES, Tbar_bs)
+        lam_bs = mixing.mixture_conductivity(xm, SPECIES, Tbar_bs)
+        B_amb = (yo * Q / ns + cp_bs * (T_INF - Tb)) / L
+        K_amb = 8 * lam_bs / (rho_l * cp_bs) * np.log1p(B_amb)
+        c1_bs = fuel_vapor_cp(f, np.minimum(0.5 * (Tb + Tf_bs), float(fuel_vapor_cp_table(f)[0].max())))
+        B_c1 = (yo * Q / ns + c1_bs * (T_INF - Tb)) / L
+        K_c1 = 8 * lam_bs / (rho_l * c1_bs) * np.log1p(B_c1)
+        # --- ambient-gas properties at T_1 (proxies) and at T_2 (buoyancy, L&W p. 396)
+        cp_g = mixing.mixture_cp(xm, SPECIES, T1)
+        mu_g = mixing.mixture_viscosity(xm, SPECIES, T1)
+        rho_g = pm * M_mix[m] / (R_U * T1)
+        alpha = lama / (rho_g * cp_g)
+        fs = np.log1p(B) / np.log1p(yo / ns)
+        T2 = np.minimum(0.5 * (Tf + T_INF), t_hi_gas)
+        rho2 = pm * M_mix[m] / (R_U * T2)
+        mu2 = mixing.mixture_viscosity(xm, SPECIES, T2)
+        vals = dict(T_b=Tb, L=L, rho_l=rho_l, Q=np.full(m.sum(), Q), nu_s=np.full(m.sum(), ns), Y_O2=yo,
+                    Z_st=zst, T_f=Tf, T_1=T1, c1=c1, lambda_F1=lamF, lambda_a1=lama, lambda_1=lam1, B=B,
+                    K_theory=K, T_f_burke_schumann=Tf_bs, K_theory_ambient_cp=K_amb, K_theory_c1_only=K_c1,
+                    cp_g=cp_g, lambda_g=lama, mu_g=mu_g, rho_g=rho_g, alpha_g=alpha, flame_standoff=fs,
+                    T_2=T2, rho_2=rho2, mu_2=mu2)
+        for k, v in vals.items():
             out[k][m] = v
-        out["c1_T_capped"][m] = 0.5 * (Tb + Tf) > t_hi_fuel
-        out["T_bar_capped"][m] = Tbar_raw > t_hi
+        out["T_1_capped"][m] = T1_raw > t_hi
         if d0_m is not None:
             d0 = np.asarray(d0_m, dtype=float)[m]
             rs = d0 / 2
-            # radiative-loss fraction proxy chi/kappa [Pa m]: kappa (Planck-mean absorption per unit pressure) unknown
-            out["chi_rad_proxy"][m] = (SIGMA * p[m] * Tf ** 4 * rs ** 2 * fs ** 3 * cp
-                                       / (3 * lam * np.log1p(B) * Q))
-            # flow (diffusion) time at the flame r_f^2 / alpha [s]; Arrhenius factor not included (no sourced Ea)
+            # radiative-loss fraction proxy chi/kappa [Pa m] (FORMULAS.md section 3; kappa unknown)
+            out["chi_rad_proxy"][m] = SIGMA * pm * Tf ** 4 * rs ** 2 * fs ** 3 * c1 / (3 * lam1 * np.log1p(B) * Q)
             out["tau_res_proxy"][m] = (fs * rs) ** 2 / alpha
-            nu_kin = mu / rho_g
-            gr = G0 * (Tf - T_INF) * d0 ** 3 / (T_INF * nu_kin ** 2)
-            pr = mu * cp / lam
-            nu_e = 2 + 0.6 * gr ** 0.25 * pr ** (1 / 3)
-            out["Gr"][m], out["Pr"][m], out["Nu_earth"][m] = gr, pr, nu_e
-            out["K_earth_theory"][m] = K * nu_e / 2
+            gr = G0 * rho2 ** 2 * d0 ** 3 / mu2 ** 2 * (Tf - T_INF) / T2
+            fb = 0.533 * gr ** 0.52
+            out["Gr"][m], out["f_B"][m], out["K_earth_theory"][m] = gr, fb, K * (1 + fb)
+            out["Gr_above_fit_range"][m] = gr > 1.0
     return pd.DataFrame(out)
 
 
 def evaluate_flex(df: pd.DataFrame) -> pd.DataFrame:
     """Physics columns for the processed FLEX table (pre-ignition inputs only)."""
     x = df[["x_o2", "x_n2", "x_co2", "x_he"]].to_numpy(dtype=float)
-    x = x / x.sum(axis=1, keepdims=True)  # rows with sum 0.98 renormalised HERE only, for property evaluation (A4)
+    x = x / x.sum(axis=1, keepdims=True)  # assumption A4: renormalised for property evaluation only
     p = df["p_Pa"].to_numpy(dtype=float)
     p = np.where(p > 0, p, np.nan)  # test 114 (P = 0) -> NaN physics
     phys = evaluate(df["fuel"].str.lower().to_numpy(), p, x, df["d0_m"].to_numpy())

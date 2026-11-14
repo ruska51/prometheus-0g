@@ -10,7 +10,7 @@ Stage-1 mapping: MVP items M1-M6, stretch S1-S6 and product questions Q1-Q8 are 
 
 | ID | Requirement | Origin | Pri | How we close it | MVP / stretch | Status |
 |---|---|---|---|---|---|---|
-| CH-1 | Web-based dashboard, AI-powered | CH Objectives | M | Streamlit app on HF Spaces (ADR-001); physics-informed ML layer (stages 5-6) | M3, M6 | open |
+| CH-1 | Web-based dashboard, AI-powered | CH Objectives | M | Streamlit app on Streamlit Community Cloud (https://prometheus-0g.streamlit.app/, ADR-040); physics-informed ML layer (stages 5-6) | M3, M6 | done |
 | CH-2 | Summarize combustion science investigations | CH Objectives | M | Catalog of all 24 PSI Combustion Science investigations from PSI records + Experimental Tables (`data/raw/psi_records/`, `data/raw/psi_tables/`) | M1 | partial |
 | CH-3 | Rank investigations | CH Objectives | M | Relevance ranking by habitat and fire-safety stage; formula approved by Ruslan (FORMULAS.md section 8 is a draft) | M2 (Q1) | open |
 | CH-4 | Interpret investigations -> foundational fire-safety insights | CH Objectives | M | Insight engine (stage 7): 12 ranked insights + history + spinoffs, evidence type, n, CI (docs/INSIGHTS.md) | M5 | partial (UI pending) |
@@ -31,7 +31,7 @@ Stage-1 mapping: MVP items M1-M6, stretch S1-S6 and product questions Q1-Q8 are 
 | SG-1 | Project Name | SG | M | SUBMISSION.md; name is Ruslan's decision | open |
 | SG-2 | High-Level Project Summary | SG | M | SUBMISSION.md, stage 12 | open |
 | SG-3 | Link to Project Demo | SG | M | Video or slides (SG-9), stage 12 | open |
-| SG-4 | Link to Final Project, publicly accessible | SG | M | https://github.com/ruska51/prometheus-0g (public, ADR-002) + HF Spaces app | partial |
+| SG-4 | Link to Final Project, publicly accessible | SG | M | https://github.com/ruska51/prometheus-0g (public, ADR-002) + https://prometheus-0g.streamlit.app/ | done |
 | SG-5 | Detailed Project Description | SG | M | SUBMISSION.md + README.md | open |
 | SG-6 | NASA Data: what was used and how; all of R1-R7 explained | SG + CLAUDE.md 3.0 | M | README table + SUBMISSION.md, every R explained | partial (R1-R7 listed, usage TBD) |
 | SG-7 | Space Agency Partner & Other Data: all data, resources and tools | SG | M | DATA_SOURCES.md -> SUBMISSION.md; libraries and their licenses | partial |

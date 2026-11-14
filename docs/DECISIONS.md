@@ -393,3 +393,4 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Options: A) Streamlit Community Cloud (free, deploys from the public GitHub repo, Ruslan logs in once) B) HF PRO (paid) C) Render free tier (sleeps, 512 MB) D) Google Cloud Run (billing account).
 - Claude's recommendation: A.
 - Decision (Ruslan): A. Supersedes the hosting part of ADR-001 / ADR-038. Dockerfile and scripts/deploy_hf.py are kept as a fallback (any Docker host).
+- Result: deployed by Ruslan on share.streamlit.io (repo ruska51/prometheus-0g, branch main, app/main.py, Python 3.12): https://prometheus-0g.streamlit.app/; all 8 pages checked by Claude in Edge (Playwright) at 16:01, no exceptions, scenario numbers equal to the local run. Every push to main redeploys.

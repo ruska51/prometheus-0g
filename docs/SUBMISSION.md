@@ -16,7 +16,8 @@ _TBD._
 
 ## Link to Final Project
 
-_TBD._
+- Live dashboard: https://prometheus-0g.streamlit.app/
+- Source code and documentation: https://github.com/ruska51/prometheus-0g
 
 ## Detailed Project Description
 

@@ -97,8 +97,12 @@ def record(tmp: Path) -> tuple[Path, list[tuple[str, float, float]]]:
         time.sleep(4)
         anim = fr.locator("iframe").first
         anim.scroll_into_view_if_needed()
-        page.mouse.wheel(0, 260)
         time.sleep(1)
+        box = anim.bounding_box()  # put the animation window at the top of the frame
+        if box:
+            page.mouse.move(W * 0.6, H * 0.5)
+            page.mouse.wheel(0, box["y"] - 70)
+        time.sleep(1.5)
         inner = fr.frame_locator("iframe").first
         inner.locator("#replay").click()
         mark("burn", DEMO_SCENES[1][1])

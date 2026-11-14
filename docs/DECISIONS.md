@@ -417,3 +417,11 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Context: self-review against the judging criteria (Impact, Creativity, Validity, Relevance, Presentation): the headline asks "Will it burn on the Moon?" but the Overview did not answer it.
 - Claude's recommendation: an answer block at the top of the Overview. Decision (Ruslan): "давай ... максимально круто по критериям".
 - Consequences: fif.insights.moon.moon_answer (all numbers computed: hybrid ratio Moon/ISS with 95 % band, d2-law burn-out time of a 3 mm droplet in ISS air / Moon-base air / lunar surface, measured FLEX self-extinction share O2 >= 0.30 vs <= 0.21, equilibrium flame temperature, NASA literature on solids, actions from insights S4/D1/P6), fuel switch, links to the animation, assistant and validation; evidence and reliability badges on every number; EN/RU; test that the numbers equal the model, insights P2/S4 and the d2-law.
+
+## ADR-044: Stage 12 - demo format, README top insights, submission target
+- Date/time: 2026-11-14, answers received after the 19:06 clock reading (UTC+5)
+- Stage: 12
+- Options: demo = 30-s video recorded automatically from the live app / 7 slides (PDF) / video recorded by Ruslan; README top-5 = Moon-base set (P2, S4, P1, D1, P6) / formula-A top-5 (D1, S3, P1, S4, P4); deadline.
+- Claude's recommendation: automatic video; Moon-base set.
+- Decision (Ruslan): video 30 s (recommended); Moon-base set (recommended); "finish by Sunday 10:00".
+- Consequences: scripts/make_demo_video.py (Playwright + Edge recording of https://prometheus-0g.streamlit.app, ffmpeg from imageio-ffmpeg, burned-in English subtitles, <= 30 s), docs/demo/prometheus-0g_demo.mp4 + subtitles.srt, docs/DEMO_SCRIPT.md; README rewritten for the jury; docs/SUBMISSION.md with every form field, counts and Ruslan's checklist; requirements matrix closed except SG-11 / TC-1 (Ruslan's actions). Flame drawing reworked after Ruslan's review to match NASA photo C-1998-485 (WebGL, laminar 1-g spindle, soft microgravity sphere) before recording.

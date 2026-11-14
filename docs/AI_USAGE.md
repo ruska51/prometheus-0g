@@ -37,3 +37,4 @@ Development: the code, analysis and texts of this project were written with Clau
 of the team member, who made every scientific and design decision (table above, docs/DECISIONS.md). No AI-generated
 images or video.
 | 2026-11-14 | post-9 | Claude Code (Anthropic, Claude Opus) | Overview headline-answer code and texts (EN/RU) | Ruslan Sharafutdinov (ADR-043) |
+| 2026-11-14 | 12 | Claude Code (Anthropic, Claude Opus) | README, submission texts, demo script and automated screen-recording script, flame shader | Ruslan Sharafutdinov (ADR-044; final texts to be read by Ruslan) |

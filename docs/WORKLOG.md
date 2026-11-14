@@ -95,3 +95,10 @@ Open items:
 2026-11-14 14:01 | 6 | Final validation: hybrid 0.171 +- 0.002 = pure ML 0.174 in CV; hybrid best on 4/4 atmosphere extrapolations; fuel transfer fails for all; monotonicity passes | docs/validation_results.json | docs
 2026-11-14 14:06 | 6 | Reliability rule with O2-pressure combination check; VALIDATION.md generated; MODEL_CARD block; ADR-030..032; correction of the "physics better on new fuel" statement | docs/*, src/fif/validation/reliability.py, tests/test_validation.py | stage 7
 - Stage 6 duration: 13:34-14:06 (clock), budget 60 min.
+
+## Stage 7 - started 2026-11-14 14:10
+
+2026-11-14 14:12 | 7 | Insight package (base: Insight, weights, 3 ranking formulas; catalog: 12 live insights + 6 history/spinoff, cabin atmospheres) | src/fif/insights | decisions
+2026-11-14 ~14:14 | 7 | ADR-033: keep all, formula A, wording as drafted | docs/DECISIONS.md | docs
+2026-11-14 14:16 | 7 | scripts/build_insights.py -> docs/insights.json, INSIGHTS.md; 8 insight tests (91 total green) | docs/INSIGHTS.md, tests/test_insights.py | stage 8
+- Stage 7 duration: 14:10-14:16 (clock), budget 60 min.

@@ -11,3 +11,4 @@
 | 2026-11-14 | 4 | Claude Code (Anthropic, Claude Opus) | L&W prescription implementation, Svehla transcription, Cantera flame temperature, PHYSICS.md rewrite | Ruslan Sharafutdinov (supplied L&W paper; ADR-026, ADR-027) |
 | 2026-11-14 | 5 | Claude Code (Anthropic, Claude Opus) | Model code (hybrid GP, classifiers), CV comparison, interpretation, MODEL_CARD.md | Ruslan Sharafutdinov (ADR-029 choices) |
 | 2026-11-14 | 6 | Claude Code (Anthropic, Claude Opus) | Validation code, variant selection, reliability rule, generated VALIDATION.md | Ruslan Sharafutdinov (ADR-030..032) |
+| 2026-11-14 | 7 | Claude Code (Anthropic, Claude Opus) | Insight functions, ranking, INSIGHTS.md generator, insight tests | Ruslan Sharafutdinov (ADR-033: catalog, formula, wording) |

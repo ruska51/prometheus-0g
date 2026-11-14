@@ -1,0 +1,558 @@
+{
+ "created_utc": "2026-11-14T09:15:52+00:00",
+ "ranking": "A_evidence_log_n",
+ "ranked": [
+  {
+   "id": "D1",
+   "stage": "detection",
+   "title": "Burning solids release CO - detect gases, not only smoke",
+   "finding": "In 118 BASS-II tests (small solid samples in the ISS glovebox) CO rose by a median 45 ppm, 90th percentile 413 ppm, maximum 575 ppm per test.",
+   "action": "Pair smoke detection with CO (and CO2) sensing in crew volumes; toxic gas, not heat, killed the Apollo 1 crew.",
+   "evidence_type": "NASA data",
+   "n_tests": 118,
+   "effect": {
+    "name": "median CO rise per test",
+    "value": 45.0,
+    "ci": null,
+    "unit": "ppm",
+    "log_effect": 2.474435349920705
+   },
+   "sources": [
+    "NASA PSI-25 BASS-II Experimental Table (https://psi.nasa.gov)"
+   ],
+   "confidence": "medium",
+   "extrapolation": false,
+   "related": [
+    "H1",
+    "H3"
+   ],
+   "score": 4.7791
+  },
+  {
+   "id": "S3",
+   "stage": "suppression",
+   "title": "Less oxygen makes flames go out earlier",
+   "finding": "Lowering O2 from 21 % to 15 % changes the droplet size at flame extinction (relative to the initial size) by +50 % (95 % CI +34 % to +79 %; 188 FLEX tests with extinction): more fuel is left unburned.",
+   "action": "Reducing O2 (venting, inert flooding) is an effective way to shorten a microgravity fire.",
+   "evidence_type": "NASA data",
+   "n_tests": 188,
+   "effect": {
+    "name": "d_ext/d0 ratio, O2 0.21 -> 0.15",
+    "value": 1.5002800437594472,
+    "ci": [
+     1.335811688342866,
+     1.788973908735935
+    ],
+    "unit": "-",
+    "log_effect": 0.4056517865222964
+   },
+   "sources": [
+    "NASA PSI-69 FLEX Experimental Table (https://psi.nasa.gov), NASA/TP-2015-216046"
+   ],
+   "confidence": "high",
+   "extrapolation": false,
+   "related": [
+    "H3"
+   ],
+   "score": 4.5494
+  },
+  {
+   "id": "P1",
+   "stage": "prevention",
+   "title": "More oxygen burns fuel faster",
+   "finding": "Raising O2 from 21 % to 30 % (other conditions fixed) changes the droplet burning rate by +44 % (95 % CI +39 % to +55 %), from 257 FLEX tests on the ISS.",
+   "action": "Treat every percent of extra O2 in a habitat as a fire-hazard increase; tighten material screening and ignition-source control when O2 is raised above sea-level air.",
+   "evidence_type": "NASA data",
+   "n_tests": 257,
+   "effect": {
+    "name": "K ratio, O2 0.21 -> 0.30",
+    "value": 1.4445124372048133,
+    "ci": [
+     1.391728989503962,
+     1.5457594467167612
+    ],
+    "unit": "-",
+    "log_effect": 0.3677718509284943
+   },
+   "sources": [
+    "NASA PSI-69 FLEX Experimental Table (https://psi.nasa.gov), NASA/TP-2015-216046",
+    "Regression with regime bootstrap: src/fif/insights/catalog.py"
+   ],
+   "confidence": "high",
+   "extrapolation": false,
+   "related": [
+    "H1"
+   ],
+   "score": 4.525
+  },
+  {
+   "id": "S4",
+   "stage": "suppression",
+   "title": "At 30 % O2 droplet flames rarely put themselves out",
+   "finding": "N2-diluted FLEX tests: the flame burned the droplet out without extinguishing in 54 % of 13 tests at O2 >= 30 %, vs 14 % of 58 tests at O2 <= 21 %.",
+   "action": "At elevated O2 assume a fire will not self-extinguish; active suppression must be immediate.",
+   "evidence_type": "NASA data",
+   "n_tests": 71,
+   "effect": {
+    "name": "share without extinction, O2>=0.30 / O2<=0.21",
+    "value": 3.903846153846152,
+    "ci": null,
+    "unit": "-",
+    "log_effect": 1.3619622604603594
+   },
+   "sources": [
+    "NASA PSI-69 FLEX Experimental Table (https://psi.nasa.gov), NASA/TP-2015-216046"
+   ],
+   "confidence": "medium",
+   "extrapolation": false,
+   "related": [
+    "H1"
+   ],
+   "score": 4.2767
+  },
+  {
+   "id": "P4",
+   "stage": "prevention",
+   "title": "In O2-rich streams gaseous fuels ignite almost every time",
+   "finding": "ACME CFI-G inverse flames on the ISS: ignition in 98 % of 101 attempts with oxidizer O2 >= 50 % (up to 85 %), vs 67 % of 33 attempts below 30 %.",
+   "action": "Treat O2 lines, regulators and O2-generator outlets as top-priority ignition hazards (keep hydrocarbons and electrical heat sources away from them).",
+   "evidence_type": "NASA data",
+   "n_tests": 134,
+   "effect": {
+    "name": "ignition share O2>=0.5 vs <0.3",
+    "value": 1.4702970297029703,
+    "ci": null,
+    "unit": "-",
+    "log_effect": 0.38546444140149483
+   },
+   "sources": [
+    "NASA PSI-159 ACME CFI-G Experimental Tables (https://psi.nasa.gov)"
+   ],
+   "confidence": "medium",
+   "extrapolation": false,
+   "related": [
+    "H2",
+    "H3"
+   ],
+   "score": 4.1187
+  },
+  {
+   "id": "S2",
+   "stage": "suppression",
+   "title": "Helium dilution does not slow burning - it speeds it up",
+   "finding": "Replacing 30 % of the nitrogen by helium changes the burning rate by +35 % (95 % CI +30 % to +42 %; 257 FLEX tests): helium conducts heat to the droplet faster.",
+   "action": "Helium is not a substitute for CO2 as a fire-suppressing diluent; account for it if He is used as a cabin diluent.",
+   "evidence_type": "NASA data",
+   "n_tests": 257,
+   "effect": {
+    "name": "K ratio, 30 % N2 -> He",
+    "value": 1.3525099632826267,
+    "ci": [
+     1.3004731218877623,
+     1.4158296101344479
+    ],
+    "unit": "-",
+    "log_effect": 0.30196209827892784
+   },
+   "sources": [
+    "NASA PSI-69 FLEX Experimental Table (https://psi.nasa.gov), NASA/TP-2015-216046"
+   ],
+   "confidence": "high",
+   "extrapolation": false,
+   "related": [],
+   "score": 4.0134
+  },
+  {
+   "id": "P2",
+   "stage": "prevention",
+   "title": "A Moon-base atmosphere burns droplets faster than ISS air",
+   "finding": "Hybrid model, 3 mm droplet: Moon-base atmosphere (O2 30 %, 10.2 psi) vs ISS cabin air (O2 21 %, 1 atm): methanol +32 % (95 % band -2 % to +77 %); heptane +32 % (95 % band -2 % to +79 %). Label: extrapolation (O2 30 % was tested only from 0.703 atm).",
+   "action": "Size fire-detection response and suppression capacity of Moon-base modules and rovers for faster fuel consumption than on the ISS; re-test cabin materials at the planned atmosphere.",
+   "evidence_type": "model",
+   "n_tests": 274,
+   "effect": {
+    "name": "K ratio Moon/ISS (heptane)",
+    "value": 1.3248766834247172,
+    "ci": [
+     0.9829251773226777,
+     1.7857902786289537
+    ],
+    "unit": "-",
+    "log_effect": 0.2813193859935659
+   },
+   "sources": [
+    "Challenge page 'Flame in Freefall' (docs/challenge/CHALLENGE.md) (Moon-base atmosphere)",
+    "NASA/TP-2015-216046 Table I (ISS cabin air)",
+    "models/K_hybrid.joblib"
+   ],
+   "confidence": "low",
+   "extrapolation": true,
+   "related": [
+    "H1",
+    "H2"
+   ],
+   "score": 2.728
+  },
+  {
+   "id": "S1",
+   "stage": "suppression",
+   "title": "CO2 dilution slows burning",
+   "finding": "Replacing 30 % of the nitrogen by CO2 (same O2 and pressure) changes the burning rate by -7 % (95 % CI -11 % to -3 %; 257 FLEX tests).",
+   "action": "CO2 is an effective diluent suppressant in microgravity; keep it in the suppression design.",
+   "evidence_type": "NASA data",
+   "n_tests": 257,
+   "effect": {
+    "name": "K ratio, 30 % N2 -> CO2",
+    "value": 0.9273034175830636,
+    "ci": [
+     0.8853837882042369,
+     0.9719123441322838
+    ],
+    "unit": "-",
+    "log_effect": -0.07547445566235185
+   },
+   "sources": [
+    "NASA PSI-69 FLEX Experimental Table (https://psi.nasa.gov), NASA/TP-2015-216046"
+   ],
+   "confidence": "high",
+   "extrapolation": false,
+   "related": [],
+   "score": 2.2526
+  },
+  {
+   "id": "P3",
+   "stage": "prevention",
+   "title": "Lowering cabin pressure barely slows burning",
+   "finding": "Going from 1.0 to 0.7 atm at the same O2 fraction changes the burning rate by -3 % (95 % CI -7 % to +0 %; 257 FLEX tests).",
+   "action": "Do not count on reduced habitat pressure to offset the added hazard of a higher O2 fraction.",
+   "evidence_type": "NASA data",
+   "n_tests": 257,
+   "effect": {
+    "name": "K ratio, 1.0 -> 0.7 atm",
+    "value": 0.9707232977424057,
+    "ci": [
+     0.9276845513265283,
+     1.0036303512247797
+    ],
+    "unit": "-",
+    "log_effect": -0.029713817581123438
+   },
+   "sources": [
+    "NASA PSI-69 FLEX Experimental Table (https://psi.nasa.gov), NASA/TP-2015-216046"
+   ],
+   "confidence": "low",
+   "extrapolation": false,
+   "related": [
+    "P2"
+   ],
+   "score": 1.8969
+  },
+  {
+   "id": "D3",
+   "stage": "detection",
+   "title": "Smoke from spacecraft materials has been measured in microgravity",
+   "finding": "SAME-R ran 109 smoke tests on the ISS with 5 materials (Kapton, Lampwick, Pyrell, Silicone, Teflon) - the data base for smoke detectors tuned to microgravity smoke.",
+   "action": "Use SAME/SAME-R particle data when specifying detectors for new spacecraft rather than terrestrial detector standards.",
+   "evidence_type": "NASA data",
+   "n_tests": 109,
+   "effect": {
+    "name": "materials tested",
+    "value": 5,
+    "ci": null,
+    "unit": "-",
+    "log_effect": null
+   },
+   "sources": [
+    "NASA PSI-101 SAME-R Experimental Table (https://psi.nasa.gov)"
+   ],
+   "confidence": "medium",
+   "extrapolation": false,
+   "related": [
+    "E2"
+   ],
+   "score": 1.4101
+  },
+  {
+   "id": "D2",
+   "stage": "detection",
+   "title": "Cool flames: fuel can keep reacting after the visible flame is gone",
+   "finding": "Cool flames were recorded in 8 of 179 ACME CFI-G normal-flame tests; FLEX test notes report cool-flame burning after visible-flame extinction of heptane droplets (NASA/TP-2015-216046).",
+   "action": "Do not declare a fire out on optical (visible/UV flame) evidence alone; confirm with gas sensing and temperature.",
+   "evidence_type": "NASA data",
+   "n_tests": 8,
+   "effect": {
+    "name": "cool-flame observations",
+    "value": 8,
+    "ci": null,
+    "unit": "tests",
+    "log_effect": null
+   },
+   "sources": [
+    "NASA PSI-159 ACME CFI-G (https://psi.nasa.gov)",
+    "NASA/TP-2015-216046 test notes"
+   ],
+   "confidence": "medium",
+   "extrapolation": false,
+   "related": [
+    "H3"
+   ],
+   "score": 0.6592
+  },
+  {
+   "id": "D4",
+   "stage": "detection",
+   "title": "Without buoyancy the same droplet burns slower than on Earth",
+   "finding": "Law & Williams buoyancy correction for a 3 mm droplet in air at 1 atm: Earth burning rate is 3.0x (methanol) and 2.9x (heptane) the microgravity rate (correlation used far outside its fitted range, Gr = 13).",
+   "action": "Do not transfer Earth flammability or detection-time results to spacecraft without microgravity data; microgravity flames are smaller and slower, so they may be detected later.",
+   "evidence_type": "physics theory",
+   "n_tests": 0,
+   "effect": {
+    "name": "K_Earth/K_ISS (heptane)",
+    "value": 2.9190224814983754,
+    "ci": null,
+    "unit": "-",
+    "log_effect": 1.0712487936231945
+   },
+   "sources": [
+    "Law & Williams, Combust. Flame 19 (1972) Eq. (9); docs/PHYSICS.md section 4"
+   ],
+   "confidence": "low",
+   "extrapolation": true,
+   "related": [],
+   "score": 0.0
+  }
+ ],
+ "history_and_earth": [
+  {
+   "id": "H1",
+   "stage": "history",
+   "title": "Apollo 1: pure oxygen turned a spark into a flash fire",
+   "finding": "\"Because of the pure oxygen atmosphere, the fire spread quickly\"; the crew died of \"asphyxia from carbon monoxide and other toxic gases\" (NASA SMA).",
+   "action": "Our data show the same physics at milder O2 levels (P1, S4) and the CO hazard (D1).",
+   "evidence_type": "NASA history",
+   "n_tests": 0,
+   "effect": {
+    "name": "-",
+    "value": null,
+    "ci": null,
+    "unit": "-",
+    "log_effect": null
+   },
+   "sources": [
+    "https://sma.nasa.gov/sma-disciplines/accllp/apollo-1"
+   ],
+   "confidence": "high",
+   "extrapolation": false,
+   "related": [
+    "P1",
+    "S4",
+    "D1"
+   ],
+   "score": 0.0
+  },
+  {
+   "id": "H2",
+   "stage": "history",
+   "title": "Apollo 13: oxygen system plus electrical heat",
+   "finding": "Heaters in the oxygen tank overheated, \"degrading the Teflon insulation\"; the redesign sheathed wiring \"in stainless steel\" (NASA SMA).",
+   "action": "O2-rich hardware is where ignition-source control matters most (P4).",
+   "evidence_type": "NASA history",
+   "n_tests": 0,
+   "effect": {
+    "name": "-",
+    "value": null,
+    "ci": null,
+    "unit": "-",
+    "log_effect": null
+   },
+   "sources": [
+    "https://sma.nasa.gov/sma-disciplines/accllp/apollo-13"
+   ],
+   "confidence": "high",
+   "extrapolation": false,
+   "related": [
+    "P4",
+    "P2"
+   ],
+   "score": 0.0
+  },
+  {
+   "id": "H3",
+   "stage": "history",
+   "title": "Mir 1997: a real fire in microgravity",
+   "finding": "An oxygen generator burned; \"The flame blocked the evacuation route to the Soyuz spacecraft\"; smoke was cleared \"over several hours\" (NASA History).",
+   "action": "Microgravity fires produce lasting smoke and gases (D1, D2) and can cut off escape routes: detection and immediate suppression (S3) are critical.",
+   "evidence_type": "NASA history",
+   "n_tests": 0,
+   "effect": {
+    "name": "-",
+    "value": null,
+    "ci": null,
+    "unit": "-",
+    "log_effect": null
+   },
+   "sources": [
+    "https://www.nasa.gov/history/25-years-ago-fire-aboard-space-station-mir/"
+   ],
+   "confidence": "high",
+   "extrapolation": false,
+   "related": [
+    "D1",
+    "D2",
+    "S3"
+   ],
+   "score": 0.0
+  },
+  {
+   "id": "E1",
+   "stage": "earth",
+   "title": "Lighter firefighter air tanks",
+   "finding": "Developed with NASA Johnson Space Center: \"20 pounds for 30 minute air supply\" (NASA Spinoff, 1976).",
+   "action": "Benefit on Earth of NASA life-support work.",
+   "evidence_type": "NASA spinoff",
+   "n_tests": 0,
+   "effect": {
+    "name": "-",
+    "value": null,
+    "ci": null,
+    "unit": "-",
+    "log_effect": null
+   },
+   "sources": [
+    "https://spinoff.nasa.gov/node/9582"
+   ],
+   "confidence": "high",
+   "extrapolation": false,
+   "related": [],
+   "score": 0.0
+  },
+  {
+   "id": "E2",
+   "stage": "earth",
+   "title": "Incipient fire detector from the Space Shuttle",
+   "finding": "Signals fire \"before appearance of flame and smoke\" and is \"less susceptible to false alarms\" (NASA Spinoff, 1978).",
+   "action": "Space detection technology already protects mines and buildings; SAME data (D3) can do the same.",
+   "evidence_type": "NASA spinoff",
+   "n_tests": 0,
+   "effect": {
+    "name": "-",
+    "value": null,
+    "ci": null,
+    "unit": "-",
+    "log_effect": null
+   },
+   "sources": [
+    "https://spinoff.nasa.gov/node/9407"
+   ],
+   "confidence": "high",
+   "extrapolation": false,
+   "related": [
+    "D3"
+   ],
+   "score": 0.0
+  },
+  {
+   "id": "E3",
+   "stage": "earth",
+   "title": "Fire-resistant gear from Apollo materials",
+   "finding": "Project FIRES used \"lightweight, fire-resistant, heat-protective materials\" from space suits (NASA Spinoff, 1982).",
+   "action": "Materials screened for O2-rich cabins protect firefighters on Earth.",
+   "evidence_type": "NASA spinoff",
+   "n_tests": 0,
+   "effect": {
+    "name": "-",
+    "value": null,
+    "ci": null,
+    "unit": "-",
+    "log_effect": null
+   },
+   "sources": [
+    "https://spinoff.nasa.gov/node/9918"
+   ],
+   "confidence": "high",
+   "extrapolation": false,
+   "related": [],
+   "score": 0.0
+  }
+ ],
+ "cabin_atmospheres": [
+  {
+   "atmosphere": "ISS cabin air",
+   "O2": 0.21,
+   "p_atm": 1.0,
+   "p_psi": 14.7,
+   "fuel": "Methanol",
+   "K_hybrid_mm2_s": 0.4856041964053071,
+   "sigma_ln": 0.10620827873332643,
+   "K_theory_mm2_s": 0.5186990633793691,
+   "status": "in range",
+   "reasons": "",
+   "source": "NASA/TP-2015-216046 Table I"
+  },
+  {
+   "atmosphere": "ISS cabin air",
+   "O2": 0.21,
+   "p_atm": 1.0,
+   "p_psi": 14.7,
+   "fuel": "Heptane",
+   "K_hybrid_mm2_s": 0.5482837243159033,
+   "sigma_ln": 0.1056888794798061,
+   "K_theory_mm2_s": 0.7262995544322713,
+   "status": "in range",
+   "reasons": "",
+   "source": "NASA/TP-2015-216046 Table I"
+  },
+  {
+   "atmosphere": "Moon base / pressurized rover (planned)",
+   "O2": 0.3,
+   "p_atm": 0.694,
+   "p_psi": 10.2,
+   "fuel": "Methanol",
+   "K_hybrid_mm2_s": 0.6386396689729193,
+   "sigma_ln": 0.10881278801792266,
+   "K_theory_mm2_s": 0.6512149372000083,
+   "status": "extrapolation",
+   "reasons": "pressure 0.694 atm outside tested 0.703-1.012 atm for Methanol, N2, O2 0.30+-0.02",
+   "source": "Challenge page 'Flame in Freefall' (docs/challenge/CHALLENGE.md)"
+  },
+  {
+   "atmosphere": "Moon base / pressurized rover (planned)",
+   "O2": 0.3,
+   "p_atm": 0.694,
+   "p_psi": 10.2,
+   "fuel": "Heptane",
+   "K_hybrid_mm2_s": 0.7264083222474046,
+   "sigma_ln": 0.10968310156865758,
+   "K_theory_mm2_s": 0.8690926163687449,
+   "status": "extrapolation",
+   "reasons": "pressure 0.694 atm outside tested 0.704-1.015 atm for Heptane, N2, O2 0.30+-0.02",
+   "source": "Challenge page 'Flame in Freefall' (docs/challenge/CHALLENGE.md)"
+  },
+  {
+   "atmosphere": "Spacesuit",
+   "O2": 1.0,
+   "p_atm": 0.293,
+   "p_psi": 4.3,
+   "fuel": "Methanol",
+   "K_hybrid_mm2_s": NaN,
+   "sigma_ln": 0.2570884273936707,
+   "K_theory_mm2_s": 1.1030431997003611,
+   "status": "unreliable",
+   "reasons": "O2 1 with N2 never tested for Methanol (window +-0.02); pressure 0.293 outside tested 0.693-3.05; O2 1 outside tested 0.12-0.34; model uncertainty sigma_lnK 0.26 > 0.2",
+   "source": "Challenge page 'Flame in Freefall' (docs/challenge/CHALLENGE.md)"
+  },
+  {
+   "atmosphere": "Spacesuit",
+   "O2": 1.0,
+   "p_atm": 0.293,
+   "p_psi": 4.3,
+   "fuel": "Heptane",
+   "K_hybrid_mm2_s": NaN,
+   "sigma_ln": 0.2570884273936707,
+   "K_theory_mm2_s": 1.2544611752814487,
+   "status": "unreliable",
+   "reasons": "O2 1 with N2 never tested for Heptane (window +-0.02); pressure 0.293 outside tested 0.693-3.05; O2 1 outside tested 0.12-0.34; model uncertainty sigma_lnK 0.26 > 0.2",
+   "source": "Challenge page 'Flame in Freefall' (docs/challenge/CHALLENGE.md)"
+  }
+ ]
+}

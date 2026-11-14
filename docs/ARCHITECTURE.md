@@ -106,6 +106,14 @@ Command: `.venv/Scripts/python scripts/train_models.py` (~45 s). Details: docs/M
 | `scripts/validate.py` | runs everything (~10 min), writes `docs/validation_results.json`, figures `docs/figures/val_*.png` |
 | `scripts/render_validation.py` | renders `docs/VALIDATION.md` and the MODEL_CARD metrics block from the JSON |
 
-## Insights, app
+## Insights layer (stage 7)
 
-_Stages 7-8._
+| Module / script | Purpose |
+|---|---|
+| `fif.insights.base` | `Insight` object, evidence weights, ranking formulas A/B/C (A in use, ADR-033) |
+| `fif.insights.catalog` | 12 insight functions computing numbers live (regression with regime bootstrap, model predictions, theory), history/spinoff blocks, cabin-atmosphere comparison with reliability labels |
+| `scripts/build_insights.py` | writes `docs/insights.json` and `docs/INSIGHTS.md` |
+
+## App
+
+_Stage 8._

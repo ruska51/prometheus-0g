@@ -86,3 +86,12 @@ Open items:
 2026-11-14 13:23 | 5 | K: hybrid RMSE_log 0.214 vs physics 0.302 / mean 0.304 / pure ML 0.288; c_f methanol 0.964, heptane 0.714; extinction AUC 0.805 (monotonic boosting), physics-only logistic balanced acc 0.733; d_ext/d0 pure ML best (0.406); 62 tests green | docs/verification/model_*, models/*.joblib, docs/figures/model_*.png | docs
 2026-11-14 13:24 | 5 | MODEL_CARD.md, ARCHITECTURE (models), Makefile data/train targets | docs/* | stage 6
 - Stage 5 duration: 13:14-13:24 (clock), budget 90 min.
+
+## Stage 6 - started 2026-11-14 13:34
+
+2026-11-14 13:39 | 6 | First validation run: hybrid 0.225 +- 0.023 (5 seeds); K non-monotone in O2 (dips 1.4-7 %), boosting P(ext) jump +0.54; C13H201 distorts neighbours | src/fif/validation/core.py, scripts/validate.py | decisions
+2026-11-14 ~13:45 | 6 | Ruslan: check all variants / test all; rules fixed; variants run (5.5 min) | src/fif/validation/variants.py | config
+2026-11-14 13:54 | 6 | Config applied (C13H201 out of K training, raw residual features, logistic interface model); models retrained | src/fif/models, models/ | full validation
+2026-11-14 14:01 | 6 | Final validation: hybrid 0.171 +- 0.002 = pure ML 0.174 in CV; hybrid best on 4/4 atmosphere extrapolations; fuel transfer fails for all; monotonicity passes | docs/validation_results.json | docs
+2026-11-14 14:06 | 6 | Reliability rule with O2-pressure combination check; VALIDATION.md generated; MODEL_CARD block; ADR-030..032; correction of the "physics better on new fuel" statement | docs/*, src/fif/validation/reliability.py, tests/test_validation.py | stage 7
+- Stage 6 duration: 13:34-14:06 (clock), budget 60 min.

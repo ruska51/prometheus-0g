@@ -96,6 +96,16 @@ flowchart LR
 
 Command: `.venv/Scripts/python scripts/train_models.py` (~45 s). Details: docs/MODEL_CARD.md.
 
-## Validation, insights, app
+## Validation layer (stage 6)
 
-_Stages 6-8._
+| Module / script | Purpose |
+|---|---|
+| `fif.validation.core` | repeated grouped CV, leave-class-out extrapolation, calibration, residuals by group, physicality, failures |
+| `fif.validation.variants` | variant selection by pre-declared rules (ADR-030) |
+| `fif.validation.reliability` | "in range" / "extrapolation" / "unreliable" label per prediction (ADR-031) |
+| `scripts/validate.py` | runs everything (~10 min), writes `docs/validation_results.json`, figures `docs/figures/val_*.png` |
+| `scripts/render_validation.py` | renders `docs/VALIDATION.md` and the MODEL_CARD metrics block from the JSON |
+
+## Insights, app
+
+_Stages 7-8._

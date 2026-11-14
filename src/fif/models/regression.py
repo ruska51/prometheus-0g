@@ -82,7 +82,9 @@ class HybridKModel:
     def predict(self, X, aux=None):
         lt, fuel = np.asarray(aux["ln_theory"]), np.asarray(aux["fuel"])
         r_mu, r_sd = self.gp.predict(X, return_std=True)
-        return lt + np.array([self.ln_cf[f] for f in fuel]) + r_mu, r_sd
+        # a fuel unseen in training (leave-fuel-out test) gets the mean calibration of the known fuels
+        fallback = float(np.mean(list(self.ln_cf.values())))
+        return lt + np.array([self.ln_cf.get(f, fallback) for f in fuel]) + r_mu, r_sd
 
     @property
     def c_f(self) -> dict[str, float]:

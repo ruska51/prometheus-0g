@@ -304,3 +304,29 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   - Metrics: full set (recommended) - K and d_ext/d0: RMSE in log space (primary), MAE in original units, R^2, 95 % interval coverage; extinction: AUC (primary), Brier, accuracy, balanced accuracy.
 - Consequences: src/fif/models/, scripts/train_models.py, MODEL_CARD.md.
 - Sources: docs/FORMULAS.md section 8 (calibration and residual formulas)
+
+## ADR-030: Stage-6 variant selection by pre-declared rules
+- Date/time: 2026-11-14 ~13:45 (UTC+5; rules written into src/fif/validation/variants.py before the run)
+- Stage: 6
+- Context: Ruslan asked to "check everything and choose the best result" for (1) the suspect test C13H201 (K = 0.05 mm2/s, OUTLIER_K + KTB_INCONSISTENT), and to "test everything" for (2) the non-monotonic O2 response.
+- Rules: (1) lowest mean RMSE_log of the hybrid on the same trusted rows (no KTB_INCONSISTENT / OUTLIER_K), 3 seeds; (2) residual feature set: lowest RMSE_log among sets with worst K drop along O2 <= 2 % per 0.01 step; (3) interface extinction model: highest AUC among models with no rise of P(extinction) along O2.
+- Result: (1) drop C13H201 from K training only (hybrid 0.128 vs 0.158 keep-all on trusted rows); with it excluded, K became monotone in O2 in all cases - the outlier caused the dips. (2) residual GP on raw conditions (`K_resid_raw`), differences between sets within one sd. (3) hybrid logistic (AUC 0.787; boosting variants rise up to +0.54 / +0.39 along O2).
+- Decision (Ruslan): delegated ("check everything and choose the best", "test everything"); choices made by the rules above.
+- Consequences: fif.models.features: HYBRID_K_FEATURES, K_TRAIN_EXCLUDE, EXTINCTION_UI_MODEL, k_train_mask; models retrained; numbers in docs/VALIDATION.md (generated).
+- Sources: docs/validation_results.json
+
+## ADR-031: Extrapolation tests in the interface and reliability thresholds
+- Date/time: 2026-11-14 ~13:44 (UTC+5)
+- Stage: 6
+- Decisions (Ruslan): show all extrapolation tests (atmosphere He / CO2 / O2 >= 0.30, ~0.7 atm, fuel transfer as an honest failure, low O2 and p > 1.2 atm); label "extrapolation" when a condition is outside the tested range, "unreliable" when sigma ln K > 0.20 (recommended option).
+- Implementation note (Claude): a per-variable range check misses the Moon-base corner (0.694 atm is tested, but not at O2 0.30). The rule therefore also checks the O2-pressure combination for the same fuel and diluent (O2 window +-0.02) against the data. Reported here for Ruslan's review.
+- Consequences: src/fif/validation/reliability.py; tests/test_validation.py.
+
+## ADR-032: Presentation when the hybrid equals pure ML in ordinary CV
+- Date/time: 2026-11-14 ~14:01 (UTC+5)
+- Stage: 6
+- Context: with C13H201 excluded, grouped CV gives hybrid 0.171 +- 0.002 vs pure ML 0.174 +- 0.003 (RMSE ln K); on held-out atmospheres the hybrid is 1.2-1.9x better (He, CO2, ~0.7 atm, O2 >= 0.30); on a held-out fuel no model transfers reliably.
+- Options: A) honest, with the extrapolation argument B) numbers only.
+- Decision (Ruslan): A.
+- Correction: Claude's question stated "on a new fuel pure physics is better"; the final table shows physics and pure ML equal for methanol and all models poor for heptane. VALIDATION.md states the corrected version.
+- Consequences: README / interface text: "equal inside tested conditions; physics makes the model hold for new atmospheres (the Moon-base case); not for new fuels".

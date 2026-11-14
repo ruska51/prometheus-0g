@@ -21,7 +21,8 @@ from sklearn.model_selection import GroupKFold
 
 from . import classification as C
 from . import regression as R
-from .features import EXTINCTION_DIRECTIONS, FEATURE_SETS, check_pre_ignition, model_table
+from .features import (EXTINCTION_DIRECTIONS, FEATURE_SETS, HYBRID_K_FEATURES, check_pre_ignition,
+                       k_train_mask, model_table, K_TRAIN_EXCLUDE)
 
 N_SPLITS = 5
 
@@ -45,11 +46,15 @@ def _cls_metrics(y, p):
             "accuracy": float(accuracy_score(y, p >= 0.5)), "balanced_accuracy": float(balanced_accuracy_score(y, p >= 0.5))}
 
 
-def cv_regression(sub, target, specs, groups):
-    """specs: {name: (factory, feature_set or None, uses_aux)}; returns OOF (mu, sd) per model."""
+def cv_regression(sub, target, specs, groups, splits=None, train_mask=None):
+    """specs: {name: (factory, feature_set or None, aux columns)}; returns OOF (mu, sd) per model.
+    splits: iterable of (train_idx, test_idx); default GroupKFold(5) on ``groups``.
+    train_mask: boolean array; rows with False are never used for fitting (still predicted)."""
     y = sub[target].to_numpy()
     oof = {k: (np.full(len(sub), np.nan), np.full(len(sub), np.nan)) for k in specs}
-    for tr, te in GroupKFold(N_SPLITS).split(sub, y, groups):
+    for tr, te in (splits if splits is not None else GroupKFold(N_SPLITS).split(sub, y, groups)):
+        if train_mask is not None:
+            tr = tr[np.asarray(train_mask)[tr]]
         for name, (factory, fs, aux_cols) in specs.items():
             X = sub[FEATURE_SETS[fs]].to_numpy() if fs else np.zeros((len(sub), 1))
             aux = sub[aux_cols] if aux_cols else None
@@ -63,10 +68,10 @@ def _aux(a: pd.DataFrame) -> dict:
     return {"ln_theory": a["ln_K_theory"].to_numpy() if "ln_K_theory" in a else None, "fuel": a["fuel"].to_numpy()}
 
 
-def cv_classification(sub, specs, groups):
+def cv_classification(sub, specs, groups, splits=None):
     y = sub["y_ext"].astype(int).to_numpy()
     oof = {k: np.full(len(sub), np.nan) for k in specs}
-    for tr, te in GroupKFold(N_SPLITS).split(sub, y, groups):
+    for tr, te in (splits if splits is not None else GroupKFold(N_SPLITS).split(sub, y, groups)):
         for name, (factory, fs) in specs.items():
             X = sub[FEATURE_SETS[fs]].to_numpy() if fs else np.zeros((len(sub), 1))
             mdl = factory().fit(X[tr], y[tr])
@@ -88,9 +93,10 @@ def run(repo_root: Path, out_models: Path, out_docs: Path) -> dict:
     k_specs = {"mean": (R.MeanModel, None, None),
                "physics": (R.PhysicsModel, None, ["ln_K_theory", "fuel"]),
                "pure_ml_gp": (R.GPModel, "K_pure_ml", None),
-               "hybrid": (R.HybridKModel, "K_hybrid_residual", ["ln_K_theory", "fuel"])}
+               "hybrid": (R.HybridKModel, HYBRID_K_FEATURES, ["ln_K_theory", "fuel"])}
     ksub, kdrop = _rows(t, "y_lnK", ["K_pure_ml", "K_hybrid_residual"], ["ln_K_theory"])
-    koof = cv_regression(ksub, "y_lnK", k_specs, ksub["cv_group"])
+    kmask = k_train_mask(ksub)
+    koof = cv_regression(ksub, "y_lnK", k_specs, ksub["cv_group"], train_mask=kmask)
     report["K"] = {"n_rows": len(ksub), "rows_dropped_missing": kdrop, "n_groups": int(ksub["cv_group"].nunique()),
                    "metrics": {k: _reg_metrics(ksub["y_lnK"].to_numpy(), *v, scale=1e6) for k, v in koof.items()},
                    "metrics_by_fuel": {k: {f: _reg_metrics(ksub["y_lnK"][ksub.fuel == f].to_numpy(), v[0][ksub.fuel == f],
@@ -124,21 +130,23 @@ def run(repo_root: Path, out_models: Path, out_docs: Path) -> dict:
     # ---------------- final fits, interpretation, save
     out_models.mkdir(parents=True, exist_ok=True)
     meta = {k: report[k] for k in ("data_sha256", "seed", "sklearn", "created_utc")}
-    Xk = ksub[FEATURE_SETS["K_hybrid_residual"]].to_numpy()
-    hyb = R.HybridKModel().fit(Xk, ksub["y_lnK"].to_numpy(), aux=_aux(ksub))
+    kfit = ksub[kmask]
+    Xk = kfit[FEATURE_SETS[HYBRID_K_FEATURES]].to_numpy()
+    hyb = R.HybridKModel().fit(Xk, kfit["y_lnK"].to_numpy(), aux=_aux(kfit))
+    report["K"]["train_excluded"] = ksub.loc[~kmask, "flex_identifier"].tolist()
     report["K"]["c_f"] = hyb.c_f
     report["K"]["gp_kernel"] = str(hyb.gp[-1].kernel_)
-    r_full = ksub["y_lnK"].to_numpy() - ksub["ln_K_theory"].to_numpy() - np.array([hyb.ln_cf[f] for f in ksub.fuel])
+    r_full = kfit["y_lnK"].to_numpy() - kfit["ln_K_theory"].to_numpy() - np.array([hyb.ln_cf[f] for f in kfit.fuel])
     pi = permutation_importance(hyb.gp, Xk, r_full, n_repeats=20, random_state=R.SEED, scoring="neg_root_mean_squared_error")
-    report["K"]["residual_permutation_importance_in_sample"] = dict(zip(FEATURE_SETS["K_hybrid_residual"],
+    report["K"]["residual_permutation_importance_in_sample"] = dict(zip(FEATURE_SETS[HYBRID_K_FEATURES],
                                                                        np.round(pi.importances_mean, 4).tolist()))
     pdp = {}
     for feat in ("ln_d0_mm", "x_he", "x_co2", "x_o2"):
-        j = FEATURE_SETS["K_hybrid_residual"].index(feat)
+        j = FEATURE_SETS[HYBRID_K_FEATURES].index(feat)
         res = partial_dependence(hyb.gp, Xk, [j], grid_resolution=15, kind="average")
         pdp[feat] = {"grid": res["grid_values"][0].round(4).tolist(), "residual": res["average"][0].round(4).tolist()}
     report["K"]["partial_dependence_residual"] = pdp
-    joblib.dump({"model": hyb, "features": FEATURE_SETS["K_hybrid_residual"], **meta}, out_models / "K_hybrid.joblib")
+    joblib.dump({"model": hyb, "features": FEATURE_SETS[HYBRID_K_FEATURES], "train_excluded": sorted(K_TRAIN_EXCLUDE), **meta}, out_models / "K_hybrid.joblib")
 
     Xe = esub[FEATURE_SETS["ext_hybrid"]].to_numpy()
     lg = C.logistic().fit(Xe, ye)

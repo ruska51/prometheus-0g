@@ -33,8 +33,9 @@ def logistic(C: float = 1.0):
     return make_pipeline(StandardScaler(), LogisticRegression(C=C, class_weight="balanced", max_iter=5000))
 
 
-def boosting(features: list[str], monotonic: bool, seed: int = SEED):
-    cst = [EXTINCTION_DIRECTIONS.get(f, 0) for f in features] if monotonic else None
+def boosting(features: list[str], monotonic: bool, seed: int = SEED, directions: dict | None = None):
+    d = directions if directions is not None else EXTINCTION_DIRECTIONS
+    cst = [d.get(f, 0) for f in features] if monotonic else None
     return HistGradientBoostingClassifier(max_depth=3, learning_rate=0.05, max_iter=200, min_samples_leaf=10,
                                           l2_regularization=1.0, class_weight="balanced",
                                           monotonic_cst=cst, random_state=seed)

@@ -119,6 +119,10 @@ The constant part (H1, H2) is what the per-fuel calibration $c_f$ (FORMULAS.md s
 - Pressures 0.5-3 atm and O2 0.12-0.34 (FLEX range); outside, the NIST property cap (1500 K) and A7 dominate.
 - No textbook worked examples could be used for tests (Turns, Law, Glassman not accessible to Claude); tests check NIST data, the NASA source equations, limits and monotonicity instead.
 
+## 8a. Law & Williams (1972) fragments received 2026-11-14 12:43 (not yet used)
+
+Screenshots from Ruslan (transcription in RESEARCH_LOG.md, 12:43). Eq. (1) $k_0 = rac{8}{ho_F}rac{\lambda_1}{C_1}\ln(1+B)$ uses properties of an inner region (index 1), supporting H1; the definitions of $\lambda_1$, $C_1$ are not in the screenshots. Eq. (9), a 1-g correlation for alkanes, $k = k_0[1 + 0.533\,Gr^{0.52}][1 - 3.80	imes10^{-5}(d\,p^{0.84})^{-1.9}]$ ($d$ in cm, $p$ in atm), could replace the FORMULAS.md section 6 estimate for the Earth comparison; the extinction relation $E = R^0\ln[(d_a/d_b)^2(p_a/p_b)^{1.68}]/(1/T_{fa} - 1/T_{fb})$ could give an activation energy from FLEX extinction pairs (needed for a real Damköhler number). Both await Ruslan's decision.
+
 ## 9. References
 
 - Nayagam, V.; Dietrich, D. L.; Hicks, M. C.; Williams, F. A. "Methanol Droplet Combustion in Oxygen-Inert Environments in Microgravity", 5th US Combustion Meeting, paper 070HE-0303 (as printed in the paper footer), NTRS 20130014061, https://ntrs.nasa.gov/citations/20130014061 - Eqs. (1), (2), section 3.1.

@@ -124,3 +124,15 @@ URL: https://spinoff.nasa.gov/node/9918 (accessed 2026-11-14)
 ## 2026-11-14 ~12:17 | Stage 3: FLEX CSV vs NASA/TP-2015-216046 Table IX
 - Where: TP PDF (NTRS 20150023456), pages 20-27 rendered and read; pdfplumber word coordinates for all rows.
 - Found: 0 value differences in 3288 cells; TP skips FLEX-156, -213, -228 (CSV renumbered); TP-only tests FLEX-216 N03H201 and FLEX-230 H01H103; all CSV blanks are en dashes in the TP. Details in DATA_QUALITY.md section 3.
+
+## 2026-11-14 12:43 | Stage 4: Law & Williams (1972) fragments supplied by Ruslan
+- Source: screenshots sent by Ruslan in chat, taken from Law & Williams, Combust. Flame 19 (1972) 393-405 (DOI 10.1016/0010-2180(72)90009-0), per ADR-023 request. Low image quality; transcription below, uncertain parts marked [?].
+- Eq. (1): k0 = (8/rho_F) (lambda_1 / C_1) ln(1 + B). Subscript 1 = properties of an inner region (the definitions of lambda_1, C_1 and B are not in the screenshots).
+- Eq. (2): Damköhler number D_f = delta^2 rho_f^(l-1) B_f / (D_Of W_O^(m-1) W_F^n) exp(-E / (R0 T_f)) [exponents partly unreadable].
+- D_1 = d^2 rho_inf^(l-1) B_inf / (4 D_Oinf W_O^(m-1) W_F^n) (a + b W_F / W_O) [?].
+- Convection factors: f_A = A (d^3 p^2)^n [?]; f_B = A_1 (Gr)^n1; forced convection m = m0 (1 + 0.276 Re^(1/2) Sc^(1/3)), f_C = 0.276 Re^(1/2).
+- Eq. (8): k = k0 [1 + A_1 Gr^n1][1 - A_2 (d p^n3)^(-n2)], constants fitted.
+- Eq. (9): k = k0 [1 + 0.533 Gr^0.52][1 - 3.80e-5 (d p^0.84)^(-1.9)], d in cm, p in atm.
+- Eq. (10) (T_inf = 293 K, small pressure dependence of mu and T_f neglected): k = k0 [1 + 13.0 (d^3 p^2)^0.52][1 - 3.80e-5 (d p^0.84)^(-1.9)].
+- Activation energy from two extinction points a, b: E = R0 ln[(d_a/d_b)^2 (p_a/p_b)^1.68] / (1/T_fa - 1/T_fb).
+- Conclusion: confirms that the burning-rate formula uses inner-region properties (lambda_1, C_1), consistent with hypothesis H1; the recipe values themselves are still missing. Eq. (9) is a fitted 1-g alkane correlation (alternative to the Nu = 2 + 0.6 Gr^1/4 Pr^1/3 estimate). Not implemented yet (Ruslan's decision needed).

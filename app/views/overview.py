@@ -45,7 +45,7 @@ for col, i in zip(cols, top):
         st.caption("Action: " + i["action"])
 
 b1, b2 = st.columns(2)
-b1.page_link("pages/scenario.py", label="Try the Moon-base scenario", icon=":material/science:")
-b2.page_link("pages/validation.py", label="See how we validated", icon=":material/fact_check:")
+b1.page_link("views/scenario.py", label="Try the Moon-base scenario", icon=":material/science:")
+b2.page_link("views/validation.py", label="See how we validated", icon=":material/fact_check:")
 st.caption("Team The Catalyst - NASA Space Apps Challenge 2026, challenge 'Flame in Freefall'. Data: NASA PSI (CC0), NASA NTRS, NIST. "
            "No NASA endorsement implied.")

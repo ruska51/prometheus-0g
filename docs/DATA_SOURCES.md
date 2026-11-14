@@ -86,3 +86,11 @@ Not in PSI Combustion Science: SoFIE (NTRS presentation 20200000361 only), PSI-1
 | Auxiliary | PSI-159 ACME CFI-G | `PSI-159_Experimental table_CFI-G_Normal Flames.csv`, `PSI-159_Experimental table_CFI-G_Inverse Flames.csv` | Ignition / self-extinction map vs O2 and pressure (NASA data + Tad/Zst), high-O2 evidence for Q5 |
 | If time remains | PSI-25 BASS-II | `PSI-25_Experimental table_BASS-II.csv` (+ TM-BASS-II tables) | O2 consumption and CO/CO2 products |
 | Catalog only | all other investigations above | their Experimental Tables + records | M1 catalog: conditions, number of tests, ranking |
+
+## 5. Visualisation references (flame animation, ADR-035)
+| Source | Used for | Access |
+|---|---|---|
+| Wyman C., Sloan P.-P., Shirley P. "Simple Analytic Approximations to the CIE XYZ Color Matching Functions", Journal of Computer Graphics Techniques 2(2), 2013 | colour of a blackbody at T_f (soot glow), `fif.insights.flame_sim.blackbody_srgb` | open access, 2026-11-14 |
+| IEC 61966-2-1 sRGB (XYZ -> linear sRGB matrix and transfer curve) | same | standard, 2026-11-14 |
+| CODATA / SI 2019 exact constants h, c, k | Planck's law | 2026-11-14 |
+| NTRS 20130014061 section 3.2 | flame-size caveat | NTRS, 2026-11-14 |

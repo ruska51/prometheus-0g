@@ -13,3 +13,4 @@
 | 2026-11-14 | 6 | Claude Code (Anthropic, Claude Opus) | Validation code, variant selection, reliability rule, generated VALIDATION.md | Ruslan Sharafutdinov (ADR-030..032) |
 | 2026-11-14 | 7 | Claude Code (Anthropic, Claude Opus) | Insight functions, ranking, INSIGHTS.md generator, insight tests | Ruslan Sharafutdinov (ADR-033: catalog, formula, wording) |
 | 2026-11-14 | 8 | Claude Code (Anthropic, Claude Opus) | Streamlit dashboard code, page texts (English), screenshots and visual fixes; no AI-generated images | Ruslan Sharafutdinov (ADR-034: structure, style, headline, ranking) |
+| 2026-11-14 | 8+ | Claude Code (Anthropic, Claude Opus) | Flame-animation code (package inputs + canvas drawing); the drawing is procedural code, not an AI-generated image | Ruslan Sharafutdinov (ADR-035) |

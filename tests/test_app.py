@@ -16,7 +16,7 @@ def _run(page: str) -> AppTest:
     at = AppTest.from_file(str(APP / "main.py"), default_timeout=180)
     at.run()
     if page != "overview":
-        at.switch_page(f"pages/{page}.py")
+        at.switch_page(f"views/{page}.py")
         at.run()
     return at
 

@@ -1,6 +1,6 @@
 # UI Specification - Prometheus-0g dashboard
 
-Stage 8 (2026-11-14), approved by Ruslan (ADR-034): structure and order as below, style B, headline "Prometheus-0g - Will it burn on the Moon?". Implemented in app/; screenshots in docs/figures/ui/. Streamlit (ADR-001), multipage (`st.navigation`). The app only calls the `fif` package and reads generated artefacts (`docs/insights.json`, `docs/validation_results.json`, `models/*.joblib`, `data/processed/*.csv`); no physics in page code. Personas: P1 cabin materials engineer, P2 crew-safety specialist / mission planner, P3 combustion researcher (ADR-008).
+Stage 8 (2026-11-14), approved by Ruslan (ADR-034): structure and order as below, style B, headline "Prometheus-0g - Will it burn on the Moon?". Implemented in app/ (pages in app/views/); screenshots in docs/figures/ui/. Streamlit (ADR-001), multipage (`st.navigation`). The app only calls the `fif` package and reads generated artefacts (`docs/insights.json`, `docs/validation_results.json`, `models/*.joblib`, `data/processed/*.csv`); no physics in page code. Personas: P1 cabin materials engineer, P2 crew-safety specialist / mission planner, P3 combustion researcher (ADR-008).
 
 Evidence badges everywhere: `NASA data` / `model` / `physics theory` / `NASA literature` / `NASA history` / `NASA spinoff`; reliability badges: `in range` / `extrapolation` / `unreliable` (ADR-031).
 
@@ -24,6 +24,7 @@ Evidence badges everywhere: `NASA data` / `model` / `physics theory` / `NASA lit
 - Users: P1, P2.
 - Components: presets (ISS air, Moon base, spacesuit, custom); inputs fuel, O2, pressure (atm and psi), diluent fraction (CO2 or He), droplet size; outputs: burning-rate constant from physics (Law & Williams) and hybrid with 95 % band, ratio vs ISS air, P(extinction) trend, reliability badge with reasons, "Earth vs ISS" factor (labelled physics theory, extrapolated); the FLEX tests nearest to the input.
 - 10-second message: "A Moon-base atmosphere burns about a third faster than ISS air - and the tool tells you how far it is from tested conditions."
+- "See it burn" window (ADR-035): two synchronized canvas panels - left = the selected atmosphere in microgravity, right = a selectable comparison (ISS air, Earth sea-level air at 1 g, Moon base, spacesuit, or the user's settings at 1 g). Real-time playback (1x / 2x / 4x, pause, replay). Shown values come from `fif.insights.flame_sim`: droplet diameter by the d^2-law, burn time, flame-out with unburned fraction (inside tested conditions only), flame temperature, soot colour (blackbody at T_f), theoretical flame size on a common relative scale with the NASA caveat; 1 g flame shape, flicker and sparks are labelled illustrative.
 
 ### 4. Risk map
 - Goal: visual overview of the O2 x pressure space.

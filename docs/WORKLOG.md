@@ -110,3 +110,7 @@ Open items:
 2026-11-14 14:24-14:30 | 8 | Screenshots via Playwright + Edge (desktop 1400 px, phone 390 px), reviewed; fixed truncated metric labels, pressure rounding, map overlay (grey veil instead of markers), clipped phone label, table headers, full-height capture | scripts/screenshots.py, docs/figures/ui/ | stage 9-12
 2026-11-14 14:30 | 8 | Docs (UI_SPEC final, ARCHITECTURE app layer, AI_USAGE) | docs/* | -
 - Stage 8 duration: 14:17-14:30 (clock), budget 150 min.
+2026-11-14 14:39-14:44 | 8+ | Animation inputs in the package: d^2-law series, Earth K x (1 + f_B), extinction diameter (GP, in range only), standoff, blackbody soot colour | src/fif/insights/flame_sim.py | canvas
+2026-11-14 14:44-14:50 | 8+ | Canvas animation (two synchronized panels, play/replay/speed), wired into the scenario page with a comparison selector; verified the flame-size caveat in NTRS 20130014061 section 3.2 | app/flame_view.py, app/common.py, app/views/scenario.py | screenshots
+2026-11-14 14:50-14:53 | 8+ | Fix: after a server restart the direct URL /scenario ran the page without main.py (file names in the sidebar, centred layout) because Streamlit auto-discovers an `app/pages/` folder; renamed to `app/views/` | app/main.py, app/views/, tests/test_app.py, docs/ARCHITECTURE.md | -
+2026-11-14 14:53-14:56 | 8+ | Tests (112 green), screenshots regenerated, docs (ADR-035, UI_SPEC, AI_USAGE, RESEARCH_LOG, DATA_SOURCES) | tests/test_flame_sim.py, docs/* | stage 9-12

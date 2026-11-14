@@ -346,3 +346,13 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Stage: 8
 - Decisions (Ruslan, all recommended options): 8 pages in the order Overview, Insights, Moon-base scenario, Risk map, Investigations, Data explorer, Validation, Method & sources (no AI assistant); style B "Clean science" (light, #1D4ED8 + #EA580C); headline "Prometheus-0g - Will it burn on the Moon?"; PSI investigation relevance = 0.5 fire-safety role + 0.3 usable data + 0.2 data size, stage tags from the challenge text.
 - Consequences: app/ (main.py + pages), .streamlit/config.toml, fif.insights.investigations, fif.insights.scenario; docs/UI_SPEC.md.
+
+## ADR-035: Burning-droplet animation window on the Moon-base scenario page
+- Date/time: 2026-11-14, answers before 14:39 (UTC+5; first file created 14:39)
+- Stage: 8 (extension after the stage report)
+- Context: Ruslan asked for "a small window that shows the flame, how it spreads and burns, based on the calculations".
+- Options: content - (A) follow the selected atmosphere preset + a selectable comparison atmosphere, (B) fixed ISS vs Moon; flame size - (A) relative theoretical scale with a caveat, (B) measured-size proxy, (C) fixed size; technique - (A) HTML/JS canvas with glow (numbers from Python), (B) Plotly frames, (C) static images.
+- Claude's recommendation: A / A (relative scale) / A (canvas).
+- Decision (Ruslan): left panel follows the Atmosphere preset (or custom settings), right panel any selectable atmosphere, e.g. Earth ("сравнение с любой другой атмосферой, например земли"); relative scale; "very beautiful, alive and roughly realistic".
+- Consequences: `fif.insights.flame_sim.simulate` computes everything shown (d^2-law series with K from the hybrid model, physics-only K when the model is withheld, K x (1 + f_B) at 1 g; flame diameter = theoretical r_f/r_s x d; extinction diameter from the d_ext GP only for reliability "in range" and P(extinction) >= 0.5; T_f; soot colour = blackbody at T_f). `app/flame_view.py` only interpolates and draws (canvas). Caveat on the page: quasi-steady theory "typically yields a value several times that of experimental measurements" for D_f/D (NTRS 20130014061, section 3.2); 1 g shape, flicker and sparks are illustrative. Tests: tests/test_flame_sim.py.
+- Sources: docs/PHYSICS.md sections 3-5; NTRS 20130014061; Wyman, Sloan & Shirley, JCGT 2(2) 2013 (CIE fit); IEC 61966-2-1 (sRGB).

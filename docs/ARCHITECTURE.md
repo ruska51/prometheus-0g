@@ -120,7 +120,7 @@ Command: `.venv/Scripts/python scripts/train_models.py` (~45 s). Details: docs/M
 flowchart LR
     G["generated artefacts<br/>docs/insights.json, docs/validation_results.json,<br/>models/*.joblib, data/processed/*.csv"] --> C["app/common.py<br/>st.cache_data loaders, badges"]
     P["fif.insights.scenario / investigations<br/>(predict, risk_grid, ranked_investigations)"] --> C
-    C --> PG["app/pages/*.py<br/>Overview, Insights, Moon-base scenario, Risk map,<br/>Investigations, Data explorer, Validation, Method"]
+    C --> PG["app/views/*.py<br/>Overview, Insights, Moon-base scenario, Risk map,<br/>Investigations, Data explorer, Validation, Method"]
     M["app/main.py<br/>st.navigation"] --> PG
 ```
 

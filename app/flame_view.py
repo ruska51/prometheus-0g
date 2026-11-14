@@ -73,7 +73,7 @@ function layout(){
 layout(); window.addEventListener('resize',layout);
 
 // common scale: largest flame extent of both panels fits the window (relative theoretical size)
-const EARTH_UP=2.3, EARTH_DN=0.55, EARTH_HW=0.8;
+const EARTH_UP=2.7, EARTH_DN=0.38, EARTH_HW=0.62;
 function scalePx(v){
   let need=0; P.forEach(p=>{const R=p.series.flame_d_mm[0]/2; const S=shp(p); need=Math.max(need, p.gravity? Math.max(R*(S.up+S.dn)*1.05, R*2.5) : R*2.5);});
   return Math.min(v.H*0.86, v.W*0.95)/need;
@@ -131,19 +131,20 @@ function sphereFlame(c,v,x,y,R,I,t){
   c.globalCompositeOperation='lighter';
   const hc=p.sooty?soot:BLUE;
   let g=c.createRadialGradient(x,y,R*0.4,x,y,R*2.0);
-  g.addColorStop(0,rgba(hc,0)); g.addColorStop(0.28,rgba(hc,0.11*I)); g.addColorStop(1,rgba(hc,0));
+  g.addColorStop(0,rgba(hc,0)); g.addColorStop(0.28,rgba(hc,(p.sooty?0.11:0.06)*I)); g.addColorStop(1,rgba(hc,0));
   c.fillStyle=g; c.beginPath(); c.arc(x,y,R*2.0,0,6.283); c.fill();
-  ring(c,x,y,R,R*0.06,BLUE,(p.sooty?0.45:0.8)*I,t,0.012);
-  if(!p.sooty){ ring(c,x,y,R*0.9,R*0.2,VIOLET,0.22*I,t+3,0.02); ring(c,x,y,R*1.02,R*0.03,[200,215,255],0.35*I,t+1,0.01); }
+  ring(c,x,y,R,R*0.06,BLUE,(p.sooty?0.45:0.5)*I,t,0.012);
+  if(!p.sooty){ ring(c,x,y,R*0.9,R*0.2,VIOLET,0.1*I,t+3,0.02); ring(c,x,y,R*1.02,R*0.03,[200,215,255],0.16*I,t+1,0.01); }
   else {
-    const N=150, Rs=R*0.74;
+    const N=72, Rs=R*0.74;
+    ring(c,x,y,Rs,R*0.13,soot,0.38*I,t,0.01);
     for(let i=0;i<N;i++){
-      const a0=i/N*6.283, a1=(i+1.2)/N*6.283;
-      const n=fbm(Math.cos(a0)*2.2+t*0.22, Math.sin(a0)*2.2-t*0.18);
-      const r0=Rs*(0.92+0.08*n), th=R*(0.08+0.13*n);
-      const col=mix(soot,[255,250,225],(n-0.45)*1.6);
+      const a0=i/N*6.283, a1=(i+2.2)/N*6.283;
+      const n=fbm(Math.cos(a0)*1.5+t*0.18, Math.sin(a0)*1.5-t*0.15);
+      const r0=Rs*(0.94+0.06*n), th=R*(0.09+0.08*n);
+      const col=mix(soot,[255,248,220],(n-0.5)*1.4);
       const gg=c.createRadialGradient(x,y,Math.max(0,r0-th),x,y,r0+th);
-      gg.addColorStop(0,rgba(col,0)); gg.addColorStop(0.5,rgba(col,(0.3+0.8*n)*I)); gg.addColorStop(1,rgba(col,0));
+      gg.addColorStop(0,rgba(col,0)); gg.addColorStop(0.5,rgba(col,(0.12+0.38*n)*I)); gg.addColorStop(1,rgba(col,0));
       c.fillStyle=gg; c.beginPath(); c.arc(x,y,r0+th,a0,a1); c.arc(x,y,Math.max(0,r0-th),a1,a0,true); c.closePath(); c.fill();
     }
     v.sparks.forEach(s=>{const ph=(s.ph+t*s.sp*0.12)%1; const rr=R*(s.rr+0.3*ph); const an=s.a+t*0.04;
@@ -152,43 +153,63 @@ function sphereFlame(c,v,x,y,R,I,t){
 }
 // buoyant shape: e = f_B(g)/f_B(1 g) from Python (0 = sphere, 1 = Earth); shape itself is illustrative
 function shp(p){const e=p.shape_e||0; return {e, up:1+(EARTH_UP-1)*e, dn:1-(1-EARTH_DN)*e, hw:1-(1-EARTH_HW)*e};}
-// gravity: flame built from stacked soft layers - blue base, white-yellow luminous core (sooty fuel), orange tip,
-// flicker and sway growing with gravity
-function buoyantFlame(c,v,x,y,R,I,t){
-  const p=v.p, S=shp(p), e=S.e, f=Math.sqrt(Math.max(e,0.01)), soot=p.flame_rgb;
-  c.globalCompositeOperation='lighter';
-  const Hh=R*(S.up+S.dn), base=y+R*S.dn;
-  const tipJ=1+0.18*e*(fbm(t*2.4,1.3)-0.5)*2, N=48;
-  const gc=p.sooty?soot:BLUE;
-  let g=c.createRadialGradient(x,y-Hh*0.25,R*0.2,x,y-Hh*0.25,Hh*0.95);
-  g.addColorStop(0,rgba(gc,0.15*I)); g.addColorStop(1,rgba(gc,0)); c.fillStyle=g; c.fillRect(x-Hh*1.2,y-Hh*1.5,Hh*2.4,Hh*2.6);
-  for(let k=0;k<N;k++){
-    const u=k/(N-1), yy=base-u*Hh*tipJ;
-    const prof=Math.pow(Math.sin(Math.PI*Math.min(1,0.2+u*0.88)),0.75)*Math.pow(1-u,0.32);
-    const w=R*S.hw*(0.3+0.9*prof)*(1-0.3*e*u);
-    const sway=e*R*0.25*Math.pow(u,1.6)*(fbm(u*2.6-t*1.7*f,t*0.6)-0.5)*2;
-    let col,a;
-    if(p.sooty){
-      if(u<0.15){col=mix(BLUE,[140,170,255],u/0.15);a=0.34;}
-      else if(u<0.55){col=mix([255,240,205],soot,(u-0.15)/0.4);a=0.3;}
-      else {col=mix(soot,[225,85,20],(u-0.55)/0.45);a=0.32*(1-Math.pow((u-0.55)/0.45,1.6));}
-    } else {col=mix(BLUE,VIOLET,u*0.7);a=0.13*(1-Math.pow(u,1.8));}
-    a*=I*(0.8+0.4*fbm(u*4.5-t*3*f,k*0.37))*(1-0.45*(1-e)*u);
-    const rx=Math.max(1,w*0.58), ry=Hh/N*2.8, cx=x+sway;
-    c.save(); c.translate(cx,yy); c.scale(1,ry/rx);
-    const gg=c.createRadialGradient(0,0,0,0,0,rx);
-    if(p.sooty){gg.addColorStop(0,rgba(col,a)); gg.addColorStop(0.65,rgba(col,a*0.55)); gg.addColorStop(1,rgba(col,0));}
-    else {gg.addColorStop(0,rgba(col,a*0.12)); gg.addColorStop(0.78,rgba(col,a)); gg.addColorStop(1,rgba(col,0));}
-    c.fillStyle=gg; c.beginPath(); c.arc(0,0,rx,0,6.283); c.fill(); c.restore();
+// gravity: a hollow flame envelope around the droplet (illustrative shape; size and colour from Python). The thin
+// blue reaction sheet passes just below the droplet and stretches upward; inside it a dark fuel-vapour core.
+// Methanol: almost only the faint blue sheet. Heptane: luminous yellow soot inside the upper envelope, orange tip.
+function contour(x,y,R,S,t,scale,dy){
+  const pts=[], f=Math.sqrt(Math.max(S.e,0.01));
+  for(let i=0;i<=150;i++){
+    const ph=i/150*6.283, u=Math.pow((1+Math.cos(ph))/2,2.4);
+    const fl=S.e*0.26*(fbm(u*2.5-t*2.3*f,0.7)-0.5)*u;
+    const rr=R*scale*(S.dn+(S.up-S.dn)*u*(1+fl));
+    const sway=R*0.2*S.e*Math.pow(u,1.8)*(fbm(t*1.2*f,u*1.8)-0.5)*2;
+    pts.push([x+rr*Math.sin(ph)*S.hw*(1-0.62*S.e*Math.pow(u,0.75))+sway, y+dy-rr*Math.cos(ph)]);
   }
-  if(p.sooty){ // fuel-rich dark zone around the droplet
-    c.globalCompositeOperation='destination-out';
-    const dg=c.createRadialGradient(x,y-R*0.12,0,x,y-R*0.12,R*0.58);
-    dg.addColorStop(0,'rgba(0,0,0,0.8)'); dg.addColorStop(1,'rgba(0,0,0,0)'); c.fillStyle=dg; c.fillRect(x-R,y-R,2*R,2*R);
+  return pts;
+}
+function pathOf(c,pts){c.beginPath(); pts.forEach((q,i)=>i?c.lineTo(q[0],q[1]):c.moveTo(q[0],q[1])); c.closePath();}
+function buoyantFlame(c,v,x,y,R,I,t){
+  const p=v.p, S=shp(p), soot=p.flame_rgb, e=S.e;
+  c.globalCompositeOperation='lighter';
+  const top=y-R*S.up*1.1, bot=y+R*S.dn;
+  const outer=contour(x,y,R,S,t,1,0);
+  const hc=p.sooty?soot:BLUE;
+  let g=c.createRadialGradient(x,y-R*S.up*0.35,R*0.2,x,y-R*S.up*0.35,R*(S.up+S.dn));
+  g.addColorStop(0,rgba(hc,(p.sooty?0.12:0.05)*I)); g.addColorStop(1,rgba(hc,0));
+  c.fillStyle=g; c.fillRect(x-R*3,top-R,R*6,R*(S.up+S.dn)+2*R);
+  if(p.sooty){ // luminous soot inside the upper part of the envelope
+    const inner=contour(x,y,R,S,t+0.12,0.84,-R*0.06);
+    c.save(); pathOf(c,inner); c.clip();
+    const lg=c.createLinearGradient(0,y+R*0.1,0,top);
+    lg.addColorStop(0,rgba(soot,0));
+    lg.addColorStop(0.16,rgba(mix([255,232,185],soot,0.25),0.42*I));
+    lg.addColorStop(0.5,rgba(soot,0.5*I));
+    lg.addColorStop(0.82,rgba(mix(soot,[230,95,25],0.75),0.38*I));
+    lg.addColorStop(1,rgba([200,60,20],0));
+    c.fillStyle=lg; c.fillRect(x-R*3,top-R,R*6,R*(S.up+S.dn)+2*R);
+    c.restore();
+    c.globalCompositeOperation='destination-out'; // dark fuel-vapour core around the droplet
+    const dg=c.createRadialGradient(x,y,0,x,y,R*0.5);
+    dg.addColorStop(0,'rgba(0,0,0,0.85)'); dg.addColorStop(1,'rgba(0,0,0,0)'); c.fillStyle=dg; c.fillRect(x-R,y-R,2*R,2*R);
     c.globalCompositeOperation='lighter';
-    if(e>0.05) v.sparks.forEach(s=>{const ph=(s.ph+t*s.sp*0.5*f)%1;
-      const px=x+R*0.7*(fbm(s.a+ph*2,t*0.3)-0.5)*2*ph, py=base-Hh*(0.45+ph*0.95);
-      c.fillStyle=rgba([255,195,95],(1-ph)*0.6*I); c.beginPath(); c.arc(px,py,Math.max(0.6,R*0.017),0,6.283); c.fill();});
+  } else { // faint hot-gas glow inside a methanol flame
+    pathOf(c,outer);
+    const ig=c.createLinearGradient(0,bot,0,top);
+    ig.addColorStop(0,rgba(BLUE,0.07*I)); ig.addColorStop(0.6,rgba(VIOLET,0.04*I)); ig.addColorStop(1,rgba(VIOLET,0));
+    c.fillStyle=ig; c.fill();
+  }
+  // thin blue reaction sheet: strongest at the base, fading upward (hidden by soot light in heptane's upper part)
+  const sg=c.createLinearGradient(0,bot,0,top), sa=(p.sooty?0.55:0.6)*I;
+  sg.addColorStop(0,rgba(BLUE,sa)); sg.addColorStop(0.3,rgba(BLUE,sa*0.75));
+  sg.addColorStop(p.sooty?0.55:0.75,rgba(p.sooty?BLUE:VIOLET,(p.sooty?0.05:0.28)*sa)); sg.addColorStop(1,rgba(VIOLET,0));
+  c.lineJoin='round'; pathOf(c,outer); c.strokeStyle=sg;
+  c.lineWidth=Math.max(2,R*0.15); c.globalAlpha=0.3; c.stroke();
+  c.lineWidth=Math.max(1,R*0.04); c.globalAlpha=1; c.stroke();
+  if(p.sooty&&e>0.05){ // a few embers leaving the tip
+    const f=Math.sqrt(e);
+    v.sparks.slice(0,18).forEach(s=>{const ph=(s.ph+t*s.sp*0.45*f)%1;
+      const px=x+R*0.35*(fbm(s.a+ph*2,t*0.3)-0.5)*2*ph, py=y-R*S.up*(0.85+ph*0.6);
+      c.fillStyle=rgba([255,190,95],(1-ph)*0.55*I); c.beginPath(); c.arc(px,py,Math.max(0.6,R*0.014),0,6.283); c.fill();});
   }
 }
 function smoke(c,x,y,R,age,gravity){

@@ -50,6 +50,7 @@ def test_citations_are_checked_against_the_context():
     assert r["unknown_citations"] == ["R:99999#1"] and not r["uncited"]
     assert ask("anything", lambda s, p: "No citations here.")["uncited"]
     assert cited_ids("a [D:core] b [D:core] [R:20150023456#3]") == ["D:core", "R:20150023456#3"]
+    assert cited_ids("x [R:1#0, R:1#1] [95 % CI] [D:a; D:b]") == ["R:1#0", "R:1#1", "D:a", "D:b"]
 
 
 def test_api_key_only_from_secrets_or_environment(monkeypatch):

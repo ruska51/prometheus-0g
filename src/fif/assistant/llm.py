@@ -20,7 +20,8 @@ DEFAULT_MODEL = "auto"
 MAX_QUESTION_CHARS = 600
 MAX_OUTPUT_TOKENS = 4096  # room for model-internal thinking; the prompt limits answers to 180 words
 EXCLUDE = ("image", "tts", "audio", "live", "embedding", "robotics", "computer", "learnlm", "gemma", "veo", "imagen")
-CITE = re.compile(r"\[((?:D|R):[^\[\]\s,;]+)\]")
+CITE = re.compile(r"\[([^\[\]]{3,400})\]")  # one bracket may hold several ids: [R:1#0, R:1#1]
+CITE_ID = re.compile(r"^(?:D|R):\S+$")
 
 SYSTEM = """You are the "Ask the data" assistant of Prometheus-0g, a fire-safety dashboard built on NASA microgravity
 combustion data. Rules, in order of priority:
@@ -45,7 +46,8 @@ def build_prompt(question: str, blocks: list[Block]) -> str:
 
 
 def cited_ids(text: str) -> list[str]:
-    return list(dict.fromkeys(CITE.findall(text)))
+    ids = [p.strip() for grp in CITE.findall(text) for p in re.split(r"[,;]", grp)]
+    return list(dict.fromkeys(i for i in ids if CITE_ID.match(i)))
 
 
 def api_key(secrets: dict | None = None) -> str | None:

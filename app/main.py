@@ -14,6 +14,33 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+
+def _refresh_code() -> None:
+    """Streamlit reruns this script and the pages on every interaction but does not reload modules outside app/views
+    (the fif package in src/, app helpers). After a deploy (git pull on Streamlit Cloud) a running server would keep the
+    old modules and stale cached results. When any source file is newer than what this process loaded, reload the
+    modules (dependencies first) and clear the caches."""
+    import importlib
+
+    here = Path(__file__).resolve()
+    files = [*(here.parents[1] / "src" / "fif").rglob("*.py"), *here.parent.glob("*.py")]
+    stamp = max(f.stat().st_mtime for f in files)
+    previous = getattr(sys, "_prometheus_code_stamp", None)
+    sys._prometheus_code_stamp = stamp
+    if previous is None or previous == stamp:  # first run of this process, or nothing changed
+        return
+    names = [n for n in list(sys.modules) if n == "fif" or n.startswith("fif.") or n in ("i18n", "common", "flame_view")]
+    for n in reversed(names):  # sys.modules keeps import order: reversed = dependencies before their importers
+        try:
+            importlib.reload(sys.modules[n])
+        except Exception:  # a module that cannot be reloaded keeps its current version
+            pass
+    st.cache_data.clear()
+    st.cache_resource.clear()
+
+
+_refresh_code()
+
 from i18n import language_selector, t  # noqa: E402
 
 st.set_page_config(page_title=t("Prometheus-0g - Will it burn on the Moon?"), page_icon=":fire:", layout="wide")

@@ -476,6 +476,7 @@ RU = {
     "The assistant is not enabled on this server: it needs a Google Gemini API key (GEMINI_API_KEY in the environment or in Streamlit secrets). Everything else in the dashboard works without it.": "Ассистент на этом сервере не включён: нужен ключ Google Gemini API (GEMINI_API_KEY в переменных окружения или в Streamlit secrets). Всё остальное в дашборде работает без него.",
     "This answer has no source citations - treat it with caution.": "В этом ответе нет ссылок на источники - относитесь к нему осторожно.",
     "Sources ({n})": "Источники ({n})",
+    "Source excerpts ({n})": "Фрагменты источников ({n})",
     "open report": "открыть отчёт",
     "Ask about NASA fire data...": "Спросите о данных NASA по горению...",
     "Question limit for this session reached": "Лимит вопросов в этой сессии исчерпан",

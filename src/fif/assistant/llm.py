@@ -41,7 +41,9 @@ combustion data. Rules, in order of priority:
    the same fuel, or our model's prediction for a 3 mm droplet), give them and state their conditions.
 7. Copy every number together with its own label exactly as in the context (median, percentile, range, number of
    tests, confidence interval); never move a number to a different label.
-8. Be concise: at most 180 words. Answer in the language of the question (English or Russian); keep block ids,
+8. Lead with the answer: the first sentence gives the direct answer with its key numbers (value, unit, comparison).
+   Then at most 3-4 short bullet points with further numbers. No introductions, no general background.
+9. Be concise: at most 120 words. Answer in the language of the question (English or Russian); keep block ids,
    chemical formulas and units as they are."""
 
 
@@ -144,15 +146,44 @@ def ask(question: str, generate: Callable[[str, str], str], k: int = 12) -> dict
     text = generate(SYSTEM, build_prompt(question, blocks)).strip()
     known = {b.id: b for b in [CORE_FACTS, *blocks]}
     ids = cited_ids(text)
-    sources = [known[i] for i in ids if i in known]
+    display, order = render_citations(text, set(known))
+    sources = [known[i] for i in order]  # numbered 1, 2, ... as in the display text
     return {
         "answer": text,
+        "display": display,
         "sources": sources,
         "unsupported_numbers": unsupported_numbers(text, sources),
         "unknown_citations": [i for i in ids if i not in known],
         "uncited": not ids,
         "retrieved": [b.id for b in blocks],
     }
+
+
+SUP = str.maketrans("0123456789,", "⁰¹²³⁴⁵⁶⁷⁸⁹˒")
+
+
+def render_citations(text: str, known: set[str]) -> tuple[str, list[str]]:
+    """Replace citation brackets by superscript numbers (1, 2, ... in order of first use) for display; the numbered
+    source list is the returned id order. Brackets that are not citations (e.g. "[95 % CI]") are kept; ids not in
+    ``known`` are dropped from the text (they are reported separately by ``ask``)."""
+    order: list[str] = []
+
+    def sub(m: re.Match) -> str:
+        parts = [p.strip() for p in re.split(r"[,;]", m.group(1))]
+        if not parts or not all(CITE_ID.match(p) for p in parts):
+            return m.group(0)
+        nums = []
+        for p in parts:
+            if p in known:
+                if p not in order:
+                    order.append(p)
+                nums.append(str(order.index(p) + 1))
+        return ",".join(dict.fromkeys(nums)).translate(SUP)
+
+    out = CITE.sub(sub, text)
+    out = re.sub(r"[ \t]+([⁰¹²³⁴⁵⁶⁷⁸⁹])", r"\1", out)  # "fact [D:x]." -> "fact¹."
+    out = re.sub(r"[ \t]+([.,;:!?)])", r"\1", out)
+    return out, order
 
 
 NUM = re.compile(r"(?<![\w.])[-+]?\d+(?:[.,]\d+)?")

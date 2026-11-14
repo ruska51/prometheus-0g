@@ -39,3 +39,4 @@ images or video.
 | 2026-11-14 | post-9 | Claude Code (Anthropic, Claude Opus) | Overview headline-answer code and texts (EN/RU) | Ruslan Sharafutdinov (ADR-043) |
 | 2026-11-14 | 12 | Claude Code (Anthropic, Claude Opus) | README, submission texts, demo script and automated screen-recording script, flame shader | Ruslan Sharafutdinov (ADR-044; final texts to be read by Ruslan) |
 | 2026-11-14 | 12+ | Claude Code (Anthropic, Claude Opus) | 7-slide English presentation (texts, layout, validation bar chart drawn from docs numbers; images = app screenshots, no AI-generated images) | Ruslan Sharafutdinov (to review) |
+| 2026-11-14 | post-12 | Claude Code (Anthropic, Claude Opus) | Assistant retrieval/prompt/citation-display fix | Ruslan Sharafutdinov (ADR-045) |

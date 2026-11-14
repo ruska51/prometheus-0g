@@ -7,7 +7,16 @@ import streamlit as st
 from common import source_note
 from i18n import t
 
-from fif.assistant.llm import DEFAULT_MODEL, MAX_QUESTION_CHARS, _reason, api_key, ask, friendly_error, gemini_generate
+from fif.assistant.llm import (
+    DEFAULT_MODEL,
+    MAX_QUESTION_CHARS,
+    SUP,
+    _reason,
+    api_key,
+    ask,
+    friendly_error,
+    gemini_generate,
+)
 
 LIMIT = 10  # questions per browser session (protects the shared free-tier quota)
 
@@ -57,7 +66,7 @@ for turn in chat:
     with st.chat_message("user"):
         st.write(turn["q"])
     with st.chat_message("assistant"):
-        st.markdown(turn["text"])
+        st.markdown(turn.get("display") or turn["text"])
         if turn.get("uncited"):
             st.warning(t("This answer has no source citations - treat it with caution."))
         if turn.get("unsupported"):
@@ -68,10 +77,14 @@ for turn in chat:
                 )
             )
         if turn.get("sources"):
-            with st.expander(t("Sources ({n})", n=len(turn["sources"]))):
-                for s in turn["sources"]:
-                    link = f" - [{t('open report')}]({s['url']})" if s["url"] else ""
-                    st.markdown(f"**[{s['id']}]** {s['title']}{link}")
+            lines = []
+            for n, s in enumerate(turn["sources"], 1):
+                link = f" - [{t('open report')}]({s['url']})" if s["url"] else ""
+                lines.append(f"{str(n).translate(SUP)} {s['title']}{link}")
+            st.caption("  \n".join(lines))
+            with st.expander(t("Source excerpts ({n})", n=len(turn["sources"]))):
+                for n, s in enumerate(turn["sources"], 1):
+                    st.markdown(f"**{n}.** {s['title']} `{s['id']}`")
                     st.caption(s["text"][:700] + ("..." if len(s["text"]) > 700 else ""))
 
 left = LIMIT - len(chat)
@@ -98,6 +111,7 @@ if q:
                 {
                     "q": q,
                     "text": r["answer"] or t("No answer was returned."),
+                    "display": r["display"],
                     "uncited": r["uncited"],
                     "unsupported": r.get("unsupported_numbers", []),
                     "sources": [{"id": s.id, "title": s.title, "text": s.text, "url": s.url} for s in r["sources"]],

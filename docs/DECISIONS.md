@@ -425,3 +425,18 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Claude's recommendation: automatic video; Moon-base set.
 - Decision (Ruslan): video 30 s (recommended); Moon-base set (recommended); "finish by Sunday 10:00".
 - Consequences: scripts/make_demo_video.py (Playwright + Edge recording of https://prometheus-0g.streamlit.app, ffmpeg from imageio-ffmpeg, burned-in English subtitles, <= 30 s), docs/demo/prometheus-0g_demo.mp4 + subtitles.srt, docs/DEMO_SCRIPT.md; README rewritten for the jury; docs/SUBMISSION.md with every form field, counts and Ruslan's checklist; requirements matrix closed except SG-11 / TC-1 (Ruslan's actions). Flame drawing reworked after Ruslan's review to match NASA photo C-1998-485 (WebGL, laminar 1-g spindle, soft microgravity sphere) before recording.
+
+## ADR-045: Assistant answers lead with numbers; citation codes shown as superscript numbers
+- Date/time: 2026-11-14 20:22-20:30
+- Stage: post-12 (live-site review by Ruslan on a phone)
+- Context: a Russian question about burning on the Moon got a qualitative answer full of raw block ids
+  ([R:20240008623#5], [D:insight-P6]). Cause: the knowledge base had no block with the Overview headline comparison,
+  and BM25 ranked PSI records and report excerpts above the scenario rows, so the model had no Moon numbers to give.
+- Options: A) numbered citations + numbers first; B) keep the codes, smaller; C) other.
+- Claude's recommendation: A.
+- Decision (Ruslan): "I want it to give concrete information quickly instead of these codes - numbers and values."
+- Consequences: new blocks D:moon-answer-methanol / -heptane built from fif.insights.moon (same numbers as the
+  Overview), pinned first for any Moon/lunar question; prompt rule 8 "lead with the answer and its key numbers", limit
+  120 words; the page replaces citation brackets by superscript numbers with a numbered source list under the answer
+  (block ids stay in the excerpts expander; citation and number checks unchanged). Tests: 4 new.
+- Sources: src/fif/assistant/knowledge.py, src/fif/assistant/llm.py, app/views/assistant.py

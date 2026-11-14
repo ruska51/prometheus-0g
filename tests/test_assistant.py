@@ -112,3 +112,43 @@ def test_unsupported_numbers_flags_invented_values_only():
 def test_search_mixes_results_and_reports():
     ids = [b.id for b in kb.search("How was the droplet burning-rate constant determined in the FLEX experiment?")]
     assert any(i.startswith("D:") for i in ids) and any(i.startswith("R:") for i in ids)
+
+
+@pytest.mark.parametrize(
+    "q",
+    ["Чем горение на Луне отличается от горения на МКС?", "Will a fire burn faster on the Moon?", "lunar base fire"],
+)
+def test_moon_question_gets_the_headline_numbers(q):
+    ids = [b.id for b in kb.search(q)]
+    assert ids[:2] == ["D:moon-answer-methanol", "D:moon-answer-heptane"]
+
+
+def test_moon_block_numbers_match_the_overview():
+    from fif.insights.moon import moon_answer
+
+    b = next(b for b in kb.index()[0] if b.id == "D:moon-answer-methanol")
+    m = moon_answer("Methanol")
+    for v in (
+        f"{(m['k_ratio'] - 1) * 100:+.0f} %",
+        f"{m['burn_time_moon_s']:.1f} s",
+        f"{m['burn_time_iss_s']:.1f} s",
+        f"{m['self_ext_high_o2'] * 100:.0f} % of {m['n_high_o2']}",
+        f"{m['flame_temperature_moon_K']:.0f} K",
+    ):
+        assert v in b.text
+
+
+def test_citations_render_as_numbers_in_order_of_first_use():
+    from fif.assistant.llm import render_citations
+
+    text = "Faster [D:moon-answer-methanol]. Hotter [D:core, D:moon-answer-methanol]. CI [95 % CI] stays [R:9#9]."
+    out, order = render_citations(text, {"D:core", "D:moon-answer-methanol"})
+    assert out == "Faster¹. Hotter²˒¹. CI [95 % CI] stays."
+    assert order == ["D:moon-answer-methanol", "D:core"]
+    assert "D:" not in out and "R:" not in out
+
+
+def test_ask_returns_display_text_and_numbered_sources():
+    r = ask("Will it burn on the Moon?", lambda system, prompt: "Yes, +32 % [D:moon-answer-methanol].")
+    assert r["display"] == "Yes, +32 %¹." and [s.id for s in r["sources"]] == ["D:moon-answer-methanol"]
+    assert r["unsupported_numbers"] == []

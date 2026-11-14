@@ -319,7 +319,7 @@ def data_blocks() -> list[Block]:
             "data",
         )
     )
-    blocks += flex_stats_blocks(fx) + scenario_blocks()
+    blocks += flex_stats_blocks(fx) + scenario_blocks() + moon_blocks()
     return blocks
 
 
@@ -398,6 +398,37 @@ def scenario_blocks() -> list[Block]:
     return out
 
 
+def moon_blocks() -> list[Block]:
+    """The Overview headline answer "Will it burn on the Moon?" per fuel (fif.insights.moon), as one block each, so a
+    Moon question gets the comparison numbers, not only scenario rows or report excerpts."""
+    from fif.insights.moon import moon_answer
+
+    out = []
+    for fuel in ("Methanol", "Heptane"):
+        m = moon_answer(fuel)
+        lo, hi = ((x - 1) * 100 for x in m["k_ratio_band"])
+        dt = m["flame_temperature_moon_K"] - m["flame_temperature_iss_K"]
+        out.append(
+            Block(
+                f"D:moon-answer-{fuel.lower()}",
+                f"Will it burn on the Moon? Moon base vs ISS - how a fire differs (headline answer, 3 mm {fuel.lower()} droplet)",
+                "Yes - faster, hotter, and less likely to go out by itself. Planned Moon-base / rover air (30 % O2, 10.2 "
+                f"psi) compared with ISS cabin air (21 % O2, 14.7 psi), 3 mm {fuel.lower()} droplet. Burning rate "
+                f"{(m['k_ratio'] - 1) * 100:+.0f} % vs ISS air (95 % band {lo:+.0f} % to {hi:+.0f} %; our hybrid model; "
+                f"{m['status']}). Burn-out time: {m['burn_time_iss_s']:.1f} s in ISS air, {m['burn_time_moon_s']:.1f} s "
+                f"in Moon-base air in microgravity, down to {m['burn_time_lunar_surface_s']:.1f} s on the lunar surface "
+                f"at 1/6 g (physics upper bound; lunar-surface factor x{m['moon_factor']:.2f}). Flames that put "
+                f"themselves out (NASA FLEX measurements, N2 tests, both fuels): {m['self_ext_high_o2'] * 100:.0f} % of "
+                f"{m['n_high_o2']} tests at O2 >= 30 % vs {m['self_ext_low_o2'] * 100:.0f} % of {m['n_low_o2']} tests "
+                f"at O2 <= 21 %. Flame temperature: {m['flame_temperature_moon_K']:.0f} K vs "
+                f"{m['flame_temperature_iss_K']:.0f} K in ISS air ({dt:+.0f} K; equilibrium with dissociation, physics "
+                "theory). Solid materials: see insight P6 (NASA literature).",
+                "data",
+            )
+        )
+    return out
+
+
 CORE_FACTS = Block(
     "D:core",
     "What this tool covers (always read first)",
@@ -434,6 +465,10 @@ def search(query: str, k: int = 12, k1: float = 1.5, b: float = 0.75) -> list[Bl
         dl = sum(d.values())
         scores.append(sum(idf.get(w, 0.0) * d[w] * (k1 + 1) / (d[w] + k1 * (1 - b + b * dl / avg)) for w in q if w in d))
     order = [i for i in sorted(range(len(blocks)), key=lambda i: scores[i], reverse=True) if scores[i] > 0]
+    if {"moon", "lunar"} & set(q):  # a Moon question always gets the headline comparison first
+        pinned = [i for i, bl in enumerate(blocks) if bl.id.startswith("D:moon-answer-")]
+        order = pinned + [i for i in order if i not in pinned]
+        scores = [s + (1e6 if i in pinned else 0.0) for i, s in enumerate(scores)]
     data = [i for i in order if blocks[i].kind == "data"]
     rep = [i for i in order if blocks[i].kind == "report"]
     half = k // 2

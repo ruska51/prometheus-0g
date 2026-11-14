@@ -42,6 +42,8 @@ $$k = k_0(1 + f_B), \qquad f_B = 0.533\,Gr^{0.52}, \qquad Gr = \frac{g\,\rho_2^2
 
 with $\rho_2$, $\mu_2$ of the ambient gas at $T_2$ and $d = d_0$. **L&W fitted this for Gr <~ 1 (p. 403); FLEX droplets (1-4.7 mm) give Gr = 11.6 median at 1 g, so 256 of 274 rows are outside the fitted range** (`Gr_above_fit_range`): the Earth number is an extrapolation and must be labelled so. The earlier estimate $Nu = 2 + 0.6Gr^{1/4}Pr^{1/3}$ (FORMULAS.md section 6) is no longer used.
 
+**Partial gravity (ADR-036).** $Gr \propto g$, so at $g = \gamma g_0$: $k = k_0[1 + 0.533(\gamma\,Gr_{Earth})^{0.52}]$ (`buoyancy_factor`). On the lunar surface $\gamma = 1/6$ (NTRS 20250004015). We report the lunar rate as a range from $k_0$ (microgravity, data + model) to this value (theory): PSI has no partial-gravity data. For the Moon-base air and a 3 mm droplet $Gr(1/6\,g)$ = 0.69-0.76, inside the fitted range. This concerns droplet burning only; for solid materials NASA reports that flammability limits are widest near lunar gravity (NTRS 20210020516), which this model does not capture.
+
 ## 5. Extinction proxies (L3, ADR-022)
 
 - flame-standoff ratio (FORMULAS.md section 2): $r_f/r_s = \ln(1+B)/\ln(1 + Y_{O\infty}/\nu_s)$;

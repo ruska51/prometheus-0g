@@ -17,7 +17,7 @@ import pandas as pd
 from fif.data.catalog import REPO_ROOT
 from fif.models.features import K_TRAIN_EXCLUDE, conditions_table
 from fif.models.train import _aux
-from fif.physics.droplet import evaluate
+from fif.physics.droplet import G_MOON_RATIO, buoyancy_factor, evaluate
 from fif.validation.reliability import reliability
 
 from .base import Insight
@@ -229,6 +229,35 @@ def d4_microgravity_vs_earth() -> Insight:
         ["Law & Williams, Combust. Flame 19 (1972) Eq. (9); docs/PHYSICS.md section 4"], "low", extrapolation=True)
 
 
+def p5_lunar_surface_bound() -> Insight:
+    x = np.array([[MOON["x_o2"], 1 - MOON["x_o2"], 0.0, 0.0]] * 2)
+    r = evaluate(np.array(["methanol", "heptane"]), np.full(2, MOON["p_atm"] * 101325.0), x, d0_m=np.full(2, 3e-3))
+    fac = buoyancy_factor(r["Gr"].to_numpy(), G_MOON_RATIO)
+    gr = r["Gr"].to_numpy() * G_MOON_RATIO
+    return Insight(
+        "P5", "prevention", "On the lunar surface a droplet burns between its ISS and Earth rates",
+        f"Moon-base air (O2 0.30, 10.2 psi), 3 mm droplet at 1/6 g: the burning rate lies between the microgravity rate and "
+        f"{fac[0]:.2f}x (methanol) / {fac[1]:.2f}x (heptane) that rate (Law & Williams buoyancy correction, Gr = "
+        f"{gr[0]:.2f} / {gr[1]:.2f}, inside its fitted range Gr <= 1). Lower bound = microgravity; no partial-gravity data in PSI.",
+        "Size Moon-base fire response for a burning rate up to the upper bound, and treat ISS-derived burn times as the slow limit.",
+        "physics theory", 0, {"name": "K(1/6 g)/K(0 g) upper bound (heptane)", "value": float(fac[1]), "ci": None, "unit": "-",
+                              "log_effect": float(np.log(fac[1]))},
+        ["Law & Williams, Combust. Flame 19 (1972) Eq. (9); docs/PHYSICS.md section 4",
+         "NTRS 20250004015 (lunar gravity = 1/6 of Earth gravity)"], "low", extrapolation=True, related=["P2", "D4", "P6"])
+
+
+def p6_lunar_gravity_solids() -> Insight:
+    return Insight(
+        "P6", "prevention", "NASA: for solid materials, lunar gravity may be the most flammable condition",
+        "NASA Glenn reports that \"Lunar gravity is nearly the most flammable condition\" for solid materials (flame spread peaks "
+        "and the oxygen limit is lowest near lunar g), and a partial-g habitat fire is expected to be \"substantially worse than "
+        "in 0-g and potentially worse than even 1-g\". The FM2 experiment is to measure this on the Moon.",
+        "Do not assume a material that passes the 1-g screening test is safe in a Moon base; add margin until lunar data (FM2) exist.",
+        "NASA literature", 0, {"name": "-", "value": None, "ci": None, "unit": "-", "log_effect": None},
+        ["NTRS 20210020516 (Fire on the Moon, NASA GRC)", "NTRS 20260000646 (Ferkul et al., LPSC 2026)"], "medium",
+        related=["P5", "H1"])
+
+
 # ------------------------------------------------------------------------------------------- suppression
 
 def s1_co2_dilution() -> Insight:
@@ -316,6 +345,7 @@ def history_and_earth() -> list[Insight]:
 
 
 DATA_INSIGHTS = [p1_oxygen_speeds_burning, p2_moon_base_vs_iss, p3_low_pressure_does_not_help, p4_gas_flames_ignite_at_high_o2,
+                 p5_lunar_surface_bound, p6_lunar_gravity_solids,
                  d1_co_from_burning_solids, d2_cool_flames, d3_smoke_detection_data, d4_microgravity_vs_earth,
                  s1_co2_dilution, s2_helium_dilution, s3_less_oxygen_earlier_extinction, s4_high_o2_removes_self_extinction]
 

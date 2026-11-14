@@ -356,3 +356,25 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Decision (Ruslan): left panel follows the Atmosphere preset (or custom settings), right panel any selectable atmosphere, e.g. Earth ("сравнение с любой другой атмосферой, например земли"); relative scale; "very beautiful, alive and roughly realistic".
 - Consequences: `fif.insights.flame_sim.simulate` computes everything shown (d^2-law series with K from the hybrid model, physics-only K when the model is withheld, K x (1 + f_B) at 1 g; flame diameter = theoretical r_f/r_s x d; extinction diameter from the d_ext GP only for reliability "in range" and P(extinction) >= 0.5; T_f; soot colour = blackbody at T_f). `app/flame_view.py` only interpolates and draws (canvas). Caveat on the page: quasi-steady theory "typically yields a value several times that of experimental measurements" for D_f/D (NTRS 20130014061, section 3.2); 1 g shape, flicker and sparks are illustrative. Tests: tests/test_flame_sim.py.
 - Sources: docs/PHYSICS.md sections 3-5; NTRS 20130014061; Wyman, Sloan & Shirley, JCGT 2(2) 2013 (CIE fit); IEC 61966-2-1 (sRGB).
+
+## ADR-036: Lunar-surface (1/6 g) burning rate as a labelled bound
+- Date/time: 2026-11-14 ~15:20 (UTC+5)
+- Stage: post-8 stretch S2 (Q6), item 1 of Ruslan's list
+- Context: the Moon-base scenario used the microgravity rate, but a Moon base sits at lunar gravity; PSI has no partial-gravity data (challenge page).
+- Options: A) range: microgravity rate .. Law & Williams correction at g_Moon (physics theory) B) single L&W number C) text only.
+- Claude's recommendation: A.
+- Decision (Ruslan): A.
+- Consequences: `fif.physics.droplet.buoyancy_factor(Gr_Earth, g_ratio)` (Gr proportional to g), `G_MOON_RATIO = 1/6` (NTRS 20250004015); `predict` returns `moon_factor`, `moon_Gr`; scenario page metric "On the lunar surface (1/6 g)"; animation comparison "Moon base on the lunar surface (1/6 g)" (default when the Moon preset is selected) and "Your settings on the lunar surface"; insights P5 (physics theory, bound) and P6 (NASA literature: lunar g may be the most flammable condition for solids, NTRS 20210020516, 20260000646). For the Moon-base air and a 3 mm droplet Gr(1/6 g) = 0.69-0.76, inside the L&W fitted range (Gr <= 1), unlike Earth (Gr 4-5).
+- Sources: NTRS 20250004015, 20210020516, 20260000646; Law & Williams 1972 Eq. (9)
+
+## ADR-037: Investigation comparison matrix (S5) placement
+- Date/time: 2026-11-14 ~15:20 (UTC+5)
+- Stage: post-8 stretch S5, item 2
+- Options: A) "Compare" tab on the Investigations page B) separate page C) side-by-side picker of 2-3 investigations.
+- Claude's recommendation: A. Decision (Ruslan): A.
+
+## ADR-038: Hosting confirmed
+- Date/time: 2026-11-14 ~15:20 (UTC+5)
+- Context: Ruslan asked why Hugging Face for a NASA hackathon. NASA does not host projects; the form needs a public "Link to Final Project".
+- Options: A) HF Spaces (Claude deploys with Ruslan's write token) B) Streamlit Community Cloud (Ruslan clicks deploy) C) GitHub only.
+- Claude's recommendation: A. Decision (Ruslan): A (ADR-001 unchanged). Deploy brought forward (item 5).

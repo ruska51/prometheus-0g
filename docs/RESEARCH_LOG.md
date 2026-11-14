@@ -146,3 +146,9 @@ URL: https://spinoff.nasa.gov/node/9918 (accessed 2026-11-14)
 - Where: NTRS API, citation 20130014061 (Nayagam et al., "Methanol Droplet Combustion in Oxygen-Inert Environments in Microgravity", 5th US Combustion Meeting), full text.
 - Found (section 3.2): "The classical quasi-steady theory of droplet combustion predicts that the ratio of the flame diameter to the droplet diameter, Df/D, is a constant ... and it typically yields a value several times that of experimental measurements." Measured Df/D for methanol in Fig. 4: about 2-10.
 - Conclusion: the animation draws the theoretical r_f/r_s on a common relative scale and quotes this caveat on the page (ADR-035).
+
+## 2026-11-14 15:05-15:20 | Lunar gravity value and lunar flammability
+- NASA Moon Fact Sheet (nssdc.gsfc.nasa.gov) and science.nasa.gov: unreachable from this machine (timeouts / DNS), not bypassed.
+- NTRS search "lunar gravity" combustion flammability: 20250010653 (LUCI, rotating sounding rocket), 20240008623 / 20240015307 (FM2 posters), 20260000646 / 20260001966 (Ferkul et al., LPSC 2026), 20210020516 (Fire on the Moon), 20240015018 (compartment fire 1 g vs lunar g).
+- Found: NTRS 20250004015 (VIPER loop heat pipe): "lunar gravity is 1/6 of Earth gravity" -> G_MOON_RATIO. NTRS 20210020516: "Lunar gravity is nearly the most flammable condition"; O2 for flammability minimal near g_Moon; downward spread peaks in partial g (Sacksteder & T'ien 1994). NTRS 20260000646: partial-g habitat fire "substantially worse than in 0-g and potentially worse than even 1-g"; FM2 to burn four solid samples on the Moon (planned late 2026).
+- Conclusion: droplet burning rate at 1/6 g is bounded by microgravity and L&W at g_Moon (ADR-036); solids are a different question, reported as NASA literature (insight P6).

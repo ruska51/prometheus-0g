@@ -94,3 +94,10 @@ Not in PSI Combustion Science: SoFIE (NTRS presentation 20200000361 only), PSI-1
 | IEC 61966-2-1 sRGB (XYZ -> linear sRGB matrix and transfer curve) | same | standard, 2026-11-14 |
 | CODATA / SI 2019 exact constants h, c, k | Planck's law | 2026-11-14 |
 | NTRS 20130014061 section 3.2 | flame-size caveat | NTRS, 2026-11-14 |
+
+## 6. Partial gravity (ADR-036)
+| Source | Used for | Access |
+|---|---|---|
+| NTRS 20250004015, "Simulated Lunar Gravity Testing of VIPER Loop Heat Pipe" (NASA) | g_Moon / g_Earth = 1/6 | NTRS API, 2026-11-14 |
+| NTRS 20210020516, "Fire on the Moon: Solid Fuel Combustion Experiments" (NASA GRC) | insight P6 quote | NTRS API, 2026-11-14 |
+| NTRS 20260000646, Ferkul, Kralik, Liao, "Material Flammability at Lunar and Martian Gravity", LPSC 2026 | insight P6 quote, FM2 | NTRS API, 2026-11-14 |

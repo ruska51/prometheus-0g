@@ -23,7 +23,7 @@ def _flex():
 
 
 def test_all_insights_complete(insights):
-    assert len([i for i in insights.values() if i.stage in ("prevention", "detection", "suppression")]) == 12
+    assert len([i for i in insights.values() if i.stage in ("prevention", "detection", "suppression")]) == 14
     for i in insights.values():
         assert i.evidence_type in EVIDENCE_WEIGHTS
         assert i.title and i.finding and i.action and i.sources
@@ -92,3 +92,12 @@ def test_cabin_atmosphere_labels():
     assert st["Moon base / pressurized rover (planned)|Heptane"] == "extrapolation"
     assert st["Spacesuit|Methanol"] == "unreliable"
     assert t.loc[t["atmosphere"] == "Spacesuit", "K_hybrid_mm2_s"].isna().all()  # no model number when unreliable
+
+
+def test_lunar_bound_between_microgravity_and_earth(insights):
+    from fif.physics.droplet import G_MOON_RATIO, buoyancy_factor
+    p5 = insights["P5"]
+    assert p5.effect["value"] > 1.0 and p5.extrapolation
+    for gr in (0.1, 1.0, 10.0, 100.0):  # property: 1 < moon factor < earth factor for any Gr
+        assert 1.0 < float(buoyancy_factor(gr, G_MOON_RATIO)) < float(buoyancy_factor(gr, 1.0))
+    assert insights["P6"].evidence_type == "NASA literature" and insights["P6"].n_tests == 0

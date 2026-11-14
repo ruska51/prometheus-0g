@@ -1,5 +1,5 @@
 {
- "created_utc": "2026-11-14T09:15:52+00:00",
+ "created_utc": "2026-11-14T10:29:37+00:00",
  "ranking": "A_evidence_log_n",
  "ranked": [
   {
@@ -297,6 +297,61 @@
     "H3"
    ],
    "score": 0.6592
+  },
+  {
+   "id": "P5",
+   "stage": "prevention",
+   "title": "On the lunar surface a droplet burns between its ISS and Earth rates",
+   "finding": "Moon-base air (O2 0.30, 10.2 psi), 3 mm droplet at 1/6 g: the burning rate lies between the microgravity rate and 1.46x (methanol) / 1.44x (heptane) that rate (Law & Williams buoyancy correction, Gr = 0.76 / 0.69, inside its fitted range Gr <= 1). Lower bound = microgravity; no partial-gravity data in PSI.",
+   "action": "Size Moon-base fire response for a burning rate up to the upper bound, and treat ISS-derived burn times as the slow limit.",
+   "evidence_type": "physics theory",
+   "n_tests": 0,
+   "effect": {
+    "name": "K(1/6 g)/K(0 g) upper bound (heptane)",
+    "value": 1.4401952339130892,
+    "ci": null,
+    "unit": "-",
+    "log_effect": 0.36477868350420484
+   },
+   "sources": [
+    "Law & Williams, Combust. Flame 19 (1972) Eq. (9); docs/PHYSICS.md section 4",
+    "NTRS 20250004015 (lunar gravity = 1/6 of Earth gravity)"
+   ],
+   "confidence": "low",
+   "extrapolation": true,
+   "related": [
+    "P2",
+    "D4",
+    "P6"
+   ],
+   "score": 0.0
+  },
+  {
+   "id": "P6",
+   "stage": "prevention",
+   "title": "NASA: for solid materials, lunar gravity may be the most flammable condition",
+   "finding": "NASA Glenn reports that \"Lunar gravity is nearly the most flammable condition\" for solid materials (flame spread peaks and the oxygen limit is lowest near lunar g), and a partial-g habitat fire is expected to be \"substantially worse than in 0-g and potentially worse than even 1-g\". The FM2 experiment is to measure this on the Moon.",
+   "action": "Do not assume a material that passes the 1-g screening test is safe in a Moon base; add margin until lunar data (FM2) exist.",
+   "evidence_type": "NASA literature",
+   "n_tests": 0,
+   "effect": {
+    "name": "-",
+    "value": null,
+    "ci": null,
+    "unit": "-",
+    "log_effect": null
+   },
+   "sources": [
+    "NTRS 20210020516 (Fire on the Moon, NASA GRC)",
+    "NTRS 20260000646 (Ferkul et al., LPSC 2026)"
+   ],
+   "confidence": "medium",
+   "extrapolation": false,
+   "related": [
+    "P5",
+    "H1"
+   ],
+   "score": 0.0
   },
   {
    "id": "D4",

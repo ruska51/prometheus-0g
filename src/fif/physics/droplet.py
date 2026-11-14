@@ -33,6 +33,13 @@ from .properties import (DELTA_C_H_LIQ_KJ_MOL, fuel_vapor_conductivity, fuel_vap
 
 T_INF = 298.15
 G0 = 9.80665  # standard gravity, m/s^2
+G_MOON_RATIO = 1.0 / 6.0  # g_Moon / g_Earth: "lunar gravity is 1/6 of Earth gravity" (NTRS 20250004015, NASA GRC)
+
+
+def buoyancy_factor(gr_earth, g_ratio: float):
+    """1 + f_B at gravity g = g_ratio * g_Earth. Gr is proportional to g (Gr = g rho^2 d^3 dT / (mu^2 T)), so
+    Gr(g) = g_ratio * Gr_Earth; f_B = 0.533 Gr^0.52 (Law & Williams 1972 Eq. 9, fitted for Gr <~ 1)."""
+    return 1.0 + 0.533 * (np.asarray(gr_earth, dtype=float) * g_ratio) ** 0.52
 SIGMA = 5.670374419e-8  # W/(m^2 K^4), CODATA 2018
 R_U = 8.314462618  # J/(mol K), CODATA 2018
 SPECIES = ["O2", "N2", "CO2", "He"]
@@ -142,7 +149,7 @@ def evaluate(fuel, p_Pa, x, d0_m=None) -> pd.DataFrame:
             out["chi_rad_proxy"][m] = SIGMA * pm * Tf ** 4 * rs ** 2 * fs ** 3 * c1 / (3 * lam1 * np.log1p(B) * Q)
             out["tau_res_proxy"][m] = (fs * rs) ** 2 / alpha
             gr = G0 * rho2 ** 2 * d0 ** 3 / mu2 ** 2 * (Tf - T_INF) / T2
-            fb = 0.533 * gr ** 0.52
+            fb = buoyancy_factor(gr, 1.0) - 1.0
             out["Gr"][m], out["f_B"][m], out["K_earth_theory"][m] = gr, fb, K * (1 + fb)
             out["Gr_above_fit_range"][m] = gr > 1.0
     return pd.DataFrame(out)

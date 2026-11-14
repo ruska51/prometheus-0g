@@ -1,10 +1,11 @@
 """Moon-base scenario: conditions in, physics + hybrid prediction with band, reliability, ISS/Earth comparison (UI_SPEC page 3)."""
 import streamlit as st
 
-from common import flame_sim, scenario, source_note, status_badge
+from common import evidence_badge, flame_sim, scenario, source_note, status_badge
 from flame_view import render as render_flame
 
 from fif.insights.flame_sim import ATMOSPHERES
+from fif.physics.droplet import G_MOON_RATIO
 from fif.insights.scenario import PRESETS
 
 st.title("Moon-base scenario")
@@ -52,24 +53,35 @@ with c_out:
               help="Logistic model on physics features; trend only outside tested atmospheres (Validation)")
     m6.metric("On Earth (1 g)", f"×{r['earth_factor']:.1f} faster",
               help=f"Law & Williams buoyancy correction, Gr = {r['earth_Gr']:.1f}; fitted only for Gr <= 1 - physics theory, extrapolated")
+    m7, m8 = st.columns([1, 2])
+    m7.metric("On the lunar surface (1/6 g)", f"×1.0–{r['moon_factor']:.2f}",
+              help=f"Partial-gravity bound: lower = microgravity rate, upper = Law & Williams buoyancy correction at 1/6 g "
+                   f"(Gr = {r['moon_Gr']:.2f}; fitted for Gr <= 1). No partial-gravity data in PSI - physics theory.")
+    m8.markdown(evidence_badge("NASA literature") + " &nbsp;**Solids may be worse on the Moon.** NASA Glenn: for solid materials "
+                "\"Lunar gravity is nearly the most flammable condition\" (NTRS 20210020516); a partial-g habitat fire is expected "
+                "to be \"substantially worse than in 0-g and potentially worse than even 1-g\" (NTRS 20260000646). "
+                "Droplet burning rate (this page) and solid flammability limits are different questions.", unsafe_allow_html=True)
 
 st.markdown("**See it burn: the same droplet in two atmospheres**")
-same_1g = "Your settings at 1 g (Earth)"
-cmp_opts = [a for a in ATMOSPHERES if not (preset == "ISS cabin air" and a.startswith("ISS"))] + [same_1g]
+same_1g, same_moon = "Your settings at 1 g (Earth)", "Your settings on the lunar surface (1/6 g)"
+cmp_opts = [a for a in ATMOSPHERES if not (preset == "ISS cabin air" and a.startswith("ISS"))] + [same_moon, same_1g]
+default_cmp = "Moon base on the lunar surface (1/6 g)" if preset.startswith("Moon") else "Earth sea-level air (1 g)"
 cmp = st.columns([1, 2])[0].selectbox("Compare with (right panel; left panel = the atmosphere above)", cmp_opts,
-                                     index=cmp_opts.index("Earth sea-level air (1 g)"))
+                                     index=cmp_opts.index(default_cmp))
 left_label = preset if preset in PRESETS else "Your settings"
 left = flame_sim(fuel, round(p_atm, 4), x_o2, x_co2, x_he, d0, 0, left_label + " (microgravity)")
-if cmp == same_1g:
-    right = flame_sim(fuel, round(p_atm, 4), x_o2, x_co2, x_he, d0, 1, left_label + " at 1 g")
+if cmp in (same_1g, same_moon):
+    g = 1.0 if cmp == same_1g else G_MOON_RATIO
+    right = flame_sim(fuel, round(p_atm, 4), x_o2, x_co2, x_he, d0, g, left_label + (" at 1 g" if g == 1 else " at 1/6 g"))
 else:
     a = ATMOSPHERES[cmp]
     right = flame_sim(fuel, round(a["p_atm"], 4), a["x_o2"], 0.0, 0.0, d0, a["g"], cmp)
 render_flame([left, right])
-st.caption("Computed: droplet shrinking by the d²-law with K from the model (×(1 + f_B) at 1 g, physics theory, extrapolated), "
+st.caption("Computed: droplet shrinking by the d²-law with K from the model (×(1 + f_B) with gravity: physics theory; on the Moon the "
+           "upper bound of the range), "
            "burn time, extinction diameter (GP model, only inside tested conditions), flame temperature and soot colour "
            "(blackbody at T_f, an upper bound). Flame size: quasi-steady theory on a common relative scale - known to "
-           "overestimate the measured flame several-fold (NASA NTRS 20130014061). 1 g flame shape, flicker and sparks are illustrative.")
+           "overestimate the measured flame several-fold (NASA NTRS 20130014061). Buoyant flame shape, flicker and sparks are illustrative.")
 for n in dict.fromkeys(left["notes"] + right["notes"]):
     st.caption("- " + n)
 st.markdown("**Nearest NASA FLEX tests (measured K, mm²/s)**")

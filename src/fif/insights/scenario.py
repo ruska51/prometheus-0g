@@ -12,6 +12,7 @@ import pandas as pd
 from fif.data.catalog import REPO_ROOT
 from fif.models.features import EXTINCTION_UI_MODEL, conditions_table
 from fif.models.train import _aux
+from fif.physics.droplet import G_MOON_RATIO, buoyancy_factor
 from fif.validation.reliability import reliability
 
 PRESETS = {  # sources: docs/INSIGHTS.md "Cabin atmospheres"
@@ -58,6 +59,8 @@ def predict(fuel: str, p_atm: float, x_o2: float, x_co2: float = 0.0, x_he: floa
         "P_extinction": p_ext,
         "earth_factor": float(1 + c["f_B"].iloc[0]),
         "earth_Gr": float(c["Gr"].iloc[0]),
+        "moon_factor": float(buoyancy_factor(c["Gr"].iloc[0], G_MOON_RATIO)),  # upper bound of the lunar-surface rate
+        "moon_Gr": float(c["Gr"].iloc[0] * G_MOON_RATIO),
         "reliability": rel,
         "nearest_tests": near,
     }

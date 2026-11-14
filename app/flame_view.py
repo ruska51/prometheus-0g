@@ -43,8 +43,8 @@ const STATUS = {"in range":"#15803D","extrapolation":"#B45309","unreliable":"#B9
 const row = document.getElementById('row');
 const V = P.map((p,i)=>{
   const el = document.createElement('div'); el.className='panel';
-  const g = p.gravity ? '1 g' : 'microgravity';
-  el.innerHTML = `<div class="head"><span class="t">${p.label}</span><span class="chip" style="background:${p.gravity?'#7C2D12':'#1E3A8A'};color:#fff">${g}</span></div>
+  const g = !p.gravity ? 'microgravity' : (Math.abs(p.gravity-1)<1e-9 ? '1 g' : (Math.abs(p.gravity-1/6)<1e-9 ? '1/6 g' : p.gravity.toFixed(2)+' g'));
+  el.innerHTML = `<div class="head"><span class="t">${p.label}</span><span class="chip" style="background:${!p.gravity?'#1E3A8A':(p.gravity<1?'#4B5563':'#7C2D12')};color:#fff">${g}</span></div>
    <canvas></canvas><div class="bar"><div></div></div>
    <div class="foot"><span class="hud"></span><br>
    K <b>${p.K_mm2_s.toFixed(2)} mm²/s</b> · ${p.extinguishes ? (p.sustained ? 'flame out at' : 'no sustained flame') : 'burns out in'} <b>${p.sustained ? p.t_end_s.toFixed(1)+' s' : ''}</b>
@@ -73,7 +73,7 @@ layout(); window.addEventListener('resize',layout);
 // common scale: largest flame extent of both panels fits the window (relative theoretical size)
 const EARTH_UP=2.3, EARTH_DN=0.55, EARTH_HW=0.8;
 function scalePx(v){
-  let need=0; P.forEach(p=>{const R=p.series.flame_d_mm[0]/2; need=Math.max(need, p.gravity? R*(EARTH_UP+EARTH_DN)*1.05 : R*2.5);});
+  let need=0; P.forEach(p=>{const R=p.series.flame_d_mm[0]/2; const S=shp(p); need=Math.max(need, p.gravity? Math.max(R*(S.up+S.dn)*1.05, R*2.5) : R*2.5);});
   return Math.min(v.H*0.86, v.W*0.95)/need;
 }
 function interp(p,t){
@@ -125,30 +125,32 @@ function sphereFlame(c,v,x,y,R,I,t){
   }
   c.restore();
 }
-function earthPath(c,x,y,R,t,scale){
+// buoyant shape: e = f_B(g)/f_B(1 g) from Python (0 = sphere, 1 = Earth); shape itself is illustrative
+function shp(p){const e=p.shape_e||0; return {e, up:1+(EARTH_UP-1)*e, dn:1-(1-EARTH_DN)*e, hw:1-(1-EARTH_HW)*e};}
+function earthPath(c,x,y,R,t,scale,S){
   c.beginPath();
-  for(let i=0;i<=120;i++){const ph=i/120*6.283; const up=Math.pow((1+Math.cos(ph))/2,3.2);
-    const fl=0.10*Math.sin(t*9.0+ph*2)+0.06*Math.sin(t*14.3+1.3);
-    const rr=R*scale*(EARTH_DN+(EARTH_UP-EARTH_DN)*up*(1+fl)) ;
-    const side=Math.sin(ph)*(EARTH_HW/0.76)*(1-0.55*Math.pow(up,0.6));
-    const px=x+rr*side*0.76+R*0.10*up*Math.sin(t*6.1), py=y-rr*Math.cos(ph)*(Math.cos(ph)>0?1:1);
+  for(let i=0;i<=120;i++){const ph=i/120*6.283; const u=Math.pow((1+Math.cos(ph))/2,3.2);
+    const fl=S.e*(0.10*Math.sin(t*9.0*Math.sqrt(S.e)+ph*2)+0.06*Math.sin(t*14.3*Math.sqrt(S.e)+1.3));
+    const rr=R*scale*(S.dn+(S.up-S.dn)*u*(1+fl));
+    const px=x+rr*Math.sin(ph)*S.hw*(1-0.55*S.e*Math.pow(u,0.6))+R*0.10*S.e*u*Math.sin(t*6.1), py=y-rr*Math.cos(ph);
     i?c.lineTo(px,py):c.moveTo(px,py);}
   c.closePath();
 }
 function earthFlame(c,v,x,y,R,I,t){
-  const p=v.p, col=p.sooty?p.flame_rgb:BLUE;
+  const p=v.p, col=p.sooty?p.flame_rgb:BLUE, S=shp(p);
   c.save(); c.globalCompositeOperation='lighter';
-  let g=c.createRadialGradient(x,y-R*0.9,R*0.2,x,y-R*0.9,R*2.6); g.addColorStop(0,rgba(col,0.18*I)); g.addColorStop(1,rgba(col,0));
-  c.fillStyle=g; c.fillRect(x-R*3,y-R*3.6,R*6,R*5);
-  earthPath(c,x,y,R,t,1.0);
-  const lg=c.createLinearGradient(0,y+R*EARTH_DN,0,y-R*EARTH_UP);
+  let g=c.createRadialGradient(x,y-R*0.9*S.e,R*0.2,x,y-R*0.9*S.e,R*(1.7+0.9*S.e)); g.addColorStop(0,rgba(col,0.18*I)); g.addColorStop(1,rgba(col,0));
+  c.fillStyle=g; c.fillRect(x-R*3,y-R*3.6,R*6,R*5.5);
+  earthPath(c,x,y,R,t,1.0,S);
+  const lg=c.createLinearGradient(0,y+R*S.dn,0,y-R*S.up);
   lg.addColorStop(0,rgba(BLUE,0.75*I)); lg.addColorStop(0.18,rgba(BLUE,0.45*I));
-  if(p.sooty){lg.addColorStop(0.38,rgba(col.map(q=>Math.min(255,q+60)),0.95*I)); lg.addColorStop(0.75,rgba(col,0.8*I)); lg.addColorStop(1,rgba([200,60,10],0));}
-  else {lg.addColorStop(0.6,rgba(BLUE,0.35*I)); lg.addColorStop(1,rgba(DEEP,0));}
+  if(p.sooty){lg.addColorStop(0.38,rgba(col.map(q=>Math.min(255,q+60)),0.95*I)); lg.addColorStop(0.75,rgba(col,0.8*I)); lg.addColorStop(1,rgba([200,60,10],0.15*(1-S.e)*I));}
+  else {lg.addColorStop(0.6,rgba(BLUE,0.35*I)); lg.addColorStop(1,rgba(DEEP,0.2*(1-S.e)*I));}
   c.fillStyle=lg; c.fill();
-  c.globalCompositeOperation='source-over'; earthPath(c,x,y+R*0.08,R,t+0.3,0.55);  // darker fuel-rich core
-  c.fillStyle=rgba([8,10,25],0.35); c.fill();
-  if(p.sooty){ c.globalCompositeOperation='lighter'; v.sparks.forEach(s=>{const ph=(s.ph+t*s.sp*0.6)%1; const px=x+R*0.5*Math.sin(s.a*3+t)*(1-ph), py=y-R*(0.6+ph*2.6);
+  // fuel-rich core inside the reaction sheet: cut out (thin luminous shell, as in microgravity, thickening as g rises)
+  c.globalCompositeOperation='destination-out'; earthPath(c,x,y+R*0.08*S.e,R,t+0.3,0.82-0.27*S.e,S);
+  c.fillStyle=`rgba(0,0,0,${0.85-0.35*S.e})`; c.fill();
+  if(p.sooty){ c.globalCompositeOperation='lighter'; v.sparks.forEach(s=>{const ph=(s.ph+t*s.sp*0.6*Math.sqrt(S.e))%1; const px=x+R*0.5*Math.sin(s.a*3+t)*(1-ph), py=y-R*(0.6+ph*(S.up+0.3));
       c.fillStyle=rgba(col,(1-ph)*0.7*I); c.beginPath(); c.arc(px,py,Math.max(0.6,R*0.02),0,6.283); c.fill();});}
   c.restore();
 }
@@ -169,7 +171,7 @@ function frame(ts){
   const wall=ts/1000;
   V.forEach(v=>{
     const c=v.cv.getContext('2d'); c.setTransform(DPR,0,0,DPR,0,0); background(c,v);
-    const p=v.p, sc=scalePx(v), x=v.W/2, y=p.gravity? v.H*0.70 : v.H*0.5;
+    const p=v.p, sc=scalePx(v), x=v.W/2, y=p.gravity? v.H*(0.5+0.2*shp(p).e) : v.H*0.5;
     const tend=p.t_end_s, tp=Math.min(clock,tend), s=interp(p,tp);
     let I=Math.pow(p.T_f_K/2300,2); I=Math.max(0.55,Math.min(1.6,I));
     I*=Math.min(1,clock/IGN);
@@ -197,7 +199,7 @@ document.querySelectorAll('button[data-s]').forEach(b=>b.onclick=()=>{speed=+b.d
 
 
 def html(sims: list[dict]) -> str:
-    keep = ("label", "fuel", "gravity", "x_o2", "p_psi", "K_mm2_s", "t_end_s", "extinguishes", "sustained", "unburned_fraction",
+    keep = ("label", "fuel", "gravity", "shape_e", "x_o2", "p_psi", "K_mm2_s", "t_end_s", "extinguishes", "sustained", "unburned_fraction",
             "T_f_K", "status", "sooty", "flame_rgb", "series")
     data = json.dumps([{k: s[k] for k in keep} for s in sims]).replace("</", "<\\/")
     return _HTML.replace("__DATA__", data)

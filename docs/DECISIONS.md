@@ -291,3 +291,16 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Decision (Ruslan): "In general yes, but taking the higher one would also be fine" -> A (LHV) kept; HHV variant documented as a sensitivity check.
 - Consequences: no code change; PHYSICS.md section 3 updated.
 - Sources: L&W 1972 p. 395 and ref. 23; NIST SRD 69 species pages
+
+## ADR-029: Final targets and model choices (stage 5)
+- Date/time: 2026-11-14 ~13:16 (UTC+5)
+- Stage: 5
+- Context: architecture proposed: level 1 physics (L&W K, ADR-027), level 2 calibration c_f per fuel = exp(mean ln(K_meas/K_theory)), level 3 ML residual r = ln(K_meas/(c_f K_theory)); classification of finite-diameter extinction on physics features.
+- Decisions (Ruslan):
+  - Targets: all three - K (hybrid), extinction yes/no (classifier), d_ext/d0 (regression; no physics baseline exists for it).
+  - Residual model: Gaussian process (recommended).
+  - Classifier: "both, compare" - logistic regression and gradient boosting on the same grouped CV.
+  - Monotonic constraints: "not sure which is better... try both and see" - boosting is run with and without constraints (proposed directions: P(extinction) decreasing in O2 and T_f, increasing in CO2 fraction; none for d0, pressure, He); logistic coefficient signs are checked against the same directions.
+  - Metrics: full set (recommended) - K and d_ext/d0: RMSE in log space (primary), MAE in original units, R^2, 95 % interval coverage; extinction: AUC (primary), Brier, accuracy, balanced accuracy.
+- Consequences: src/fif/models/, scripts/train_models.py, MODEL_CARD.md.
+- Sources: docs/FORMULAS.md section 8 (calibration and residual formulas)

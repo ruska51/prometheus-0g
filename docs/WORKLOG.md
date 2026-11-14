@@ -78,3 +78,11 @@ Open items:
 2026-11-14 ~13:02 | 4 | NASA TR R-132 (Svehla) transcribed (CH3OH table, C5/C6 viscosity), Eq. (2) self-check 0.1 %; Cantera 3.2.0 + NASA Glenn thermo for equilibrium T_f | data/raw/nasa_tr_r132, src/fif/physics/flame.py | droplet rewrite
 2026-11-14 13:07 | 4 | droplet.py rewritten to the L&W prescription; K_meas/K_theory methanol 0.97 (74 % within 15 %), heptane 0.73; size trend confirmed; 39 tests green; PHYSICS.md rewritten; ADR-027; tag stage-4.2 | src/fif/physics, tests/test_physics.py, docs/PHYSICS.md | stage 5
 2026-11-14 13:11 | 4 | ADR-028: q = LHV confirmed by Ruslan; HHV sensitivity +7.8 % / +3.4 % in K | docs/DECISIONS.md, docs/PHYSICS.md | stage 5
+
+## Stage 5 - started 2026-11-14 13:14
+
+2026-11-14 ~13:16 | 5 | Architecture proposed; decisions ADR-029 (3 targets, GP residual, logistic vs boosting, constraints both ways, full metrics) | docs/DECISIONS.md | code
+2026-11-14 13:21 | 5 | models package (features + leakage guard, regression, classification, train); scripts/train_models.py one command (~45 s) | src/fif/models, scripts/train_models.py | metrics
+2026-11-14 13:23 | 5 | K: hybrid RMSE_log 0.214 vs physics 0.302 / mean 0.304 / pure ML 0.288; c_f methanol 0.964, heptane 0.714; extinction AUC 0.805 (monotonic boosting), physics-only logistic balanced acc 0.733; d_ext/d0 pure ML best (0.406); 62 tests green | docs/verification/model_*, models/*.joblib, docs/figures/model_*.png | docs
+2026-11-14 13:24 | 5 | MODEL_CARD.md, ARCHITECTURE (models), Makefile data/train targets | docs/* | stage 6
+- Stage 5 duration: 13:14-13:24 (clock), budget 90 min.

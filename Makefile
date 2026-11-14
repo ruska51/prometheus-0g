@@ -5,10 +5,10 @@ setup:
 	py -3.12 -m venv .venv && $(PY) -m pip install -r requirements.txt && $(PY) -m pip install -e .
 
 data:
-	@echo "stage 3: not implemented yet"
+	$(PY) scripts/build_data.py
 
 train:
-	@echo "stage 5: not implemented yet"
+	$(PY) scripts/train_models.py
 
 test:
 	$(PY) -m pytest -q

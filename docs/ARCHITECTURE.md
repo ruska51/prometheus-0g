@@ -75,6 +75,27 @@ flowchart LR
 | `fif.physics.flame` | stoichiometric adiabatic flame temperature with dissociation (Cantera HP equilibrium, NASA Glenn thermo) | fuel, T_b, x, T_inf, p -> T_f |
 | `fif.physics.droplet` | burning-rate constant with the Law & Williams (1972) prescription, extinction proxies, L&W buoyancy correction; `evaluate_flex(df)` | fuel, p, x, d0 -> DataFrame |
 
-## Models, validation, insights, app
+## Models layer (stage 5)
 
-_Stages 5-8._
+```mermaid
+flowchart LR
+    P["data/processed/flex.csv"] --> MT["models/features.py<br/>model_table: physics + features + targets<br/>check_pre_ignition (leakage guard)"]
+    PH["physics/droplet.py<br/>K_theory, T_f, proxies"] --> MT
+    MT --> TR["models/train.py<br/>GroupKFold(5) by regime"]
+    TR --> RG["regression.py<br/>mean / physics / GP / hybrid:<br/>ln K = ln K_theory + ln c_f + GP"]
+    TR --> CL["classification.py<br/>prior / logistic / boosting (+monotonic)"]
+    RG & CL --> OUT["models/*.joblib (+data sha256, seed)<br/>docs/verification/model_report.json,<br/>model_comparison.tsv, figures"]
+```
+
+| Module | Purpose |
+|---|---|
+| `fif.models.features` | feature sets (raw + physics), allow-list, `check_pre_ignition`, `model_table` |
+| `fif.models.regression` | `MeanModel`, `PhysicsModel`, `GPModel`, `HybridKModel` (predict mean and sigma in log space) |
+| `fif.models.classification` | `PriorModel`, `logistic()`, `boosting(features, monotonic)` |
+| `fif.models.train` | grouped CV comparison, interpretation (permutation importance, partial dependence, coefficient sign check), final fit and save |
+
+Command: `.venv/Scripts/python scripts/train_models.py` (~45 s). Details: docs/MODEL_CARD.md.
+
+## Validation, insights, app
+
+_Stages 6-8._

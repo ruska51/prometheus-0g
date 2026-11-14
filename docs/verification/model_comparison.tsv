@@ -1,0 +1,14 @@
+target	model	n_rows	RMSE_log	MAE	R2_log	coverage95	AUC	Brier	accuracy	balanced_accuracy
+K	mean	258	0.3037	0.1077	-0.0181	0.9535				
+K	physics	258	0.3015	0.1131	-0.0036	0.9031				
+K	pure_ml_gp	258	0.2876	0.0613	0.087	0.9147				
+K	hybrid	258	0.214	0.0528	0.4945	0.9302				
+d_ext_over_d0	mean	188	0.5093	0.2098	-0.012	0.9574				
+d_ext_over_d0	pure_ml_gp	188	0.4055	0.1183	0.3584	0.8989				
+d_ext_over_d0	hybrid_gp	188	0.4397	0.1279	0.2458	0.8777				
+extinction	prior	223					0.3929	0.1339	0.843	0.5
+extinction	physics_logistic	223					0.7695	0.1916	0.7265	0.7331
+extinction	pure_ml_boosting	223					0.6885	0.1497	0.8027	0.6156
+extinction	hybrid_logistic	223					0.7757	0.1771	0.7175	0.6697
+extinction	hybrid_boosting_free	223					0.7852	0.1188	0.8161	0.6468
+extinction	hybrid_boosting_monotonic	223					0.8054	0.1208	0.8117	0.6558

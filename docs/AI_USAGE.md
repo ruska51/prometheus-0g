@@ -9,3 +9,4 @@
 | 2026-11-14 | 3 | Claude Code (Anthropic, Claude Opus) | Data-layer code (parsers, cleaning, schema, build, tests), PDF cross-check script, EDA figures, data documentation | Ruslan Sharafutdinov (anomaly, CV-group and target decisions ADR-015..018) |
 | 2026-11-14 | 4 | Claude Code (Anthropic, Claude Opus) | Physics-layer code, NIST fetch script, theory-vs-data comparison and figures, PHYSICS.md | Ruslan Sharafutdinov (theory level, property assumptions, gravity base, feature set ADR-022..025) |
 | 2026-11-14 | 4 | Claude Code (Anthropic, Claude Opus) | L&W prescription implementation, Svehla transcription, Cantera flame temperature, PHYSICS.md rewrite | Ruslan Sharafutdinov (supplied L&W paper; ADR-026, ADR-027) |
+| 2026-11-14 | 5 | Claude Code (Anthropic, Claude Opus) | Model code (hybrid GP, classifiers), CV comparison, interpretation, MODEL_CARD.md | Ruslan Sharafutdinov (ADR-029 choices) |

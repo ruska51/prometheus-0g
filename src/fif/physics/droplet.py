@@ -1,6 +1,7 @@
 """Quasi-steady droplet combustion (level L2 + L3 proxies, ADR-022). Vectorised, SI units.
 
-Burning-rate constant (NTRS 20130014061, Nayagam, Dietrich, Hicks & Williams, Eqs. 1-2):
+Burning-rate constant (NTRS 20130014061, Nayagam, Dietrich, Hicks & Williams, Eqs. 1-2; same form as
+Law & Williams 1972 Eq. 1 with inner-region properties lambda_1, C_1 - ADR-026):
     K = 8 lambda_g / (rho_l cp_g) * ln(1 + B),
     B = (q_f Y_O,inf nu_f + cp_g (T_inf - T_b)) / L,
 with nu_f the stoichiometric fuel-to-oxygen mass ratio (= 1 / nu_s below).
@@ -20,7 +21,8 @@ import numpy as np
 import pandas as pd
 
 from . import mixing
-from .properties import gas_T_range, molar_mass, sat_prop, t_sat, DELTA_C_H_LIQ_KJ_MOL
+from .properties import (DELTA_C_H_LIQ_KJ_MOL, fuel_vapor_cp, fuel_vapor_cp_table, gas_T_range, molar_mass,
+                         sat_prop, t_sat)
 
 T_INF = 298.15
 G0 = 9.80665  # standard gravity, m/s^2 (CGPM 1901 definition)
@@ -58,8 +60,10 @@ def evaluate(fuel, p_Pa, x, d0_m=None, n_iter: int = 30) -> pd.DataFrame:
     out = {k: np.full(n, np.nan) for k in
            ["T_b", "L", "rho_l", "Q", "nu_s", "Y_O2", "Z_st", "T_f", "T_bar", "cp_g", "lambda_g",
             "mu_g", "rho_g", "B", "K_theory", "flame_standoff", "alpha_g", "chi_rad_proxy",
-            "tau_res_proxy", "Gr", "Pr", "Nu_earth", "K_earth_theory"]}
+            "tau_res_proxy", "Gr", "Pr", "Nu_earth", "K_earth_theory", "c1_fuel_vapor",
+            "B_ambient_cp", "K_theory_ambient_cp"]}
     out["T_bar_capped"] = np.zeros(n, dtype=bool)
+    out["c1_T_capped"] = np.zeros(n, dtype=bool)
     Y = mixing.mass_fractions(x, SPECIES)
     y_o2 = Y[:, 0]
     M_mix = mixing.mixture_molar_mass(x, SPECIES)
@@ -86,14 +90,23 @@ def evaluate(fuel, p_Pa, x, d0_m=None, n_iter: int = 30) -> pd.DataFrame:
         lam = mixing.mixture_conductivity(xm, SPECIES, Tbar)
         mu = mixing.mixture_viscosity(xm, SPECIES, Tbar)
         rho_g = p[m] * M_mix[m] / (R_U * Tbar)
-        B = (Q * y_o2[m] / ns + cp * (T_INF - Tb)) / L
-        K = 8 * lam / (rho_l * cp) * np.log1p(B)
+        # Law & Williams (1972) Eq. (1): k0 = (8/rho_F)(lambda_1/C_1) ln(1+B), B = [Y_O q/i - c_1(T_b - T_inf)]/L,
+        # index 1 = gas region inside the flame (fuel vapour side). c_1 = NIST ideal-gas cp of the fuel vapour
+        # at T_bar; lambda_1 = lambda of the ambient mixture (L&W elementary assumption lambda_1 = lambda_2). ADR-026.
+        t_hi_fuel = float(fuel_vapor_cp_table(f)[0].max())
+        c1 = fuel_vapor_cp(f, np.minimum(0.5 * (Tb + Tf), t_hi_fuel))
+        B = (Q * y_o2[m] / ns + c1 * (T_INF - Tb)) / L
+        K = 8 * lam / (rho_l * c1) * np.log1p(B)
+        B_amb = (Q * y_o2[m] / ns + cp * (T_INF - Tb)) / L  # stage-4 first version: ambient-gas cp (kept for comparison)
+        K_amb = 8 * lam / (rho_l * cp) * np.log1p(B_amb)
         fs = np.log1p(B) / np.log1p(y_o2[m] / ns)
         alpha = lam / (rho_g * cp)
         for k, v in dict(T_b=Tb, L=L, rho_l=rho_l, Q=np.full(m.sum(), Q), nu_s=np.full(m.sum(), ns),
-                         Y_O2=y_o2[m], Z_st=zst, T_f=Tf, T_bar=Tbar, cp_g=cp, lambda_g=lam, mu_g=mu,
-                         rho_g=rho_g, B=B, K_theory=K, flame_standoff=fs, alpha_g=alpha).items():
+                         Y_O2=y_o2[m], Z_st=zst, T_f=Tf, T_bar=Tbar, cp_g=cp, c1_fuel_vapor=c1, lambda_g=lam,
+                         mu_g=mu, rho_g=rho_g, B=B, K_theory=K, B_ambient_cp=B_amb, K_theory_ambient_cp=K_amb,
+                         flame_standoff=fs, alpha_g=alpha).items():
             out[k][m] = v
+        out["c1_T_capped"][m] = 0.5 * (Tb + Tf) > t_hi_fuel
         out["T_bar_capped"][m] = Tbar_raw > t_hi
         if d0_m is not None:
             d0 = np.asarray(d0_m, dtype=float)[m]

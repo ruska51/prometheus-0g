@@ -111,3 +111,29 @@ def check_delta_c_h_on_page(fuel: str) -> bool:
     text = re.sub(r"<[^>]+>", " ", text)
     text = " ".join(text.split())
     return DELTA_C_H_LIQ_KJ_MOL[fuel][1] in text
+
+
+@functools.lru_cache(maxsize=None)
+def fuel_vapor_cp_table(fuel: str) -> tuple[np.ndarray, np.ndarray]:
+    """Ideal-gas cp of fuel vapour from the FIRST 'Constant pressure heat capacity of gas' table on the
+    NIST gas-phase page (thermo_gas_<ID>.html): methanol - Thermodynamics Research Center 1997 (50-3000 K);
+    n-heptane - Scott 1974 (200-1500 K). Returns (T [K], cp [J/(kg K)])."""
+    text = (NIST / f"thermo_gas_{LIQ_IDS[fuel]}.html").read_text(encoding="utf-8", errors="replace")
+    i = text.find('<table class="data" aria-label="Constant pressure heat capacity of gas">')
+    j = text.find("</table>", i)
+    rows = re.findall(r"<tr[^>]*>(.*?)</tr>", text[i:j], flags=re.S)
+    pairs = []
+    for r in rows:
+        cells = re.findall(r'<td class="right-nowrap">(.*?)</td>', r, flags=re.S)
+        if len(cells) >= 2:
+            cp_txt = html.unescape(re.sub(r"<[^>]+>", "", cells[0])).split("±")[0].strip()
+            pairs.append((cp_txt, html.unescape(cells[1]).strip()))
+    T = np.array([float(b) for a, b in pairs]); cp = np.array([float(a) for a, b in pairs])
+    order = np.argsort(T)
+    return T[order], cp[order] / molar_mass(fuel)
+
+
+def fuel_vapor_cp(fuel: str, T) -> np.ndarray:
+    """cp of fuel vapour [J/(kg K)] at T [K] (NIST ideal-gas table, linear interpolation, clamped at ends)."""
+    t, cp = fuel_vapor_cp_table(fuel)
+    return np.interp(np.asarray(T, dtype=float), t, cp)

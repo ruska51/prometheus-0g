@@ -110,3 +110,16 @@ def test_physics_uses_only_pre_ignition_inputs():
     src = inspect.getsource(droplet.evaluate_flex)
     for post in ("K_m2_s", "d_ext", "burn_time", "test_end", "extinct"):
         assert post not in src
+
+
+def test_fuel_vapor_cp_matches_nist_printed_values():
+    # NIST gas-phase pages: methanol 89.54 J/(mol K) at 1000 K (TRC 1997); heptane 381.58 at 1000 K (Scott 1974)
+    assert pr.fuel_vapor_cp("methanol", 1000.0) * pr.molar_mass("methanol") == pytest.approx(89.54)
+    assert pr.fuel_vapor_cp("heptane", 1000.0) * pr.molar_mass("heptane") == pytest.approx(381.58)
+
+
+def test_inner_region_cp_lowers_K_vs_ambient_cp():
+    # ADR-026: c_1 (fuel vapour) > cp of air at flame-zone temperatures -> lower K
+    r = droplet.evaluate(np.array(["methanol", "heptane"]), np.full(2, 101325.0), _x(rows=2))
+    assert np.all(r["c1_fuel_vapor"] > r["cp_g"])
+    assert np.all(r["K_theory"] < r["K_theory_ambient_cp"])

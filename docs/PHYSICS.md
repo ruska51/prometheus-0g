@@ -18,9 +18,14 @@ $$K = \frac{8\,\lambda_g}{\rho_l\,c_{p,g}}\,\ln(1+B), \qquad B = \frac{q_f\,Y_{O
 
 with $\nu_f$ the stoichiometric fuel-to-oxygen mass ratio ($\nu_f = 1/\nu_s$ below). The NASA paper evaluates properties "according to the semi-empirical recipe proposed by Law and Williams" (Combust. Flame 19 (1972) 393-405, DOI 10.1016/0010-2180(72)90009-0), which was not accessible to Claude (ADR-023).
 
-**L2 - implemented (ADR-022):** L1 plus
+Law & Williams (1972), Eq. (1) and the paragraph after it (supplied by Ruslan, 2026-11-14): $k_0 = \frac{8}{\rho_F}\frac{\lambda_1}{C_1}\ln(1+B)$, $B = [Y_{O\infty}\,q/i - c_1(T_b - T_\infty)]/L$; $q$ = heat of combustion per unit mass of fuel at $T_\infty$, $i$ = stoichiometric oxygen-fuel mass ratio, $L$ = latent heat at the boiling point, $\rho_F$ = liquid density at $T_b$; subscripts 1 and 2 = gas regions inside and outside the flame; elementary assumptions: Lewis numbers of unity, $\lambda_1 = \lambda_2$ = const, $c_1 = c_2$ = const.
+
+**L2 - implemented (ADR-022, corrected by ADR-026):** L1 plus
 - $T_b(P)$ from the NIST saturation curve (interpolated in $\ln P$), so pressure enters through $T_b$, $L(T_b)$, $\rho_l(T_b)$;
-- $\lambda_g$, $c_{p,g}$ of the actual ambient mixture (O2 + N2/CO2/He) with NASA RP-1311 mixing rules (section 4), at $\bar T = (T_b + T_f)/2$;
+- **$C_1$ in K and B = ideal-gas cp of the fuel vapour** (NIST gas-phase tables: methanol TRC 1997, n-heptane Scott 1974) at $\bar T = (T_b + T_f)/2$ (capped at the table end: 3000 K methanol, 1500 K heptane; 21 model rows capped). This is the inner-region heat capacity of L&W Eq. (1). The first stage-4 version used the cp of the ambient gas and over-predicted K by 2x (methanol) and 4x (heptane); it is kept as column `K_theory_ambient_cp` for comparison;
+- $\lambda_1$ = conductivity of the ambient mixture (O2 + N2/CO2/He, NASA RP-1311 mixing rules, section 4) at $\bar T$, using the L&W assumption $\lambda_1 = \lambda_2$ (NIST has no fuel-vapour conductivity at flame temperatures);
+- $q = Q$ = **lower** heating value (water leaves the flame as vapour); the higher heating value from the same NIST data is 22.65 MJ/kg (methanol) and 48.07 MJ/kg (heptane), section 6;
+- flame temperature with the outer-region cp $c_2$ = cp of the ambient mixture;
 - flame temperature from the Burke-Schumann flame sheet (docs/FORMULAS.md section 2):
 
 $$Z_{st} = \frac{Y_{O,\infty}}{Y_{O,\infty} + \nu_s}, \qquad T_f = T_\infty + Z_{st}\left[(T_s - T_\infty) + \frac{Q - L}{c_{p,g}}\right], \quad T_s = T_b$$
@@ -55,7 +60,7 @@ Eq. (5.5) is algebraically identical to the Wilke form in FORMULAS.md section 1 
 | ID | Assumption | Effect / where it matters |
 |---|---|---|
 | A1 | $T_\infty$ = 298.15 K for all FLEX tests (FLEX CSV has no temperature; the FLEX-2 PSI-68 table lists 25 C) | small; enters B and $T_f$ |
-| A2 | Gas properties = ambient O2 + diluent mixture, no fuel vapour, no products (ADR-023) | main suspect for the constant over-prediction of K (section 7) |
+| A2 | $C_1$ = pure fuel-vapour cp (no products, no inert in the inner region); $\lambda_1$ = ambient-mixture conductivity ($\lambda_1 = \lambda_2$, L&W); $c_2$ for $T_f$ = ambient-mixture cp (ADR-023, ADR-026) | $C_1$ of pure vapour is an upper bound of the real inner-region cp -> K slightly low (methanol ratio 1.36) |
 | A3 | $\bar T = (T_b + T_f)/2$ ("1/2 rule", ADR-023), capped at 1500 K (end of the NIST tables): 38 of 274 model rows capped (`T_bar_capped`) | high-O2 / high-$T_f$ rows |
 | A4 | Mole fractions renormalised to sum 1 inside the property calculation only (6 tests sum to 0.98, ADR-015 keeps the data unchanged) | negligible |
 | A5 | cp, $\lambda$, $\mu$ of gases taken at 1 atm and used at 0.5-3 atm (ideal gas); density from the ideal-gas law | small for these gases |
@@ -74,7 +79,9 @@ Generated from the raw NIST files by the code (2026-11-14). NIST Chemistry WebBo
 | Liquid density rho_l | 748.3 | 613.5 | kg/m3 | saturation table | at T_b(1 atm) |
 | Liquid cp | 2.826 | 2.558 | kJ/(kg K) | saturation table (not used in L2) | at T_b(1 atm) |
 | -Delta_c H (liquid, H2O liquid) | 725.7 | 4817 | kJ/mol | species page: methanol Chao & Rossini 1965 (-725.7 ± 0.1); heptane NIST average of 7 (-4817 ± 8) | 298.15 K |
-| Lower heating value Q | 19.9 | 44.56 | MJ/kg | computed: HHV - n_H2O M_H2O L_water(298.15 K, NIST water saturation table) | 298.15 K |
+| Higher heating value HHV = -Delta_c H / M | 22.65 | 48.07 | MJ/kg | computed from the row above (water liquid in products) | 298.15 K |
+| Lower heating value Q (used in B and T_f) | 19.90 | 44.56 | MJ/kg | computed: HHV - n_H2O M_H2O L_water / M_fuel; n_H2O = 2 (methanol), 8 (heptane); L_water = 2440.8 kJ/kg at 298.15 K (NIST water saturation table) | 298.15 K |
+| Fuel-vapour ideal-gas cp (C_1) | 89.54 J/(mol K) = 2794 J/(kg K) | 381.58 J/(mol K) = 3808 J/(kg K) | at 1000 K | gas-phase page: methanol TRC 1997 (50-3000 K); heptane Scott 1974 (200-1500 K) | used at T_bar |
 | Stoichiometric O2/fuel mass ratio nu_s | 1.498 | 3.513 | - | computed from global stoichiometry and NIST molar masses | - |
 
 Gases (NIST fluid tables at 1 atm, 300-1500 K in 50 K steps; values at 300 K and 1200 K shown):
@@ -92,24 +99,26 @@ Physical constants: $\sigma$ = 5.670374419e-8 W/(m² K⁴), $R_u$ = 8.314462618 
 
 Figures: `docs/figures/physics_K_parity.png`, `physics_K_ratio_groups.png`, `physics_extinction_proxies.png`; table: `docs/verification/physics_vs_data.tsv`.
 
-| Finding | Numbers |
-|---|---|
-| Theory over-predicts K for every group | median $K_{meas}/K_{theory}$: methanol 0.52, heptane 0.24 |
-| Over-prediction is nearly constant within a fuel | spread of ln(ratio): methanol 0.15, heptane 0.28 |
-| Larger droplets burn slower than theory | corr(ln ratio, d0): methanol -0.37, heptane -0.42 |
-| Theory overstates the helium effect (methanol) | ratio He 0.40-0.47 vs N2 0.49-0.55; corr(ln ratio, x_He) = -0.56 |
-| CO2-diluted methanol burns relatively faster than theory | corr(ln ratio, x_CO2) = +0.36 |
-| $T_f$ unrealistically high at O2 0.30-0.34 | up to 3800 K (A7) |
-| Extinction: "no finite-diameter extinction" cases sit at high $T_f$ | qualitative, `physics_extinction_proxies.png` |
+| Finding | First version (ambient-gas cp, stage 4 12:40) | Corrected (C_1 = fuel-vapour cp, ADR-026, 12:51) |
+|---|---|---|
+| median $K_{meas}/K_{theory}$ | methanol 0.52, heptane 0.24 | **methanol 1.36, heptane 0.89** |
+| spread of ln(ratio) within a fuel | methanol 0.15, heptane 0.28 | methanol 0.18, heptane 0.30 |
+| corr(ln ratio, d0): larger droplets burn slower than theory | -0.37 / -0.42 | -0.24 / -0.34 |
+| helium effect over-predicted | corr(ln ratio, x_He) methanol -0.56 | methanol -0.78 (ratio He 0.85-1.05 vs N2/CO2 1.34-1.41); heptane -0.28 (He 0.67-0.78 vs N2/CO2 0.85-0.97) |
+| CO2 | methanol +0.36 | methanol +0.24, heptane -0.22 |
+| $T_f$ at O2 0.30-0.34 | up to 3800 K (A7) | unchanged (T_f uses the outer-region cp) |
+| extinction: "no finite-diameter extinction" at high $T_f$ | qualitative | unchanged |
 
-**Hypotheses for discussion (not tested yet):**
-- H1 (constant factor, fuel-specific): properties of the ambient gas instead of a fuel-vapour-rich mixture (A2). Heptane vapour should have a much higher cp than air, which would lower B (heptane B = 8-13 here) and K. This would explain why heptane is worse than methanol. The Law & Williams recipe probably treats this; to be checked against the paper.
-- H2: $T_f$ without dissociation or radiation (A7) inflates $\bar T$, $\lambda_g$ and B, most at high O2.
-- H3 (d0 trend): radiative heat loss grows with flame size (FORMULAS.md section 3). For methanol, the NASA paper also reports water absorption: small droplets burn faster than quasi-steady theory, large ones slower (NTRS 20130014061, section 3.1).
-- H4 (He): the high conductivity of He enters $\lambda_g$ at full weight, while the real flame zone is dominated by products and fuel vapour (A2); helium's high diffusivity (Lewis number) is not in the single-$\lambda$ formula.
-- H5 (CO2): CO2 changes radiation (absorption/emission) and chemistry; neither is in L2.
+Cause of the first version's error: $K \propto \lambda/C$; the cp of the fuel vapour at flame-zone temperatures is 2.4x (methanol) and 3.3x (heptane) the cp of air at 1000 K (NIST), almost exactly the 2x / 4x over-prediction. Using the ambient-gas cp was a modelling error against the L&W Eq. (1) definition, not an arithmetic one; the heating value was not the cause (Q = LHV 19.90 MJ/kg is correct for vapour-phase products; using the HHV 22.65 MJ/kg would raise K further).
 
-The constant part (H1, H2) is what the per-fuel calibration $c_f$ (FORMULAS.md section 8, stage 5) absorbs; the trends (H3-H5) are what the ML residual should learn.
+**Hypotheses for the remaining errors (for discussion):**
+- H1' (methanol 1.36): pure-vapour $C_1$ is an upper bound; the real inner region also holds products and N2 with lower cp. In addition the NASA paper reports water absorption by methanol droplets, which raises the measured K of small droplets (NTRS 20130014061 section 3.1).
+- H2: $T_f$ without dissociation or radiation (A7) inflates $\bar T$ and $\lambda_1$, most at high O2.
+- H3 (d0 trend): radiative heat loss grows with flame size (FORMULAS.md section 3); water absorption (methanol).
+- H4 (He): $\lambda_1 = \lambda_2$ puts helium's conductivity into the inner region, where there is little helium; non-unity Lewis number of He is not in the formula.
+- H5 (CO2): radiation and chemistry of CO2 not in L2.
+
+The per-fuel constant left (methanol 1.36, heptane 0.89) is what the calibration $c_f$ (FORMULAS.md section 8, stage 5) absorbs; the trends (H3-H5) are what the ML residual should learn.
 
 ## 8. What the theory does not describe; limits of applicability
 
@@ -119,7 +128,7 @@ The constant part (H1, H2) is what the per-fuel calibration $c_f$ (FORMULAS.md s
 - Pressures 0.5-3 atm and O2 0.12-0.34 (FLEX range); outside, the NIST property cap (1500 K) and A7 dominate.
 - No textbook worked examples could be used for tests (Turns, Law, Glassman not accessible to Claude); tests check NIST data, the NASA source equations, limits and monotonicity instead.
 
-## 8a. Law & Williams (1972) fragments received 2026-11-14 12:43 (not yet used)
+## 8a. Law & Williams (1972) fragments received 2026-11-14 12:43 (Eq. 1 and its definitions used since ADR-026; Eqs. 8-10 and the E relation not yet used)
 
 Screenshots from Ruslan (transcription in RESEARCH_LOG.md, 12:43). Eq. (1) $k_0 = \frac{8}{\rho_F}\frac{\lambda_1}{C_1}\ln(1+B)$ uses properties of an inner region (index 1), supporting H1; the definitions of $\lambda_1$, $C_1$ are not in the screenshots. Eq. (9), a 1-g correlation for alkanes, $k = k_0[1 + 0.533\,Gr^{0.52}][1 - 3.80\times10^{-5}(d\,p^{0.84})^{-1.9}]$ ($d$ in cm, $p$ in atm), could replace the FORMULAS.md section 6 estimate for the Earth comparison; the extinction relation $E = R^0\ln[(d_a/d_b)^2(p_a/p_b)^{1.68}]/(1/T_{fa} - 1/T_{fb})$ could give an activation energy from FLEX extinction pairs (needed for a real Damköhler number). Both await Ruslan's decision.
 

@@ -291,3 +291,7 @@ datasets:
         sha256: e370dcbecbc34c2b2fc0e6540fee2a9d273d584d92f4bd2695c148c57dc230e0
       - path: "data/raw/nist/thermo_C7782447.html"
         sha256: 840a24d2c7ab05c1c6c9cb94023644a13af5393337f36ccd615997df193d413e
+      - path: "data/raw/nist/thermo_gas_C142825.html"
+        sha256: d525694693923373f1aa98da65310bab0e66d4275575e4523317ece762827338
+      - path: "data/raw/nist/thermo_gas_C67561.html"
+        sha256: 78af2f8e85908d71e465d880860fc4b582de3dd74cc571a5bfc9e82614926d6c

@@ -6,7 +6,8 @@ Stage 4 (ADR-022..025). Raw responses are stored unchanged; sha256 go to data/ca
   density) for O2, N2, CO2, He: ``gas_<ID>.tsv`` (NIST fluid.cgi, Type=IsoBar).
 - Saturation tables (liquid and vapor) for methanol, n-heptane, water: ``sat_<ID>.tsv`` (Type=SatT).
 - Species pages with molecular weight and condensed-phase thermochemistry (Delta_c H liquid):
-  ``thermo_<ID>.html`` (cbook.cgi, Mask=2).
+  ``thermo_<ID>.html`` (cbook.cgi, Mask=2); gas-phase pages of the fuels with ideal-gas cp tables:
+  ``thermo_gas_<ID>.html`` (Mask=1).
 
 NIST IDs: O2 C7782447, N2 C7727379, CO2 C124389, He C7440597, methanol C67561,
 n-heptane C142825, water C7732185.
@@ -55,6 +56,8 @@ def main() -> None:
                f"&THigh={hi}&TLow={lo}&TInc={inc}{UNITS}")
         (OUT / f"sat_{nid}.tsv").write_bytes(_get(url))
         (OUT / f"thermo_{nid}.html").write_bytes(_get(f"{BASE}/cbook.cgi?ID={nid}&Units=SI&Mask=2"))
+        if name != "water":  # gas-phase page: ideal-gas cp of the fuel vapour (ADR-026)
+            (OUT / f"thermo_gas_{nid}.html").write_bytes(_get(f"{BASE}/cbook.cgi?ID={nid}&Units=SI&Mask=1"))
         print("liquid", name, nid)
         time.sleep(1)
     for name, nid in GASES.items():

@@ -70,3 +70,6 @@ Open items:
 2026-11-14 ~12:40 | 4 | physics package (properties, mixing, droplet); theory vs data: K_meas/K_theory 0.52 (methanol), 0.24 (heptane); trends with d0, He, CO2 | src/fif/physics, scripts/physics_vs_data.py, docs/figures/physics_*.png | tests, docs
 2026-11-14 12:43 | 4 | 18 physics tests (32 total green); PHYSICS.md, ARCHITECTURE (physics), DATA_SOURCES, features list | tests/test_physics.py, docs/* | stage 5
 - Stage 4 duration: 12:25-12:43 (clock), budget 90 min.
+2026-11-14 12:49 | 4 | Rework after Ruslan's review: Q checked (19.90 = LHV, HHV 22.65 MJ/kg - both from NIST); cause of the 2x/4x error = ambient-gas cp instead of the inner-region C_1 of L&W Eq. (1) | - | fix
+2026-11-14 12:51 | 4 | C_1 = NIST fuel-vapour cp (TRC 1997 / Scott 1974); K_meas/K_theory methanol 1.36, heptane 0.89; 34 tests green; PHYSICS.md sections 2, 5, 6, 7 updated; ADR-026; tag stage-4.1 | src/fif/physics, data/raw/nist/thermo_gas_*, docs/PHYSICS.md | stage 5
+- Stage 4 rework: 12:49-12:52 (clock).

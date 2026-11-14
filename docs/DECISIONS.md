@@ -260,3 +260,13 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Decision (Ruslan): A (recommended).
 - Consequences: features ln K_theory, B, T_f, Y_O2 (mass), alpha_g = lambda/(rho cp); for extinction also d0 and chi_rad proxy; plus the raw pre-ignition conditions. Listed in `fif.data.features` / stage 5.
 - Sources: docs/PHYSICS.md
+
+## ADR-026: Inner-region heat capacity C_1 in the burning-rate formula (correction of stage 4)
+- Date/time: 2026-11-14 12:52 (UTC+5)
+- Stage: 4 (rework requested by Ruslan before stage 5)
+- Context: the first stage-4 version used the cp of the ambient gas in K and B and over-predicted FLEX K by 2x (methanol) and 4x (heptane). Ruslan supplied the paragraph after L&W (1972) Eq. (1): K uses lambda_1 / C_1 of the gas region inside the flame; elementary assumptions lambda_1 = lambda_2, c_1 = c_2; q = heat of combustion per unit mass at T_inf. Ruslan also pointed to HHV vs LHV.
+- Options: A) C_1 = fuel-vapour cp (NIST ideal-gas tables) at T_bar, lambda_1 = ambient-mixture lambda B) keep ambient cp C) C_1 from a full inner-region mixture (needs product composition and fuel-vapour conductivity, not in NIST).
+- Claude's recommendation: A - follows the L&W definition with sourced data; C would need data we do not have.
+- Decision (Ruslan): "fix it and make everything correct before stage 5" - implemented A; Q stays the LHV (19.90 / 44.56 MJ/kg), HHV 22.65 / 48.07 MJ/kg shown in PHYSICS.md section 6 - Ruslan to confirm LHV vs HHV.
+- Consequences: median K_meas/K_theory 0.52 -> 1.36 (methanol), 0.24 -> 0.89 (heptane). Old version kept as K_theory_ambient_cp. New raw files data/raw/nist/thermo_gas_C67561.html, thermo_gas_C142825.html. Tag stage-4.1 (stage-4 left unchanged).
+- Sources: Law & Williams, Combust. Flame 19 (1972) 393-405, Eq. (1) and following paragraph; NIST SRD 69 gas-phase cp (TRC 1997; Scott 1974)

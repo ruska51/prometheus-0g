@@ -28,7 +28,7 @@ with tab_rank:
         "relevance": "relevance", "psi_id": "PSI id", "acronym": "acronym", "title": "title", "stage": "stage", "fuel_type": "subject",
         "flight_platform": "platform", "start_date": "start", "end_date": "end", "n_table_rows": "tests in table",
         "n_publications": "publications", "doi": "DOI", "psi_url": "PSI page"})
-    st.dataframe(show, hide_index=True, use_container_width=True,
+    st.dataframe(show, hide_index=True, width="stretch",
                  column_config={"PSI page": st.column_config.LinkColumn(display_text="open"),
                                 "relevance": st.column_config.ProgressColumn(min_value=0, max_value=1, format="%.2f")})
     st.download_button("Download this table (CSV)", show.to_csv(index=False).encode("utf-8"), "psi_investigations.csv", "text/csv")
@@ -57,7 +57,7 @@ with tab_cmp:
                                hovertemplate="%{y}: %{x}<br>%{customdata}<extra></extra>"))
     fig.update_layout(template=PLOT_TEMPLATE, height=40 + 26 * len(t), margin=dict(l=10, r=10, t=10, b=10),
                       yaxis=dict(autorange="reversed"), xaxis=dict(side="top", tickangle=-30))
-    st.plotly_chart(fig, use_container_width=True)
+    st.plotly_chart(fig, width="stretch")
     both = t[t["oxygen"] & t["pressure"]]["acronym"].tolist()
     outc = t[t[[l for l in labels if kinds[l] == "outcome"]].any(axis=1)]["acronym"].tolist()
     st.markdown(f"- **Oxygen and pressure both recorded:** {', '.join(both)} ({len(both)} of {len(t)} tables) - "

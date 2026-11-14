@@ -36,6 +36,6 @@ for name, a in PRESETS.items():
                                  marker=dict(size=18, symbol="star", color="#2563EB", line=dict(width=2, color="white")), name=name))
 fig.update_layout(template=PLOT_TEMPLATE, height=560, xaxis_title="Oxygen mole fraction", yaxis_title="Cabin pressure, psi",
                   legend=dict(orientation="h", y=-0.18), margin=dict(l=10, r=10, t=30, b=10))
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, width="stretch")
 st.caption(f"Spacesuit (100 % O2, {PRESETS['Spacesuit']['p_atm'] * 14.696:.1f} psi) lies far outside this map and all tested data.")
 source_note("hybrid model (docs/MODEL_CARD.md); FLEX tests: NASA PSI-69; cabin atmospheres: NASA/TP-2015-216046 Table I and the challenge page")

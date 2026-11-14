@@ -89,5 +89,5 @@ st.caption("K = burning-rate constant, the slope of droplet diameter squared vs 
 st.dataframe(r["nearest_tests"].round({"p_atm": 3, "x_o2": 2, "x_co2": 2, "x_he": 2}).rename(columns={"flex_identifier": "FLEX id", "x_o2": "O2", "x_co2": "CO2", "x_he": "He",
                                                  "p_atm": "p, atm", "d0_mm_orig": "d0, mm", "K_mm2_s_orig": "K measured, mm²/s",
                                                  "test_end": "test end", "source_id": "source", "row_id": "row"}),
-             hide_index=True, use_container_width=True)
+             hide_index=True, width="stretch")
 source_note("NASA PSI-69 FLEX + NASA/TP-2015-216046; models: docs/MODEL_CARD.md; reliability rule: ADR-031")

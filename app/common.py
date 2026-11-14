@@ -10,6 +10,7 @@ from pathlib import Path
 
 import pandas as pd
 import streamlit as st
+from i18n import t as _t
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT / "src") not in sys.path:
@@ -36,12 +37,12 @@ def badge(text: str, color: str) -> str:
     )
 
 
-def evidence_badge(t: str) -> str:
-    return badge(t, EVIDENCE_COLORS.get(t, MUTED))
+def evidence_badge(kind: str) -> str:
+    return badge(_t(kind), EVIDENCE_COLORS.get(kind, MUTED))
 
 
-def status_badge(s: str) -> str:
-    return badge(s, STATUS_COLORS.get(s, MUTED))
+def status_badge(status: str) -> str:
+    return badge(_t(status), STATUS_COLORS.get(status, MUTED))
 
 
 @st.cache_data(show_spinner=False)
@@ -91,7 +92,7 @@ def risk_grid(fuel: str, d0_mm: float) -> pd.DataFrame:
 
 
 def source_note(text: str) -> None:
-    st.caption(f"Source: {text}")
+    st.caption(_t("Source:") + " " + text)
 
 
 @st.cache_data(show_spinner=False)

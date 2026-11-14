@@ -14,16 +14,19 @@ import streamlit as st
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-st.set_page_config(page_title="Prometheus-0g - Will it burn on the Moon?", page_icon=":fire:", layout="wide")
+from i18n import language_selector, t  # noqa: E402
+
+st.set_page_config(page_title=t("Prometheus-0g - Will it burn on the Moon?"), page_icon=":fire:", layout="wide")
+language_selector()
 
 pages = [
-    st.Page("views/overview.py", title="Overview", icon=":material/home:", default=True),
-    st.Page("views/insights.py", title="Insights", icon=":material/insights:"),
-    st.Page("views/scenario.py", title="Moon-base scenario", icon=":material/science:"),
-    st.Page("views/risk_map.py", title="Risk map", icon=":material/map:"),
-    st.Page("views/investigations.py", title="Investigations", icon=":material/table_view:"),
-    st.Page("views/data_explorer.py", title="Data explorer", icon=":material/dataset:"),
-    st.Page("views/validation.py", title="Validation", icon=":material/fact_check:"),
-    st.Page("views/method.py", title="Method & sources", icon=":material/menu_book:"),
+    st.Page("views/overview.py", title=t("Overview"), icon=":material/home:", default=True),
+    st.Page("views/insights.py", title=t("Insights"), icon=":material/insights:"),
+    st.Page("views/scenario.py", title=t("Moon-base scenario"), icon=":material/science:"),
+    st.Page("views/risk_map.py", title=t("Risk map"), icon=":material/map:"),
+    st.Page("views/investigations.py", title=t("Investigations"), icon=":material/table_view:"),
+    st.Page("views/data_explorer.py", title=t("Data explorer"), icon=":material/dataset:"),
+    st.Page("views/validation.py", title=t("Validation"), icon=":material/fact_check:"),
+    st.Page("views/method.py", title=t("Method & sources"), icon=":material/menu_book:"),
 ]
 st.navigation(pages).run()

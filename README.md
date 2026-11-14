@@ -3,7 +3,7 @@
 Physics-first, AI-assisted fire-safety insights from NASA microgravity combustion experiments. Built for the challenge "Flame in Freefall".
 Team **The Catalyst**, NASA International Space Apps Challenge 2026 (Uralsk local event).
 
-**Live dashboard:** https://prometheus-0g.streamlit.app/ (Streamlit Community Cloud, ADR-040)
+**Live dashboard:** https://prometheus-0g.streamlit.app/ (Streamlit Community Cloud, ADR-040) - English by default, Russian interface: https://prometheus-0g.streamlit.app/?lang=ru
 
 > Work in progress. Sections below are filled during the project (stage 12).
 

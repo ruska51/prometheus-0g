@@ -97,7 +97,7 @@ def simulate(
     status = s["reliability"]["status"]
     K = s["K_hybrid_mm2_s"] if s["K_hybrid_mm2_s"] is not None else s["K_theory_mm2_s"]
     k_src = "hybrid model" if s["K_hybrid_mm2_s"] is not None else "physics only (model withheld)"
-    notes = []
+    notes, notes_ru = [], []
     fac = float(buoyancy_factor(s["earth_Gr"], gravity)) if gravity else 1.0
     if gravity:
         K = K * fac
@@ -105,10 +105,15 @@ def simulate(
         bound = ", upper bound; lower bound = microgravity K" if gravity < 1 else ""
         k_src += f" x (1 + f_B) = x{fac:.2f} ({where} buoyancy, Gr = {s['earth_Gr'] * gravity:.2g}{bound})"
         notes.append("Buoyant flame shape is schematic; extinction is not modelled with gravity.")
+        notes_ru.append("Форма пламени при гравитации схематична; затухание с гравитацией не моделируется.")
         if gravity < 1:
             notes.append(
                 "Partial gravity: the burning rate lies between the microgravity value and this upper bound "
                 "(no partial-gravity data in PSI)."
+            )
+            notes_ru.append(
+                "Частичная гравитация: скорость горения лежит между значением в невесомости и этой верхней границей "
+                "(данных при частичной гравитации в PSI нет)."
             )
     d_ext = None
     extinguishes = False
@@ -122,11 +127,15 @@ def simulate(
             extinguishes = True
     else:
         notes.append("Extinction not predicted outside the tested data (P(extinction) shown for reference only).")
+        notes_ru.append("Вне испытанных условий затухание не прогнозируется (P(затухания) показана только для справки).")
     t_end = (d0_mm**2 - (d_ext**2 if d_ext else 0.0)) / K
     sustained = not (extinguishes and d_ext >= d0_mm * 0.999)
     if not sustained:
         notes.append(
             "Predicted extinction diameter >= initial diameter: no sustained flame (brief ignition flash, illustrative)."
+        )
+        notes_ru.append(
+            "Прогнозный диаметр затухания не меньше начального: устойчивого пламени нет (короткая вспышка, иллюстрация)."
         )
     t = np.linspace(0.0, t_end, 121)
     d = np.sqrt(np.clip(d0_mm**2 - K * t, 0.0, None))
@@ -152,6 +161,7 @@ def simulate(
         "status": status,
         "unburned_fraction": float((d_ext / d0_mm) ** 3) if d_ext else 0.0,
         "notes": notes,
+        "notes_ru": notes_ru,
         "sustained": sustained,
         "sooty": sooty,
         "flame_rgb": color,

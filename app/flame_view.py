@@ -35,22 +35,23 @@ button.on{background:#1D4ED8;color:#fff;border-color:#1D4ED8}
 </style></head><body>
 <div class="row" id="row"></div>
 <div class="ctl">
- <button id="play">❚❚ Pause</button><button id="replay">↺ Replay</button>
- <span style="margin-left:6px">Speed</span><button data-s="1" class="on">1× real time</button><button data-s="2">2×</button><button data-s="4">4×</button>
+ <button id="play"></button><button id="replay"></button>
+ <span style="margin-left:6px" id="speedlab"></span><button data-s="1" class="on" id="rt"></button><button data-s="2">2×</button><button data-s="4">4×</button>
 </div>
 <script>
 const P = __DATA__;
+const L = __LABELS__;
 const STATUS = {"in range":"#15803D","extrapolation":"#B45309","unreliable":"#B91C1C"};
 const row = document.getElementById('row');
 const V = P.map((p,i)=>{
   const el = document.createElement('div'); el.className='panel';
-  const g = !p.gravity ? 'microgravity' : (Math.abs(p.gravity-1)<1e-9 ? '1 g' : (Math.abs(p.gravity-1/6)<1e-9 ? '1/6 g' : p.gravity.toFixed(2)+' g'));
+  const g = !p.gravity ? L.microgravity : (Math.abs(p.gravity-1)<1e-9 ? '1 g' : (Math.abs(p.gravity-1/6)<1e-9 ? '1/6 g' : p.gravity.toFixed(2)+' g'));
   el.innerHTML = `<div class="head"><span class="t">${p.label}</span><span class="chip" style="background:${!p.gravity?'#1E3A8A':(p.gravity<1?'#4B5563':'#7C2D12')};color:#fff">${g}</span></div>
    <canvas></canvas><div class="bar"><div></div></div>
    <div class="foot"><span class="hud"></span><br>
-   K <b>${p.K_mm2_s.toFixed(2)} mm²/s</b> · ${p.extinguishes ? (p.sustained ? 'flame out at' : 'no sustained flame') : 'burns out in'} <b>${p.sustained ? p.t_end_s.toFixed(1)+' s' : ''}</b>
+   K <b>${p.K_mm2_s.toFixed(2)} ${L.mm2s}</b> · ${p.extinguishes ? (p.sustained ? L.flame_out_at : L.no_sustained) : L.burns_out_in} <b>${p.sustained ? p.t_end_s.toFixed(1)+' '+L.s : ''}</b>
    · T<sub>f</sub> <b>${Math.round(p.T_f_K)} K</b><br>
-   O<sub>2</sub> ${(p.x_o2*100).toFixed(0)} % · ${p.p_psi.toFixed(1)} psi · <span class="chip" style="background:${STATUS[p.status]||'#6B7280'};color:#fff">${p.status}</span></div>`;
+   O<sub>2</sub> ${(p.x_o2*100).toFixed(0)} % · ${p.p_psi.toFixed(1)} psi · <span class="chip" style="background:${STATUS[p.status]||'#6B7280'};color:#fff">${L[p.status]||p.status}</span></div>`;
   row.appendChild(el);
   return {p, el, cv: el.querySelector('canvas'), bar: el.querySelector('.bar>div'), hud: el.querySelector('.hud')};
 });
@@ -183,23 +184,49 @@ function frame(ts){
     if(I>0.003&&R>0.5){ p.gravity? earthFlame(c,v,x,y,R,I,wall) : sphereFlame(c,v,x,y,R,I,wall); }
     if(!burnedOut) droplet(c,x,y,rd,p,I,p.sooty?p.flame_rgb:BLUE);
     if(p.extinguishes&&clock>tend+(p.sustained?0:0.9)){ smoke(c,x,y,Math.max(rd*3,12),clock-tend-0.2,p.gravity);
-      label(c,v,p.sustained?`FLAME OUT · ${(p.unburned_fraction*100).toFixed(0)} % of fuel left`:'NO SUSTAINED FLAME','#FCA5A5'); }
-    else if(burnedOut) label(c,v,'BURNED OUT','#FDE68A');
+      label(c,v,p.sustained?`${L.FLAME_OUT} · ${(p.unburned_fraction*100).toFixed(0)} % ${L.fuel_left}`:L.NO_SUSTAINED,'#FCA5A5'); }
+    else if(burnedOut) label(c,v,L.BURNED_OUT,'#FDE68A');
     v.bar.style.width=(tend>0?Math.min(1,clock/tend)*100:100)+'%';
-    v.hud.innerHTML=`t <b>${tp.toFixed(1)} s</b> · d <b>${s.d.toFixed(2)} mm</b> · burned <b>${(s.b*100).toFixed(0)} %</b>`;
+    v.hud.innerHTML=`t <b>${tp.toFixed(1)} ${L.s}</b> · d <b>${s.d.toFixed(2)} ${L.mm}</b> · ${L.burned} <b>${(s.b*100).toFixed(0)} %</b>`;
   });
   requestAnimationFrame(frame);
 }
 requestAnimationFrame(frame);
 const pb=document.getElementById('play');
-pb.onclick=()=>{playing=!playing; pb.textContent=playing?'❚❚ Pause':'▶ Play';};
-document.getElementById('replay').onclick=()=>{clock=0; playing=true; pb.textContent='❚❚ Pause';};
+pb.textContent='❚❚ '+L.Pause; document.getElementById('replay').textContent='↺ '+L.Replay;
+document.getElementById('speedlab').textContent=L.Speed; document.getElementById('rt').textContent='1× '+L.real_time;
+pb.onclick=()=>{playing=!playing; pb.textContent=playing?'❚❚ '+L.Pause:'▶ '+L.Play;};
+document.getElementById('replay').onclick=()=>{clock=0; playing=true; pb.textContent='❚❚ '+L.Pause;};
 document.querySelectorAll('button[data-s]').forEach(b=>b.onclick=()=>{speed=+b.dataset.s; document.querySelectorAll('button[data-s]').forEach(q=>q.classList.toggle('on',q===b));});
 </script></body></html>
 """
 
 
-def html(sims: list[dict]) -> str:
+LABELS_EN = {  # texts drawn by the JavaScript; app/i18n.py supplies the Russian set
+    "microgravity": "microgravity",
+    "flame_out_at": "flame out at",
+    "no_sustained": "no sustained flame",
+    "burns_out_in": "burns out in",
+    "s": "s",
+    "mm": "mm",
+    "mm2s": "mm²/s",
+    "burned": "burned",
+    "FLAME_OUT": "FLAME OUT",
+    "fuel_left": "of fuel left",
+    "NO_SUSTAINED": "NO SUSTAINED FLAME",
+    "BURNED_OUT": "BURNED OUT",
+    "Pause": "Pause",
+    "Play": "Play",
+    "Replay": "Replay",
+    "Speed": "Speed",
+    "real_time": "real time",
+    "in range": "in range",
+    "extrapolation": "extrapolation",
+    "unreliable": "unreliable",
+}
+
+
+def html(sims: list[dict], labels: dict | None = None) -> str:
     keep = (
         "label",
         "fuel",
@@ -219,8 +246,9 @@ def html(sims: list[dict]) -> str:
         "series",
     )
     data = json.dumps([{k: s[k] for k in keep} for s in sims]).replace("</", "<\\/")
-    return _HTML.replace("__DATA__", data)
+    lab = json.dumps({**LABELS_EN, **(labels or {})}).replace("</", "<\\/")
+    return _HTML.replace("__DATA__", data).replace("__LABELS__", lab)
 
 
-def render(sims: list[dict], height: int = 500) -> None:
-    components.html(html(sims), height=height, scrolling=False)
+def render(sims: list[dict], labels: dict, height: int = 500) -> None:
+    components.html(html(sims, labels), height=height, scrolling=False)

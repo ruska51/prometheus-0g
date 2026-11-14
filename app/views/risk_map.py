@@ -4,17 +4,21 @@ import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
 from common import PLOT_TEMPLATE, flex, risk_grid, source_note
+from i18n import t
 
 from fif.insights.scenario import PRESETS
 
 SHORT = {"ISS cabin air": "ISS air", "Moon base / rover (planned)": "Moon base"}
 
-st.title("Risk map: oxygen x pressure")
+st.title(t("Risk map: oxygen x pressure"))
 st.markdown(
-    "Colour = predicted burning rate relative to ISS cabin air (hybrid model, 3 mm droplet, N2 balance). "
-    "Grey cells are outside the conditions NASA tested for that fuel (O2 within ±0.02 at that pressure); dark dots are the FLEX tests, stars are real or planned cabin atmospheres."
+    t(
+        "Colour = predicted burning rate relative to ISS cabin air (hybrid model, 3 mm droplet, N2 balance). "
+        "Grey cells are outside the conditions NASA tested for that fuel (O2 within ±0.02 at that pressure); dark dots are "
+        "the FLEX tests, stars are real or planned cabin atmospheres."
+    )
 )
-fuel = st.radio("Fuel", ["Methanol", "Heptane"], horizontal=True)
+fuel = st.radio(t("Fuel"), ["Methanol", "Heptane"], horizontal=True, format_func=t)
 g = risk_grid(fuel, 3.0)
 o2 = np.sort(g["x_o2"].unique())
 p = np.sort(g["p_atm"].unique())
@@ -42,7 +46,7 @@ fig.add_trace(
         colorscale=[[0, "rgba(120,120,120,0.55)"], [1, "rgba(120,120,120,0.55)"]],
         showscale=False,
         hoverinfo="skip",
-        name="outside tested conditions",
+        name=t("outside tested conditions"),
     )
 )
 fig.add_trace(
@@ -51,7 +55,7 @@ fig.add_trace(
         y=[None],
         mode="markers",
         marker=dict(size=12, color="rgba(120,120,120,0.55)", symbol="square"),
-        name="outside tested conditions (grey)",
+        name=t("outside tested conditions (grey)"),
     )
 )
 f = flex()
@@ -62,7 +66,7 @@ fig.add_trace(
         y=f["p_atm"] * 14.696,
         mode="markers",
         marker=dict(size=7, color="#111827", line=dict(width=1, color="white")),
-        name="NASA FLEX tests (N2)",
+        name=t("NASA FLEX tests (N2)"),
         hovertemplate="FLEX %{text}<extra></extra>",
         text=f["flex_identifier"],
     )
@@ -74,25 +78,31 @@ for name, a in PRESETS.items():
                 x=[a["x_o2"]],
                 y=[a["p_atm"] * 14.696],
                 mode="markers+text",
-                text=[f"<b>{SHORT.get(name, name)}</b>"],
+                text=[f"<b>{t(SHORT.get(name, name))}</b>"],
                 textposition="top center",
                 textfont=dict(size=14, color="#111827"),
                 marker=dict(size=18, symbol="star", color="#2563EB", line=dict(width=2, color="white")),
-                name=name,
+                name=t(name),
             )
         )
 fig.update_layout(
     template=PLOT_TEMPLATE,
     height=560,
-    xaxis_title="Oxygen mole fraction",
-    yaxis_title="Cabin pressure, psi",
+    xaxis_title=t("Oxygen mole fraction"),
+    yaxis_title=t("Cabin pressure, psi"),
     legend=dict(orientation="h", y=-0.18),
     margin=dict(l=10, r=10, t=30, b=10),
 )
 st.plotly_chart(fig, width="stretch")
 st.caption(
-    f"Spacesuit (100 % O2, {PRESETS['Spacesuit']['p_atm'] * 14.696:.1f} psi) lies far outside this map and all tested data."
+    t(
+        "Spacesuit (100 % O2, {p:.1f} psi) lies far outside this map and all tested data.",
+        p=PRESETS["Spacesuit"]["p_atm"] * 14.696,
+    )
 )
 source_note(
-    "hybrid model (docs/MODEL_CARD.md); FLEX tests: NASA PSI-69; cabin atmospheres: NASA/TP-2015-216046 Table I and the challenge page"
+    t(
+        "hybrid model (docs/MODEL_CARD.md); FLEX tests: NASA PSI-69; cabin atmospheres: NASA/TP-2015-216046 Table I and "
+        "the challenge page"
+    )
 )

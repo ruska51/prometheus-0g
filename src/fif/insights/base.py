@@ -36,6 +36,7 @@ class Insight:
     extrapolation: bool = False
     related: list = field(default_factory=list)  # ids of linked insights (history <-> data)
     score: float = 0.0
+    ru: dict = field(default_factory=dict)  # Russian title / finding / action (interface language switch)
 
     def to_dict(self) -> dict:
         return asdict(self)

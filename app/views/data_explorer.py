@@ -3,18 +3,19 @@
 import plotly.express as px
 import streamlit as st
 from common import PLOT_TEMPLATE, cfig, flex, source_note
+from i18n import t
 
-st.title("Data explorer")
-tab1, tab2 = st.tabs(["FLEX droplets (PSI-69)", "CFI-G gaseous flames (PSI-159)"])
+st.title(t("Data explorer"))
+tab1, tab2 = st.tabs([t("FLEX droplets (PSI-69)"), t("CFI-G gaseous flames (PSI-159)")])
 
 with tab1:
     f = flex()
     c1, c2, c3 = st.columns(3)
-    fuel = c1.multiselect("Fuel", ["Methanol", "Heptane"], default=["Methanol", "Heptane"])
-    dil = c2.multiselect("Diluent", ["N2", "CO2", "He"], default=["N2", "CO2", "He"])
-    o2 = c3.slider("O2 mole fraction", 0.10, 0.35, (0.10, 0.35), 0.01)
+    fuel = c1.multiselect(t("Fuel"), ["Methanol", "Heptane"], default=["Methanol", "Heptane"], format_func=t)
+    dil = c2.multiselect(t("Diluent"), ["N2", "CO2", "He"], default=["N2", "CO2", "He"])
+    o2 = c3.slider(t("O2 mole fraction"), 0.10, 0.35, (0.10, 0.35), 0.01)
     v = f[f["fuel"].isin(fuel) & f["diluent"].isin(dil) & f["x_o2"].between(*o2)]
-    st.caption(f"{len(v)} of {len(f)} tests; quality flags explained in docs/DATA_QUALITY.md")
+    st.caption(t("{n} of {total} tests; quality flags explained in docs/DATA_QUALITY.md", n=len(v), total=len(f)))
     fig = px.scatter(
         v,
         x="x_o2",
@@ -23,7 +24,12 @@ with tab1:
         symbol="fuel",
         template=PLOT_TEMPLATE,
         hover_data=["flex_identifier", "p_atm", "d0_mm_orig", "test_end", "quality_flag"],
-        labels={"x_o2": "O2 mole fraction", "K_mm2_s_orig": "burning-rate constant K, mm²/s", "diluent": "diluent"},
+        labels={
+            "x_o2": t("O2 mole fraction"),
+            "K_mm2_s_orig": t("burning-rate constant K, mm²/s"),
+            "diluent": t("diluent"),
+            "fuel": t("fuel"),
+        },
     )
     fig.update_layout(height=420, margin=dict(l=10, r=10, t=30, b=10), legend=dict(orientation="h", y=-0.25))
     st.plotly_chart(fig, width="stretch")
@@ -48,11 +54,13 @@ with tab1:
     ]
     st.dataframe(v[cols], hide_index=True, width="stretch")
     st.download_button(
-        "Download filtered FLEX data (CSV)", v[cols].to_csv(index=False).encode("utf-8"), "flex_filtered.csv", "text/csv"
+        t("Download filtered FLEX data (CSV)"), v[cols].to_csv(index=False).encode("utf-8"), "flex_filtered.csv", "text/csv"
     )
     source_note(
-        "NASA PSI-69 Experimental Table (CC0) + 2 tests from NASA/TP-2015-216046 Table IX; units: p in atm, d in mm, K in mm²/s, "
-        "time in s; columns source_id/source_file/row_id point to the raw row"
+        t(
+            "NASA PSI-69 Experimental Table (CC0) + 2 tests from NASA/TP-2015-216046 Table IX; units: p in atm, d in mm, K in "
+            "mm²/s, time in s; columns source_id/source_file/row_id point to the raw row"
+        )
     )
 
 with tab2:
@@ -66,9 +74,10 @@ with tab2:
         template=PLOT_TEMPLATE,
         hover_data=["fuel_label", "test_id", "hot_ignition", "burn_time_s"],
         labels={
-            "p_Pa": "pressure, Pa",
-            "x_o2_oxidizer": "O2 mole fraction of the oxidizer",
-            "end_mode": "end (SE self-extinguished, FT flow terminated)",
+            "p_Pa": t("pressure, Pa"),
+            "x_o2_oxidizer": t("O2 mole fraction of the oxidizer"),
+            "end_mode": t("end (SE self-extinguished, FT flow terminated)"),
+            "table": t("flame type"),
         },
     )
     fig.update_layout(height=420, margin=dict(l=10, r=10, t=30, b=10), legend=dict(orientation="h", y=-0.25))
@@ -89,5 +98,5 @@ with tab2:
         "row_id",
     ]
     st.dataframe(c[ccols], hide_index=True, width="stretch")
-    st.download_button("Download CFI-G data (CSV)", c[ccols].to_csv(index=False).encode("utf-8"), "cfig.csv", "text/csv")
-    source_note("NASA PSI-159 ACME CFI-G Experimental Tables (CC0); Tad and Zst as computed by the table authors")
+    st.download_button(t("Download CFI-G data (CSV)"), c[ccols].to_csv(index=False).encode("utf-8"), "cfig.csv", "text/csv")
+    source_note(t("NASA PSI-159 ACME CFI-G Experimental Tables (CC0); Tad and Zst as computed by the table authors"))

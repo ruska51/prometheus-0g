@@ -67,3 +67,7 @@ Colour use: evidence badges with fixed colours (NASA data green, model blue, the
 ## Responsiveness
 
 Wide layout on desktop; columns collapse on narrow screens (Streamlit stacks columns); charts use `use_container_width`; check at 390 px width.
+
+## Language
+
+English by default; Russian via the sidebar switch "Language / Язык" or the URL parameter `?lang=ru` (ADR-041). Numbers are identical in both languages; NASA record texts, data values and direct quotes stay in English.

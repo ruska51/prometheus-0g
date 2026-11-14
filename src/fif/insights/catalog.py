@@ -31,6 +31,8 @@ MOON = {"x_o2": 0.30, "p_atm": 10.2 / 14.696}  # challenge page: "30% or greater
 SUIT = {"x_o2": 1.0, "p_atm": 4.3 / 14.696}  # challenge page: spacesuit "100% oxygen to only 4.3 psi"
 SRC_FLEX = "NASA PSI-69 FLEX Experimental Table (https://psi.nasa.gov), NASA/TP-2015-216046"
 SRC_CH = "Challenge page 'Flame in Freefall' (docs/challenge/CHALLENGE.md)"
+FUEL_RU = {"Methanol": "метанол", "Heptane": "гептан"}
+STATUS_RU = {"in range": "в пределах данных", "extrapolation": "экстраполяция", "unreliable": "ненадёжно"}
 
 
 @functools.lru_cache(maxsize=1)
@@ -100,6 +102,13 @@ def _conf(ci: list[float] | None, n: int, extrap: bool = False) -> str:
 def p1_oxygen_speeds_burning() -> Insight:
     coef, boots, n = k_regression()
     r, ci, le = _ratio(coef, boots, "x_o2", 0.09)
+    ru = dict(
+        title="Больше кислорода - топливо сгорает быстрее",
+        finding=f"Повышение O2 с 21 % до 30 % (прочие условия те же) меняет скорость горения капли на {_pct(r)} "
+        f"(95 % ДИ от {_pct(ci[0])} до {_pct(ci[1])}), по {n} тестам FLEX на МКС.",
+        action="Считайте каждый лишний процент O2 в модуле ростом пожарной опасности; ужесточайте отбор материалов и контроль "
+        "источников зажигания, когда O2 выше, чем в воздухе на уровне моря.",
+    )
     return Insight(
         "P1",
         "prevention",
@@ -114,6 +123,7 @@ def p1_oxygen_speeds_burning() -> Insight:
         [SRC_FLEX, "Regression with regime bootstrap: src/fif/insights/catalog.py"],
         _conf(ci, n),
         related=["H1"],
+        ru=ru,
     )
 
 
@@ -130,6 +140,15 @@ def p2_moon_base_vs_iss() -> Insight:
         lab.append(rel["status"])
         txt.append(f"{fuel.lower()} {_pct(ratio)} (95 % band {_pct(lo)} to {_pct(hi)})")
     worst = max(rows, key=lambda r: r[1])
+    ru = dict(
+        title="Атмосфера лунной базы ускоряет горение капель по сравнению с воздухом МКС",
+        finding="Гибридная модель, капля 3 мм: атмосфера лунной базы (O2 30 %, 10.2 psi) против воздуха кабины МКС "
+        "(O2 21 %, 1 атм): "
+        + "; ".join(f"{FUEL_RU[f]} {_pct(q)} (95 % полоса от {_pct(a)} до {_pct(b)})" for f, q, a, b in rows)
+        + f". Статус: {', '.join(STATUS_RU[x] for x in sorted(set(lab)))} (O2 30 % испытан только начиная с 0.703 атм).",
+        action="Рассчитывайте обнаружение пожара и мощность тушения в модулях лунной базы и луноходах на более быстрое "
+        "выгорание топлива, чем на МКС; повторно испытайте материалы кабины в планируемой атмосфере.",
+    )
     return Insight(
         "P2",
         "prevention",
@@ -151,12 +170,19 @@ def p2_moon_base_vs_iss() -> Insight:
         "low" if "extrapolation" in lab or "unreliable" in lab else "medium",
         extrapolation="in range" not in lab,
         related=["H1", "H2"],
+        ru=ru,
     )
 
 
 def p3_low_pressure_does_not_help() -> Insight:
     coef, boots, n = k_regression()
     r, ci, le = _ratio(coef, boots, "ln_p", float(np.log(0.7)))
+    ru = dict(
+        title="Снижение давления в кабине почти не замедляет горение",
+        finding=f"Переход с 1.0 на 0.7 атм при той же доле O2 меняет скорость горения на {_pct(r)} "
+        f"(95 % ДИ от {_pct(ci[0])} до {_pct(ci[1])}; {n} тестов FLEX).",
+        action="Не рассчитывайте, что пониженное давление в модуле компенсирует добавочную опасность повышенной доли O2.",
+    )
     return Insight(
         "P3",
         "prevention",
@@ -170,6 +196,7 @@ def p3_low_pressure_does_not_help() -> Insight:
         [SRC_FLEX],
         _conf(ci, n),
         related=["P2"],
+        ru=ru,
     )
 
 
@@ -179,6 +206,14 @@ def p4_gas_flames_ignite_at_high_o2() -> Insight:
     hi = inv[inv["x_o2_oxidizer"] >= 0.5]
     lo = inv[inv["x_o2_oxidizer"] < 0.3]
     p_hi, p_lo = hi["ignited"].mean(), lo["ignited"].mean()
+    ru = dict(
+        title="В потоках, богатых O2, газообразное топливо поджигается почти всегда",
+        finding=f"Обращённые пламёна ACME CFI-G на МКС: воспламенение в {p_hi * 100:.0f} % из {len(hi)} попыток при O2 в "
+        f"окислителе не ниже 50 % (до {inv['x_o2_oxidizer'].max() * 100:.0f} %) против {p_lo * 100:.0f} % из {len(lo)} "
+        "попыток ниже 30 %.",
+        action="Считайте кислородные магистрали, редукторы и выходы генераторов O2 главными зонами риска воспламенения "
+        "(держите углеводороды и источники электрического нагрева подальше от них).",
+    )
     return Insight(
         "P4",
         "prevention",
@@ -199,6 +234,7 @@ def p4_gas_flames_ignite_at_high_o2() -> Insight:
         ["NASA PSI-159 ACME CFI-G Experimental Tables (https://psi.nasa.gov)"],
         "medium",
         related=["H2", "H3"],
+        ru=ru,
     )
 
 
@@ -216,6 +252,13 @@ def d1_co_from_burning_solids() -> Insight:
     o0, o1 = num(b["Calibrated  initial O2 % by vol"]), num(b["Calibrated final O2 % by vol"])
     ok = co0.notna() & co1.notna() & o0.notna() & o1.notna() & (o1 <= o0 + 0.5)  # drop rows with O2 rising (anomaly)
     dco = (co1 - co0)[ok]
+    ru = dict(
+        title="Горящие твёрдые материалы выделяют CO - контролируйте газы, а не только дым",
+        finding=f"В {int(ok.sum())} тестах BASS-II (небольшие твёрдые образцы в перчаточном боксе МКС) CO вырос по медиане на "
+        f"{dco.median():.0f} ppm, 90-й перцентиль {dco.quantile(0.9):.0f} ppm, максимум {dco.max():.0f} ppm за тест.",
+        action="Дополняйте дымовые извещатели датчиками CO (и CO2) в обитаемых объёмах: экипаж Apollo 1 погиб от токсичных "
+        "газов, а не от жара.",
+    )
     return Insight(
         "D1",
         "detection",
@@ -235,6 +278,7 @@ def d1_co_from_burning_solids() -> Insight:
         ["NASA PSI-25 BASS-II Experimental Table (https://psi.nasa.gov)"],
         "medium",
         related=["H1", "H3"],
+        ru=ru,
     )
 
 
@@ -242,6 +286,14 @@ def d2_cool_flames() -> Insight:
     c = pd.read_csv(REPO_ROOT / "data" / "processed" / "cfig.csv")
     norm = c[c["table"] == "normal"]
     yes = norm["cool_flame"].fillna("").str.lower().str.startswith("yes") | norm["comments"].fillna("").str.contains("ool flame")
+    ru = dict(
+        title="Холодные пламёна: топливо может реагировать и после погасания видимого пламени",
+        finding=f"Холодные пламёна зафиксированы в {int(yes.sum())} из {len(norm)} тестов ACME CFI-G с нормальным пламенем; "
+        "в заметках к тестам FLEX описано холодное горение капель гептана после погасания видимого пламени "
+        "(NASA/TP-2015-216046).",
+        action="Не объявляйте пожар потушенным только по оптическим признакам (видимое или УФ-пламя); подтверждайте газовыми "
+        "датчиками и температурой.",
+    )
     return Insight(
         "D2",
         "detection",
@@ -255,6 +307,7 @@ def d2_cool_flames() -> Insight:
         ["NASA PSI-159 ACME CFI-G (https://psi.nasa.gov)", "NASA/TP-2015-216046 test notes"],
         "medium",
         related=["H3"],
+        ru=ru,
     )
 
 
@@ -263,6 +316,12 @@ def d3_smoke_detection_data() -> Insight:
     s.columns = [str(x).strip() for x in s.columns]
     col = [x for x in s.columns if "Sample Type" in x][0]
     mats = sorted(s[col].dropna().astype(str).str.strip().unique())
+    ru = dict(
+        title="Дым от материалов космических аппаратов измерен в невесомости",
+        finding=f"SAME-R провёл на МКС {len(s.dropna(how='all'))} дымовых тестов с {len(mats)} материалами "
+        f"({', '.join(mats)}) - это база для дымовых извещателей, настроенных на дым в невесомости.",
+        action="При выборе извещателей для новых кораблей опирайтесь на данные SAME/SAME-R о частицах, а не на земные стандарты.",
+    )
     return Insight(
         "D3",
         "detection",
@@ -276,6 +335,7 @@ def d3_smoke_detection_data() -> Insight:
         ["NASA PSI-101 SAME-R Experimental Table (https://psi.nasa.gov)"],
         "medium",
         related=["E2"],
+        ru=ru,
     )
 
 
@@ -283,6 +343,14 @@ def d4_microgravity_vs_earth() -> Insight:
     x = np.array([[0.21, 0.79, 0.0, 0.0]] * 2)
     r = evaluate(np.array(["methanol", "heptane"]), np.full(2, 101325.0), x, d0_m=np.full(2, 3e-3))
     fac = (1 + r["f_B"]).to_numpy()
+    ru = dict(
+        title="Без плавучести та же капля горит медленнее, чем на Земле",
+        finding=f"Поправка Law & Williams на плавучесть для капли 3 мм в воздухе при 1 атм: на Земле скорость горения в "
+        f"{fac[0]:.1f} раза (метанол) и в {fac[1]:.1f} раза (гептан) выше, чем в невесомости (корреляция применена далеко за "
+        f"пределами диапазона подгонки, Gr = {r['Gr'].iloc[0]:.0f}).",
+        action="Не переносите земные результаты по горючести и времени обнаружения на корабли без данных невесомости: пламя в "
+        "невесомости меньше и медленнее, его могут обнаружить позже.",
+    )
     return Insight(
         "D4",
         "detection",
@@ -298,6 +366,7 @@ def d4_microgravity_vs_earth() -> Insight:
         ["Law & Williams, Combust. Flame 19 (1972) Eq. (9); docs/PHYSICS.md section 4"],
         "low",
         extrapolation=True,
+        ru=ru,
     )
 
 
@@ -306,6 +375,15 @@ def p5_lunar_surface_bound() -> Insight:
     r = evaluate(np.array(["methanol", "heptane"]), np.full(2, MOON["p_atm"] * 101325.0), x, d0_m=np.full(2, 3e-3))
     fac = buoyancy_factor(r["Gr"].to_numpy(), G_MOON_RATIO)
     gr = r["Gr"].to_numpy() * G_MOON_RATIO
+    ru = dict(
+        title="На поверхности Луны капля горит со скоростью между МКС и Землёй",
+        finding=f"Воздух лунной базы (O2 0.30, 10.2 psi), капля 3 мм при 1/6 g: скорость горения лежит между скоростью в "
+        f"невесомости и {fac[0]:.2f}x (метанол) / {fac[1]:.2f}x (гептан) от неё (поправка Law & Williams на плавучесть, "
+        f"Gr = {gr[0]:.2f} / {gr[1]:.2f}, внутри диапазона подгонки Gr <= 1). Нижняя граница - невесомость; данных при "
+        "частичной гравитации в PSI нет.",
+        action="Рассчитывайте противопожарную защиту лунной базы на скорость горения вплоть до верхней границы, а время "
+        "выгорания по данным МКС считайте медленным пределом.",
+    )
     return Insight(
         "P5",
         "prevention",
@@ -330,10 +408,20 @@ def p5_lunar_surface_bound() -> Insight:
         "low",
         extrapolation=True,
         related=["P2", "D4", "P6"],
+        ru=ru,
     )
 
 
 def p6_lunar_gravity_solids() -> Insight:
+    ru = dict(
+        title="NASA: для твёрдых материалов лунная гравитация может быть самым пожароопасным условием",
+        finding='NASA Glenn сообщает, что для твёрдых материалов "Lunar gravity is nearly the most flammable condition" '
+        "(скорость распространения пламени максимальна, а кислородный предел минимален вблизи лунной g), а пожар в модуле при "
+        'частичной гравитации ожидается "substantially worse than in 0-g and potentially worse than even 1-g". '
+        "Эксперимент FM2 должен измерить это на Луне.",
+        action="Не считайте материал, прошедший отбор при 1 g, безопасным для лунной базы; закладывайте запас, пока нет "
+        "лунных данных (FM2).",
+    )
     return Insight(
         "P6",
         "prevention",
@@ -348,6 +436,7 @@ def p6_lunar_gravity_solids() -> Insight:
         ["NTRS 20210020516 (Fire on the Moon, NASA GRC)", "NTRS 20260000646 (Ferkul et al., LPSC 2026)"],
         "medium",
         related=["P5", "H1"],
+        ru=ru,
     )
 
 
@@ -357,6 +446,12 @@ def p6_lunar_gravity_solids() -> Insight:
 def s1_co2_dilution() -> Insight:
     coef, boots, n = k_regression()
     r, ci, le = _ratio(coef, boots, "x_co2", 0.30)
+    ru = dict(
+        title="Разбавление CO2 замедляет горение",
+        finding=f"Замена 30 % азота на CO2 (при тех же O2 и давлении) меняет скорость горения на {_pct(r)} "
+        f"(95 % ДИ от {_pct(ci[0])} до {_pct(ci[1])}; {n} тестов FLEX).",
+        action="CO2 - эффективный разбавитель для тушения в невесомости; оставляйте его в системе пожаротушения.",
+    )
     return Insight(
         "S1",
         "suppression",
@@ -369,12 +464,20 @@ def s1_co2_dilution() -> Insight:
         {"name": "K ratio, 30 % N2 -> CO2", "value": r, "ci": ci, "unit": "-", "log_effect": le},
         [SRC_FLEX],
         _conf(ci, n),
+        ru=ru,
     )
 
 
 def s2_helium_dilution() -> Insight:
     coef, boots, n = k_regression()
     r, ci, le = _ratio(coef, boots, "x_he", 0.30)
+    ru = dict(
+        title="Разбавление гелием не замедляет горение, а ускоряет его",
+        finding=f"Замена 30 % азота на гелий меняет скорость горения на {_pct(r)} "
+        f"(95 % ДИ от {_pct(ci[0])} до {_pct(ci[1])}; {n} тестов FLEX): гелий быстрее подводит тепло к капле.",
+        action="Гелий не заменяет CO2 как огнетушащий разбавитель; учитывайте это, если гелий используется как разбавитель "
+        "атмосферы кабины.",
+    )
     return Insight(
         "S2",
         "suppression",
@@ -387,12 +490,20 @@ def s2_helium_dilution() -> Insight:
         {"name": "K ratio, 30 % N2 -> He", "value": r, "ci": ci, "unit": "-", "log_effect": le},
         [SRC_FLEX],
         _conf(ci, n),
+        ru=ru,
     )
 
 
 def s3_less_oxygen_earlier_extinction() -> Insight:
     coef, boots, n = dext_regression()
     r, ci, le = _ratio(coef, boots, "x_o2", -0.06)
+    ru = dict(
+        title="При меньшем содержании кислорода пламя гаснет раньше",
+        finding=f"Снижение O2 с 21 % до 15 % меняет размер капли в момент погасания пламени (относительно начального) на "
+        f"{_pct(r)} (95 % ДИ от {_pct(ci[0])} до {_pct(ci[1])}; {n} тестов FLEX с погасанием): больше топлива остаётся "
+        "несгоревшим.",
+        action="Снижение O2 (сброс давления, заполнение инертным газом) - эффективный способ сократить пожар в невесомости.",
+    )
     return Insight(
         "S3",
         "suppression",
@@ -406,6 +517,7 @@ def s3_less_oxygen_earlier_extinction() -> Insight:
         [SRC_FLEX],
         _conf(ci, n),
         related=["H3"],
+        ru=ru,
     )
 
 
@@ -414,6 +526,12 @@ def s4_high_o2_removes_self_extinction() -> Insight:
     lab = f[f["extinct_finite_d"].notna() & (f["diluent"] == "N2")]
     hi, lo = lab[lab["x_o2"] >= 0.30], lab[lab["x_o2"] <= 0.21]
     s_hi, s_lo = 1 - hi["extinct_finite_d"].mean(), 1 - lo["extinct_finite_d"].mean()
+    ru = dict(
+        title="При 30 % O2 пламя капли почти никогда не гаснет само",
+        finding=f"Тесты FLEX с разбавлением N2: пламя выжгло каплю без погасания в {s_hi * 100:.0f} % из {len(hi)} тестов при "
+        f"O2 не ниже 30 % против {s_lo * 100:.0f} % из {len(lo)} тестов при O2 не выше 21 %.",
+        action="При повышенном O2 исходите из того, что пожар сам не погаснет: активное тушение нужно немедленно.",
+    )
     return Insight(
         "S4",
         "suppression",
@@ -433,13 +551,14 @@ def s4_high_o2_removes_self_extinction() -> Insight:
         [SRC_FLEX],
         "medium",
         related=["H1"],
+        ru=ru,
     )
 
 
 # ------------------------------------------------------------------------------------------- history / Earth
 
 
-def history_and_earth() -> list[Insight]:
+def _history_and_earth_en() -> list[Insight]:
     z = {"name": "-", "value": None, "ci": None, "unit": "-", "log_effect": None}
     return [
         Insight(
@@ -575,3 +694,44 @@ def cabin_atmospheres() -> pd.DataFrame:
                 }
             )
     return pd.DataFrame(rows)
+
+
+HISTORY_RU = {
+    "H1": {
+        "title": "Apollo 1: чистый кислород превратил искру во вспышку пожара",
+        "finding": 'Цитаты NASA SMA: "Because of the pure oxygen atmosphere, the fire spread quickly"; экипаж погиб от "asphyxia from carbon monoxide and other toxic gases".',
+        "action": "Наши данные показывают ту же физику при более умеренном O2 (P1, S4) и опасность CO (D1).",
+    },
+    "H2": {
+        "title": "Apollo 13: кислородная система плюс электрический нагрев",
+        "finding": 'Нагреватели в кислородном баке перегрелись, "degrading the Teflon insulation"; после доработки проводку поместили "in stainless steel" (NASA SMA).',
+        "action": "Оборудование с высоким содержанием O2 - место, где контроль источников зажигания важнее всего (P4).",
+    },
+    "H3": {
+        "title": '"Мир", 1997: реальный пожар в невесомости',
+        "finding": 'Загорелся генератор кислорода; "The flame blocked the evacuation route to the Soyuz spacecraft"; дым удаляли "over several hours" (NASA History).',
+        "action": "Пожар в невесомости даёт долго не рассеивающийся дым и газы (D1, D2) и может отрезать пути эвакуации: критичны обнаружение и немедленное тушение (S3).",
+    },
+    "E1": {
+        "title": "Облегчённые дыхательные баллоны пожарных",
+        "finding": 'Разработаны вместе с Johnson Space Center NASA: "20 pounds for 30 minute air supply" (NASA Spinoff, 1976).',
+        "action": "Польза на Земле от работ NASA по системам жизнеобеспечения.",
+    },
+    "E2": {
+        "title": "Детектор пожара на ранней стадии от Space Shuttle",
+        "finding": 'Сигнализирует о пожаре "before appearance of flame and smoke" и "less susceptible to false alarms" (NASA Spinoff, 1978).',
+        "action": "Космическая технология обнаружения уже защищает шахты и здания; данные SAME (D3) могут сделать то же.",
+    },
+    "E3": {
+        "title": "Огнестойкое снаряжение из материалов Apollo",
+        "finding": 'Проект FIRES использовал "lightweight, fire-resistant, heat-protective materials" от скафандров (NASA Spinoff, 1982).',
+        "action": "Материалы, отобранные для кабин с высоким O2, защищают пожарных на Земле.",
+    },
+}
+
+
+def history_and_earth() -> list[Insight]:
+    out = _history_and_earth_en()
+    for i in out:
+        i.ru = HISTORY_RU[i.id]
+    return out

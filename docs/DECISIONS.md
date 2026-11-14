@@ -394,3 +394,10 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Claude's recommendation: A.
 - Decision (Ruslan): A. Supersedes the hosting part of ADR-001 / ADR-038. Dockerfile and scripts/deploy_hf.py are kept as a fallback (any Docker host).
 - Result: deployed by Ruslan on share.streamlit.io (repo ruska51/prometheus-0g, branch main, app/main.py, Python 3.12): https://prometheus-0g.streamlit.app/; all 8 pages checked by Claude in Edge (Playwright) at 16:01, no exceptions, scenario numbers equal to the local run. Every push to main redeploys.
+
+## ADR-041: Interface language switch (English default, Russian optional)
+- Date/time: 2026-11-14, request received after the 16:24 clock reading (UTC+5)
+- Stage: post-10
+- Context: Ruslan: "add a language switch so that there is Russian, but English opens first, and Russian for whoever needs it".
+- Decision (Ruslan): English by default, Russian on request. Implementation choices (Claude, technical): sidebar radio "Language / Язык" plus URL parameter `?lang=ru`; English text is the translation key (app/i18n.py), so a missing translation shows English; package-generated texts (insight cards, reliability reasons, animation notes) carry parallel Russian fields (`ru`, `reasons_ru`, `notes_ru`) with the same computed numbers; NASA record text, data values and quotes stay in English. Repository documents and submission texts stay English (NASA requirement).
+- Consequences: app/i18n.py, all pages, flame_view labels, fif.insights.catalog / base, fif.validation.reliability, fif.insights.flame_sim; tests/test_i18n.py (every literal key translated, placeholders match, all pages run in Russian).

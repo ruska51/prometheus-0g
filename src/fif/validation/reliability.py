@@ -14,6 +14,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     import pandas as pd
 
+FUEL_RU = {"Methanol": "метанола", "Heptane": "гептана"}
 SIGMA_UNRELIABLE = 0.20
 
 # Tested FLEX ranges (rows with use_in_model; data/processed/flex.csv, 2026-11-14 build)
@@ -48,7 +49,7 @@ def _tested_rows() -> pd.DataFrame:
 def reliability(
     fuel: str, p_atm: float, x_o2: float, x_co2: float, x_he: float, d0_mm: float, sigma_log: float | None = None
 ) -> dict:
-    reasons = []
+    reasons, reasons_ru = [], []  # English for the docs/API, Russian for the interface language switch
     # joint (combination) check: was this O2 level tested at this pressure for this fuel and diluent?
     if fuel in TESTED["fuel"]:
         dil = "CO2" if x_co2 > 0 else ("He" if x_he > 0 else "N2")
@@ -56,22 +57,32 @@ def reliability(
         near = t[(t["fuel"] == fuel) & (t["diluent"] == dil) & ((t["x_o2"] - x_o2).abs() <= O2_WINDOW + 1e-9)]
         if near.empty:
             reasons.append(f"O2 {x_o2:.3g} with {dil} never tested for {fuel} (window +-{O2_WINDOW})")
+            reasons_ru.append(f"O2 {x_o2:.3g} с {dil} для {FUEL_RU.get(fuel, fuel)} не испытывали (окно +-{O2_WINDOW})")
         elif not (near["p_atm"].min() - 1e-9 <= p_atm <= near["p_atm"].max() + 1e-9):
             reasons.append(
                 f"pressure {p_atm:.3g} atm outside tested {near['p_atm'].min():.3f}-{near['p_atm'].max():.3f} atm "
                 f"for {fuel}, {dil}, O2 {x_o2:.2f}+-{O2_WINDOW}"
             )
+            reasons_ru.append(
+                f"давление {p_atm:.3g} атм вне испытанного диапазона {near['p_atm'].min():.3f}-{near['p_atm'].max():.3f} атм "
+                f"для {FUEL_RU.get(fuel, fuel)}, {dil}, O2 {x_o2:.2f}+-{O2_WINDOW}"
+            )
     if fuel not in TESTED["fuel"]:
         reasons.append(f"fuel {fuel} not tested")
+        reasons_ru.append(f"топливо {fuel} не испытывали")
     for name, val in (("p_atm", p_atm), ("x_o2", x_o2), ("x_co2", x_co2), ("x_he", x_he), ("d0_mm", d0_mm)):
         lo, hi = TESTED[name]
         if not (lo <= val <= hi):
             label = {"p_atm": "pressure", "x_o2": "O2", "x_co2": "CO2", "x_he": "He", "d0_mm": "droplet size"}[name]
             reasons.append(f"{label} {val:.3g} outside tested {lo:g}-{hi:g}")
+            label_ru = {"pressure": "давление", "O2": "O2", "CO2": "CO2", "He": "He", "droplet size": "размер капли"}[label]
+            reasons_ru.append(f"{label_ru} {val:.3g} вне испытанного диапазона {lo:g}-{hi:g}")
     if x_co2 > 0 and x_he > 0:
         reasons.append("CO2 and He together were never tested")
+        reasons_ru.append("CO2 и He вместе никогда не испытывали")
     status = "extrapolation" if reasons else "in range"
     if sigma_log is not None and sigma_log > SIGMA_UNRELIABLE:
         reasons.append(f"model uncertainty sigma_lnK {sigma_log:.2f} > {SIGMA_UNRELIABLE}")
+        reasons_ru.append(f"неопределённость модели sigma_lnK {sigma_log:.2f} > {SIGMA_UNRELIABLE}")
         status = "unreliable"
-    return {"status": status, "reasons": reasons}
+    return {"status": status, "reasons": reasons, "reasons_ru": reasons_ru}

@@ -17,3 +17,4 @@
 | 2026-11-14 | post-8 | Claude Code (Anthropic, Claude Opus) | Lunar-gravity bound code, insights P5/P6 texts (quotes from NTRS), animation update | Ruslan Sharafutdinov (ADR-036) |
 | 2026-11-14 | post-8 | Claude Code (Anthropic, Claude Opus) | Comparison-matrix code and page text | Ruslan Sharafutdinov (ADR-037) |
 | 2026-11-14 | post-8 | Claude Code (Anthropic, Claude Opus) | Extinction label sensitivity code and generated report | Ruslan Sharafutdinov (ADR-018 'all the others if time remains') |
+| 2026-11-14 | 10 | Claude Code (Anthropic, Claude Opus) | Lint/format configuration and fixes, type hints, run.py, raw-hash check, tests, clean-install verification | Ruslan Sharafutdinov (stage-10 prompt) |

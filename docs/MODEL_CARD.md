@@ -13,7 +13,7 @@ Explain and predict droplet burning and flame extinction for the conditions test
 | Target | Rows | Notes |
 |---|---|---|
 | burning-rate constant K (ln K) | 258 | 16 rows lack K or d0 |
-| extinction at finite diameter (1/0) | 223 | 188 positive / 35 negative; definition ADR-018 (open question ADR-021) |
+| extinction at finite diameter (1/0) | 223 | 188 positive / 35 negative; definition ADR-018 (kept after the sensitivity check, ADR-039) |
 | d_ext/d0 (ln) | 188 | |
 
 Cross-validation: GroupKFold, 5 folds, groups = test regime (fuel x pressure x composition, ADR-016; 80 groups in the K set). Metrics on pooled out-of-fold predictions. Seed 20261114.
@@ -102,7 +102,7 @@ By fuel (RMSE ln K): methanol - physics 0.133, hybrid 0.152, pure ML 0.307; hept
 - Only methanol and n-heptane, only FLEX ranges (O2 <= 0.34, p 0.69-3.05 atm, d0 1.1-4.7 mm, T_inf about 298 K). The Moon-base atmosphere (O2 >= 0.30 at <= 10.2 psi) is just outside the tested pressure range: label as extrapolation.
 - Above 1.2 atm only 9 CO2-diluted tests; no He or N2 data there.
 - Heptane K: wider errors (RMSE ln 0.28, coverage 0.89 < 0.95).
-- Extinction: only 35 negative examples; the class definition has an open question (ADR-021); balanced accuracy is 0.65-0.73.
+- Extinction: only 35 negative examples; the class definition was checked for sensitivity and kept (ADR-039); balanced accuracy is 0.65-0.73.
 - One test (C13H201, K = 0.05 mm²/s, flagged OUTLIER_K and KTB_INCONSISTENT) is excluded from K training since ADR-030; it is still evaluated and remains the largest error.
 - No model transfers reliably to an untested fuel (VALIDATION.md section 4); the extinction classifier extrapolates poorly to new atmospheres.
 - Earth (1 g) numbers come from the L&W buoyancy correlation far outside its fitted range (PHYSICS.md section 4): not a model output to trust.

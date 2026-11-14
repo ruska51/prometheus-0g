@@ -378,3 +378,18 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Context: Ruslan asked why Hugging Face for a NASA hackathon. NASA does not host projects; the form needs a public "Link to Final Project".
 - Options: A) HF Spaces (Claude deploys with Ruslan's write token) B) Streamlit Community Cloud (Ruslan clicks deploy) C) GitHub only.
 - Claude's recommendation: A. Decision (Ruslan): A (ADR-001 unchanged). Deploy brought forward (item 5).
+
+## ADR-039: Extinction class definition stays A
+- Date/time: 2026-11-14, answer received between the 15:42 and 15:52 clock readings (UTC+5)
+- Stage: post-8 item 3
+- Context: sensitivity analysis (docs/verification/extinction_label_sensitivity.md): directions hold for A, B, C; variant C (Disruption = no extinction) fails the pre-declared AUC check by ranking better (0.882 vs 0.787).
+- Options: A) keep the diameter-based definition B) switch to C.
+- Claude's recommendation: A - 'Disruption' ends a test for another reason (droplet breakup / drift), so whether the flame would have gone out is unknown; counting it as 'no extinction' answers a different question.
+- Decision (Ruslan): A ("оставляем А"). Closes the open question of ADR-021.
+
+## ADR-040: Hosting moves to Streamlit Community Cloud
+- Date/time: 2026-11-14, answer received after the 15:53 clock reading (UTC+5)
+- Context: Hugging Face refused to create the Space (HTTP 402): "hosting Gradio and Docker Spaces on free cpu-basic requires a PRO subscription"; only static Spaces are free. Nothing was published on HF; the local token file was deleted.
+- Options: A) Streamlit Community Cloud (free, deploys from the public GitHub repo, Ruslan logs in once) B) HF PRO (paid) C) Render free tier (sleeps, 512 MB) D) Google Cloud Run (billing account).
+- Claude's recommendation: A.
+- Decision (Ruslan): A. Supersedes the hosting part of ADR-001 / ADR-038. Dockerfile and scripts/deploy_hf.py are kept as a fallback (any Docker host).

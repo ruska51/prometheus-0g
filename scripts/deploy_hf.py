@@ -1,4 +1,4 @@
-"""Deploy the dashboard to a public Hugging Face Space (Docker SDK) - stage 11, ADR-001 / ADR-038.
+"""FALLBACK (ADR-040: free HF Docker Spaces now need PRO). Deploy the dashboard to a Hugging Face Space (Docker SDK).
 
 The token is read from the environment variable HF_TOKEN or from a file given by HF_TOKEN_FILE (default
 ~/.hf_token_prometheus); it is never written into the repository. The Space gets a copy of the files the app needs

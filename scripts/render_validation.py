@@ -213,7 +213,7 @@ Figure: `docs/figures/val_K_pred_vs_meas.png`.
 ## 10. Limitations
 
 - Two fuels, one experiment (FLEX), ISS ambient about 298 K; partial gravity untested.
-- Extinction: {R['n_rows']['extinction'] - R['n_rows']['extinction_positive']} negative examples; class definition has an open question (ADR-021). {LS}
+- Extinction: {R['n_rows']['extinction'] - R['n_rows']['extinction_positive']} negative examples; class definition from the extinction diameter (ADR-018), kept after the sensitivity check (ADR-039). {LS}
 - Earth (1 g) numbers are outside the fitted range of the L&W buoyancy correlation (PHYSICS.md section 4).
 """
     (ROOT / "docs" / "VALIDATION.md").write_text(doc, encoding="utf-8")

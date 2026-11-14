@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Secrets (HF token etc. - never commit)
+.env
+*.token
+.streamlit/secrets.toml
+
+# OS / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# NOTE: data/raw is intentionally NOT ignored. Whether small public raw files
+# are committed is Ruslan's decision (see docs/DECISIONS.md).

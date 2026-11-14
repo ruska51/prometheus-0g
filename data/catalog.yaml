@@ -1,0 +1,4 @@
+# Dataset registry. One entry per dataset; filled from stage 2/3.
+# Fields: id, title, source (PSI-id / NTRS id / URL), files (path + sha256),
+#         license / terms, accessed (YYYY-MM-DD), notes.
+datasets: []

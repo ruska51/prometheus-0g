@@ -220,6 +220,85 @@ function smoke(c,x,y,R,age,gravity){
 }
 function label(c,v,txt,col){c.font=`600 ${v.W<240?11:14}px system-ui`; c.textAlign='center'; c.fillStyle=col; c.fillText(txt,v.W/2,v.H-12);}
 
+
+// ---- WebGL flame shader: turbulent emission field coloured by local temperature (illustrative look; flame size,
+// burn time, T_f and soot colour come from Python). Falls back to the 2D drawing when WebGL is unavailable.
+const FS=`precision highp float;
+uniform vec2 c0; uniform float R,up,dn,hw,e,t,I,soot,micro; uniform vec3 sc;
+float h(vec2 q){return fract(sin(dot(q,vec2(127.1,311.7)))*43758.5453);}
+float vn(vec2 q){vec2 i=floor(q),f=fract(q); f=f*f*(3.-2.*f);
+  return mix(mix(h(i),h(i+vec2(1.,0.)),f.x),mix(h(i+vec2(0.,1.)),h(i+vec2(1.,1.)),f.x),f.y);}
+float fbm(vec2 q){float s=0.,a=.5; for(int i=0;i<5;i++){s+=a*vn(q); q=q*2.03+vec2(1.7,9.2); a*=.5;} return s;}
+vec3 fire(float T){T=clamp(T,0.,1.);
+  return vec3(1.,.27,.05)*smoothstep(0.,.35,T)+vec3(0.,.43,.12)*smoothstep(.3,.7,T)+vec3(0.,.24,.58)*smoothstep(.66,1.,T);}
+const vec3 BLUE=vec3(.30,.50,1.);
+void main(){
+  vec2 p=(gl_FragCoord.xy-c0)/R; vec3 col=vec3(0.);
+  if(micro>.5){
+    float r=length(p), a=atan(p.y,p.x);
+    float n=fbm(vec2(cos(a),sin(a))*2.2+vec2(t*.10,-t*.08)+r*1.2);
+    float rw=r+.025*(n-.5);
+    col+=BLUE*(exp(-pow((rw-1.)/.04,2.))*(soot>.5?.40:.42)+exp(-pow((rw-.97)/.15,2.))*(soot>.5?.07:.06));
+    if(soot>.5){
+      float n2=fbm(vec2(cos(a),sin(a))*1.9+vec2(r*4.,r*2.5)+vec2(t*.16,-t*.11));
+      float sh=exp(-pow((r-.74-.07*(n2-.5))/.12,2.))*(.25+1.05*n2*n2);
+      col+=fire(.52+.48*n2)*mix(vec3(1.),sc,.45)*sh*1.25;
+    } else { col+=vec3(.45,.40,1.)*exp(-pow((r-.86)/.22,2.))*.035; }
+  } else {
+    float ef=sqrt(max(e,.01)), H=up+dn;
+    float vv=clamp((p.y+dn)/H,0.,1.);                       // 0 bottom of the sheet, 1 tip
+    float n=fbm(vec2(p.x*2.3,p.y*1.5-t*2.6*ef));
+    float sway=.24*e*pow(vv,1.7)*(fbm(vec2(t*1.3*ef,vv*1.9))-.5)*2.;
+    vec2 q=vec2(p.x-sway,p.y);
+    // smooth egg/teardrop: ellipse (half-width hw, depth dn) below the droplet, stretched ellipse (height up) above,
+    // tapering into a tongue as gravity grows; both halves meet at the droplet level without a kink
+    float Yb=q.y<0.?q.y/dn:q.y/(up*(1.+.2*e*(n-.5)*2.));
+    float tap=max(1.-.82*e*pow(max(Yb,0.),1.35),.04);
+    float d=length(vec2(q.x/(hw*tap),Yb))+.25*e*(n-.5)*vv;
+    float sheet=exp(-pow((d-1.)/.07,2.));
+    float fadeUp=soot>.5?1.-smoothstep(.22,.58,vv):1.-.85*smoothstep(.5,1.,vv);
+    col+=BLUE*sheet*fadeUp*(soot>.5?.5:.42);
+    if(soot>.5){
+      float n2=fbm(vec2(q.x*3.2,p.y*2.3-t*3.2*ef)+3.7);
+      float body=smoothstep(1.02,.45,d)*smoothstep(.1,.33,vv)*(1.-.75*smoothstep(.8,1.,vv))*(.45+.95*n2);
+      body*=mix(.45,1.,smoothstep(.1,1.,length(p)/.42));
+      float T=1.04-.62*vv-.22*d+.18*(n2-.5);
+      col+=fire(T)*mix(vec3(1.),sc,.35)*body*1.15;
+    } else { col+=vec3(.35,.45,1.)*(1.-smoothstep(0.,1.,d))*(1.-vv)*.05; }
+  }
+  gl_FragColor=vec4(col*I,1.);
+}`;
+const VS='attribute vec2 a; void main(){gl_Position=vec4(a,0.,1.);}';
+function makeGL(){
+  const cv=document.createElement('canvas');
+  const gl=cv.getContext('webgl',{premultipliedAlpha:false,preserveDrawingBuffer:true,antialias:false});
+  if(!gl) return null;
+  const sh=(type,src)=>{const o=gl.createShader(type); gl.shaderSource(o,src); gl.compileShader(o);
+    if(!gl.getShaderParameter(o,gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o;};
+  try{
+    const pr=gl.createProgram(); gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS)); gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));
+    gl.linkProgram(pr); if(!gl.getProgramParameter(pr,gl.LINK_STATUS)) return null; gl.useProgram(pr);
+    const b=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,b);
+    gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+    const la=gl.getAttribLocation(pr,'a'); gl.enableVertexAttribArray(la); gl.vertexAttribPointer(la,2,gl.FLOAT,false,0,0);
+    const U={}; ['c0','R','up','dn','hw','e','t','I','soot','micro','sc'].forEach(k=>U[k]=gl.getUniformLocation(pr,k));
+    return {cv,gl,U};
+  }catch(err){ return null; }
+}
+function glFlame(v,x,y,R,I,t){
+  if(v.glx===undefined) v.glx=makeGL();
+  const G=v.glx; if(!G) return null;
+  const {cv,gl,U}=G, p=v.p, S=shp(p);
+  if(cv.width!==v.cv.width||cv.height!==v.cv.height){cv.width=v.cv.width; cv.height=v.cv.height;}
+  gl.viewport(0,0,cv.width,cv.height);
+  gl.uniform2f(U.c0,x*DPR,cv.height-y*DPR); gl.uniform1f(U.R,R*DPR);
+  gl.uniform1f(U.up,S.up); gl.uniform1f(U.dn,S.dn); gl.uniform1f(U.hw,S.hw); gl.uniform1f(U.e,S.e);
+  gl.uniform1f(U.t,t); gl.uniform1f(U.I,I); gl.uniform1f(U.soot,p.sooty?1:0); gl.uniform1f(U.micro,p.gravity?0:1);
+  gl.uniform3f(U.sc,p.flame_rgb[0]/255,p.flame_rgb[1]/255,p.flame_rgb[2]/255);
+  gl.drawArrays(gl.TRIANGLES,0,3);
+  return cv;
+}
+
 let clock=0,last=null,speed=1,playing=true;
 const FADE=0.7, IGN=0.35;
 const T_total=Math.max(...P.map(p=>p.t_end_s+(p.sustained?0:0.9)))+3.0;
@@ -238,13 +317,16 @@ function frame(ts){
     else if(clock>tend){I*=Math.max(0,1-(clock-tend)/FADE);}
     const rd=s.d/2*sc, burnedOut=!p.extinguishes&&clock>=tend;
     if(I>0.003&&R>0.5){ // flame drawn on its own layer, then composited with bloom (soft glow passes + crisp pass)
-      if(!v.fx||v.fx.width!==v.cv.width||v.fx.height!==v.cv.height){v.fx=document.createElement('canvas'); v.fx.width=v.cv.width; v.fx.height=v.cv.height;}
-      const fc=v.fx.getContext('2d'); fc.setTransform(1,0,0,1,0,0); fc.clearRect(0,0,v.fx.width,v.fx.height); fc.setTransform(DPR,0,0,DPR,0,0);
-      p.gravity? buoyantFlame(fc,v,x,y,R,I,wall) : sphereFlame(fc,v,x,y,R,I,wall);
+      let src=glFlame(v,x,y,R,I,wall), crisp=0.95;
+      if(!src){ // 2D fallback
+        if(!v.fx||v.fx.width!==v.cv.width||v.fx.height!==v.cv.height){v.fx=document.createElement('canvas'); v.fx.width=v.cv.width; v.fx.height=v.cv.height;}
+        const fc=v.fx.getContext('2d'); fc.setTransform(1,0,0,1,0,0); fc.clearRect(0,0,v.fx.width,v.fx.height); fc.setTransform(DPR,0,0,DPR,0,0);
+        p.gravity? buoyantFlame(fc,v,x,y,R,I,wall) : sphereFlame(fc,v,x,y,R,I,wall); src=v.fx; crisp=0.5;
+      }
       c.save(); c.setTransform(1,0,0,1,0,0); c.globalCompositeOperation='lighter';
-      c.filter=`blur(${(Math.max(6,R*0.3)*DPR).toFixed(1)}px)`; c.globalAlpha=0.85; c.drawImage(v.fx,0,0);
-      c.filter=`blur(${(Math.max(1.2,R*0.045)*DPR).toFixed(1)}px)`; c.globalAlpha=0.9; c.drawImage(v.fx,0,0);
-      c.filter='none'; c.globalAlpha=0.5; c.drawImage(v.fx,0,0);
+      c.filter=`blur(${(Math.max(6,R*0.28)*DPR).toFixed(1)}px)`; c.globalAlpha=0.7; c.drawImage(src,0,0);
+      c.filter=`blur(${(Math.max(1,R*0.03)*DPR).toFixed(1)}px)`; c.globalAlpha=0.6; c.drawImage(src,0,0);
+      c.filter='none'; c.globalAlpha=crisp; c.drawImage(src,0,0);
       c.restore();
     }
     if(!burnedOut) droplet(c,x,y,rd,p,I,p.sooty?mix(p.flame_rgb,[255,255,255],0.2):BLUE);

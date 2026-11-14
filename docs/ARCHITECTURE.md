@@ -54,6 +54,24 @@ Commands (repository root):
 
 Every processed row carries provenance: `source_id`, `source_file`, `row_id`, `quality_flag`.
 
-## Physics, models, validation, insights, app
+## Physics layer (stage 4)
 
-_Stages 4-8._
+```mermaid
+flowchart LR
+    N["data/raw/nist/*<br/>NIST SRD 69 tables<br/>(scripts/fetch_nist.py)"] --> PR["physics/properties.py<br/>gas cp, mu, lambda(T); T_sat(P), L, rho_l;<br/>M, Delta_c H"]
+    PR --> MX["physics/mixing.py<br/>NASA RP-1311 Eqs. 5.3-5.6"]
+    PR & MX --> DR["physics/droplet.py<br/>B, T_f (Burke-Schumann), K_theory (L2),<br/>proxies (L3), Nu_earth"]
+    FP["data/processed/flex.csv<br/>pre-ignition columns only"] --> DR
+    DR --> CMP["scripts/physics_vs_data.py<br/>figures + physics_vs_data.tsv"]
+    DR --> ML["models (stage 5):<br/>calibration c_f + ML residual"]
+```
+
+| Module | Purpose | Inputs -> outputs |
+|---|---|---|
+| `fif.physics.properties` | read NIST raw tables; interpolation; molar masses, heats of combustion | raw files -> arrays (SI) |
+| `fif.physics.mixing` | mole/mass fractions, mixture viscosity, conductivity, cp | x (rows x species), T -> arrays |
+| `fif.physics.droplet` | L2 theory + L3 proxies + Earth estimate; `evaluate_flex(df)` | fuel, p, x, d0 -> DataFrame |
+
+## Models, validation, insights, app
+
+_Stages 5-8._

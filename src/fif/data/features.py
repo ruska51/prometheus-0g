@@ -28,3 +28,7 @@ TARGETS = {
     "extinct_finite_d": "visible flame extinguished at finite droplet diameter (ADR-018)",
     "d_ext_over_d0": "relative extinction diameter (ADR-017)",
 }
+
+# Physics-derived features (ADR-025), computed by fif.physics.droplet.evaluate_flex from pre-ignition inputs only.
+PHYSICS_FEATURES_K = ["ln_K_theory", "B", "T_f", "Y_O2", "alpha_g"]
+PHYSICS_FEATURES_EXTINCTION = PHYSICS_FEATURES_K + ["d0_m", "chi_rad_proxy"]

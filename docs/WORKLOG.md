@@ -60,3 +60,13 @@ Open items:
 2026-11-14 ~12:19 | 3 | tests (13, built into tmp dirs; live processed mtime unchanged), EDA + 4 figures | tests/test_data_flex.py, scripts/eda.py, docs/figures/ | docs
 2026-11-14 12:22 | 3 | DATA_DICTIONARY, DATA_QUALITY, ARCHITECTURE (data layer + Mermaid), DATA_SOURCES; correction: Moon-base atmosphere is just outside the FLEX tested pressure range (0.694 vs >= 0.703 atm), not inside as said in stage 2 | docs/* | stage 4
 - Stage 3 duration: 12:03-12:22 (clock), budget 90 min.
+
+## Stage 4 - started 2026-11-14 12:25
+
+2026-11-14 12:27 | 4 | Stage-3 follow-up: 70/73 examined (TP Table IV, Figs. 74/77, K-burn-time consistency) -> row 73 excluded; FLEX-216/230 added from TP; commit 64dde02 | src/fif/data, data/raw/ntrs/flex_tp_supplement.csv | physics
+2026-11-14 ~12:30 | 4 | Theory sources: NTRS 20130014061 (K, B equations), NASA RP-1311 (mixing rules, read from rendered pages), Law & Williams DOI via Crossref | docs/PHYSICS.md | decisions
+2026-11-14 ~12:35 | 4 | Decisions ADR-022..025 (L2 + L3 proxies, 1/2 rule ambient mixture, microgravity base, compact features) | docs/DECISIONS.md | code
+2026-11-14 ~12:37 | 4 | NIST SRD 69 data fetched (scripts/fetch_nist.py, 13 files, catalog) | data/raw/nist | code
+2026-11-14 ~12:40 | 4 | physics package (properties, mixing, droplet); theory vs data: K_meas/K_theory 0.52 (methanol), 0.24 (heptane); trends with d0, He, CO2 | src/fif/physics, scripts/physics_vs_data.py, docs/figures/physics_*.png | tests, docs
+2026-11-14 12:43 | 4 | 18 physics tests (32 total green); PHYSICS.md, ARCHITECTURE (physics), DATA_SOURCES, features list | tests/test_physics.py, docs/* | stage 5
+- Stage 4 duration: 12:25-12:43 (clock), budget 90 min.

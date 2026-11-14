@@ -256,3 +256,38 @@ datasets:
     files:
       - path: "data/raw/ntrs/flex_tp_supplement.csv"
         sha256: 69abefd47df0cef8b7fb155ad047d3ae0fac78b52954d1400af46ef05e983a25
+
+  - id: nist_webbook
+    title: "NIST Chemistry WebBook, SRD 69: gas properties at 1 atm (O2, N2, CO2, He), saturation tables (methanol, n-heptane, water), species pages"
+    source: https://webbook.nist.gov/chemistry/ (fetched by scripts/fetch_nist.py)
+    license: "NIST Standard Reference Data, public; cite as NIST Chemistry WebBook, NIST SRD 69"
+    accessed: 2026-11-14
+    files:
+      - path: "data/raw/nist/gas_C124389.tsv"
+        sha256: 82396a60aaa0876215f6b7ffa59c4afb508c1c7f2208b4d8319a96daffbb3e92
+      - path: "data/raw/nist/gas_C7440597.tsv"
+        sha256: e3c9680dd19a88e78933561debd1f9337b6632f0ded665a9d554d93bf7b392b1
+      - path: "data/raw/nist/gas_C7727379.tsv"
+        sha256: 11d3176f600923a534d77bd5c7551e6f2207acea551f8bdf578eb63d2514f00a
+      - path: "data/raw/nist/gas_C7782447.tsv"
+        sha256: 066a591ee08d138fe354fa5b2190174220809337d46087732446c85e14ad1f80
+      - path: "data/raw/nist/sat_C142825.tsv"
+        sha256: 85ba4581218c1bf708834a6b485edad2e2c88b7f1249121410b999f3a7a0e754
+      - path: "data/raw/nist/sat_C67561.tsv"
+        sha256: cec78c6da2e2ca9f1b40fc4255827e7f4d400333468c7e13a3f93203ffdf154d
+      - path: "data/raw/nist/sat_C7732185.tsv"
+        sha256: fbeba376bede5cd38bb7c44ef02ce38f0a1f73cc1ca709edf2d6153f58b77e95
+      - path: "data/raw/nist/thermo_C124389.html"
+        sha256: 9765f3c30b9a0d9e5182ab6f79bd66e1915513bb72896499b737638be088e267
+      - path: "data/raw/nist/thermo_C142825.html"
+        sha256: c199968f5323cb538612c23d89f625add05ddb8254b993e191e20cdde3392f21
+      - path: "data/raw/nist/thermo_C67561.html"
+        sha256: 60b655b769424e316f77d7c83bdf143fe593ed76ee2fcc9ba2d0278acdb8444c
+      - path: "data/raw/nist/thermo_C7440597.html"
+        sha256: 750c90c9655d5aa8a33821f5db1a1d5d11f38f974bee60889064f919cbc37463
+      - path: "data/raw/nist/thermo_C7727379.html"
+        sha256: 35aaa4cf7947ff2d209372a208d8e34a120dc306cf2a2d1246f86b3fcc3d3f47
+      - path: "data/raw/nist/thermo_C7732185.html"
+        sha256: e370dcbecbc34c2b2fc0e6540fee2a9d273d584d92f4bd2695c148c57dc230e0
+      - path: "data/raw/nist/thermo_C7782447.html"
+        sha256: 840a24d2c7ab05c1c6c9cb94023644a13af5393337f36ccd615997df193d413e

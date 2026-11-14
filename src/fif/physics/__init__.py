@@ -1,5 +1,3 @@
-"""Physics layer: combustion theory, property data, gravity corrections. Units: SI internally. Equations and assumptions: docs/PHYSICS.md. Stage: 4.
-
-Status: stub (stage 0). Content is added in the stage named above.
-See docs/ARCHITECTURE.md for the layer contract (data -> physics -> models -> validation -> insights -> app).
+"""Physics layer: quasi-steady droplet combustion (L2 + L3 proxies), NIST property data,
+NASA RP-1311 mixing rules, Earth-gravity estimate. SI units. Stage 4; see docs/PHYSICS.md.
 """

@@ -199,7 +199,7 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Sources: NASA/TP-2015-216046 App. A.1; docs/DATA_QUALITY.md
 
 ## ADR-019: Duplicate identifier 193F001 and K-burn-time consistency
-- Date/time: 2026-11-14 12:30 (UTC+5)
+- Date/time: 2026-11-14 12:27 (UTC+5)
 - Stage: 4 (data follow-up)
 - Context: CSV tests 70 and 73 carry the same identifier, date and GMT. TP Table IV (test matrix) and Figs. 74 and 77 show two different tests on 3/23/10, both with an unintended very large droplet that hit the igniter and left the field of view; the shared timestamp is likely a table copy error.
 - Options: A) keep both B) keep one, chosen by evidence C) drop both.
@@ -209,7 +209,7 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Sources: NASA/TP-2015-216046 Table IV, Table IX p. 22, Figs. 74 and 77 (pp. 97, 100)
 
 ## ADR-020: Add the two TP-only FLEX tests
-- Date/time: 2026-11-14 12:30 (UTC+5)
+- Date/time: 2026-11-14 12:27 (UTC+5)
 - Stage: 4 (data follow-up)
 - Context: FLEX-216 (N03H201) and FLEX-230 (H01H103) are in TP Table IX but not in the PSI CSV.
 - Options: A) add from the TP B) leave out.
@@ -219,9 +219,44 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Sources: NASA/TP-2015-216046 Table IX p. 26
 
 ## ADR-021: Extinction class kept as in ADR-018 for now
-- Date/time: 2026-11-14 12:30 (UTC+5)
+- Date/time: 2026-11-14 12:27 (UTC+5)
 - Stage: 4
 - Context: open question 3 of DATA_QUALITY.md (blank vs dash).
 - Decision (Ruslan): "Keep it for now, we will see later."
 - Consequences: no change; revisit in validation (stage 6) with the ADR-018 sensitivity variants.
 - Sources: docs/DATA_QUALITY.md section 5
+
+## ADR-022: Theory level for droplets (FLEX) and CFI-G
+- Date/time: 2026-11-14 ~12:35 (UTC+5; answer received between the 12:27 and 12:36 clock readings)
+- Stage: 4
+- Context: three levels proposed: L1 classical quasi-steady (NASA's comparison, NTRS 20130014061 Eqs. 1-2); L2 = L1 + T_b(P) + diluent-specific mixture properties + Burke-Schumann T_f; L3 = L2 + extinction proxies.
+- Options: A) L2 + simple L3 B) L1 only C) L1 + L2 without L3.
+- Claude's recommendation: A.
+- Decision (Ruslan): A; "maybe add L1 later if it is needed and time remains". CFI-G: no own flame model, Tad/Zst from the NASA table.
+- Consequences: `fif.physics.droplet.evaluate` implements L2 + proxies (flame standoff, chi_rad/kappa, r_f^2/alpha); no Damköhler number (A, E_a not sourced).
+- Sources: NTRS 20130014061; docs/FORMULAS.md sections 2-3
+
+## ADR-023: Gas-property evaluation
+- Date/time: 2026-11-14 ~12:35 (UTC+5; answer received between the 12:27 and 12:36 clock readings)
+- Stage: 4
+- Context: NASA used the Law & Williams (1972) recipe, not accessible to Claude. NIST data exist for O2/N2/CO2/He at 300-1500 K, not for fuel vapour at flame temperatures.
+- Options: A) ambient-mixture properties at T_bar = (T_b+T_f)/2, capped 1500 K, NASA RP-1311 mixing rules B) same with the 1/3 rule C) obtain the Law & Williams paper.
+- Claude's recommendation: A.
+- Decision (Ruslan): A, and "give me the DOI and say what exactly you need, I will try to find it".
+- Consequences: implemented A (assumptions A2-A5 in PHYSICS.md). Request to Ruslan: Law & Williams, Combustion and Flame 19 (1972) 393-405, DOI 10.1016/0010-2180(72)90009-0 - the part where the property values (lambda, cp, reference temperature, which species) for the burning-rate calculation are defined. If obtained, the recipe can replace A (hypothesis H1).
+- Sources: NASA RP-1311 Eqs. 5.3-5.6; NIST SRD 69
+
+## ADR-024: Gravity baseline
+- Date/time: 2026-11-14 ~12:35 (UTC+5; answer received between the 12:27 and 12:36 clock readings)
+- Stage: 4
+- Decision (Ruslan): base = microgravity (recommended). Earth = theory x Nu/2 (FORMULAS.md section 6), shown as `physics theory`, never as data.
+- Consequences: columns Gr, Pr, Nu_earth, K_earth_theory.
+- Sources: docs/FORMULAS.md section 6
+
+## ADR-025: Physics features for ML
+- Date/time: 2026-11-14 ~12:35 (UTC+5; answer received between the 12:27 and 12:36 clock readings)
+- Stage: 4
+- Options: A) compact set B) everything computed C) ln K_theory only.
+- Decision (Ruslan): A (recommended).
+- Consequences: features ln K_theory, B, T_f, Y_O2 (mass), alpha_g = lambda/(rho cp); for extinction also d0 and chi_rad proxy; plus the raw pre-ignition conditions. Listed in `fif.data.features` / stage 5.
+- Sources: docs/PHYSICS.md

@@ -3,6 +3,7 @@
 Usage (repository root): ``.venv/Scripts/python scripts/build_data.py``
 Steps: verify raw checksums -> parse -> clean/flag -> validate schema -> write CSV + logs.
 """
+
 from __future__ import annotations
 
 import sys
@@ -18,8 +19,10 @@ def main() -> None:
     for name in ("flex", "cfig", "catalog"):
         df = res[name]
         flagged = (df["quality_flag"] != "").sum()
-        print(f"{name:8} rows={len(df):4} flagged={flagged:3}"
-              + (f" use_in_model={int(df['use_in_model'].sum())}" if "use_in_model" in df else ""))
+        print(
+            f"{name:8} rows={len(df):4} flagged={flagged:3}"
+            + (f" use_in_model={int(df['use_in_model'].sum())}" if "use_in_model" in df else "")
+        )
     print(f"transform log entries: {len(res['log'])}")
 
 

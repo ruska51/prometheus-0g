@@ -13,6 +13,7 @@ Units: SI internally (Pa, m, m^2/s, s, kg/s, K). Original values are kept in ``*
 Conversions: 1 atm = 760 mmHg = 101325 Pa (docs/FORMULAS.md section 1) -> 1 mmHg = 101325/760 Pa;
 1 bar = 1e5 Pa; 1 mm = 1e-3 m; 1 mm^2/s = 1e-6 m^2/s; 1 mg/s = 1e-6 kg/s; T[K] = T[degC] + 273.15.
 """
+
 from __future__ import annotations
 
 import math
@@ -44,12 +45,23 @@ def _flag(df: pd.DataFrame, mask: pd.Series, code: str) -> None:
 
 # --------------------------------------------------------------------------- FLEX (PSI-69)
 
-def regime_group(fuel: pd.Series, p_mmHg: pd.Series, x_o2, x_co2, x_he, p_bin_mmHg: float = 50.0) -> pd.Series:
+
+def regime_group(
+    fuel: pd.Series, p_mmHg: pd.Series, x_o2: pd.Series, x_co2: pd.Series, x_he: pd.Series, p_bin_mmHg: float = 50.0
+) -> pd.Series:
     """CV group (ADR-016): fuel x pressure rounded to 50 mmHg x O2/CO2/He rounded to 0.01."""
     pb = (p_mmHg / p_bin_mmHg).round() * p_bin_mmHg
-    return (fuel.str.lower() + "|P" + pb.map(lambda v: "nan" if math.isnan(v) else f"{v:.0f}")
-            + "|O2=" + x_o2.round(2).map("{:.2f}".format) + "|CO2=" + x_co2.round(2).map("{:.2f}".format)
-            + "|He=" + x_he.round(2).map("{:.2f}".format))
+    return (
+        fuel.str.lower()
+        + "|P"
+        + pb.map(lambda v: "nan" if math.isnan(v) else f"{v:.0f}")
+        + "|O2="
+        + x_o2.round(2).map("{:.2f}".format)
+        + "|CO2="
+        + x_co2.round(2).map("{:.2f}".format)
+        + "|He="
+        + x_he.round(2).map("{:.2f}".format)
+    )
 
 
 def clean_flex(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
@@ -66,12 +78,18 @@ def clean_flex(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
     df["p_Pa"] = df["p_mmHg"] * PA_PER_MMHG
     df["d0_m"] = df["d0_mm"] * 1e-3
     df["K_m2_s"] = df["burning_rate_raw_value"] * 1e-6
-    log.add("flex", "unit", n, "p_Pa = p_mmHg * 101325/760; d0_m = d0_mm*1e-3; K_m2_s = burning rate * 1e-6 "
-            "(CSV header unit 'mm' read as mm^2/s per NASA/TP-2015-216046 App. A.1, ADR-015)")
+    log.add(
+        "flex",
+        "unit",
+        n,
+        "p_Pa = p_mmHg * 101325/760; d0_m = d0_mm*1e-3; K_m2_s = burning rate * 1e-6 "
+        "(CSV header unit 'mm' read as mm^2/s per NASA/TP-2015-216046 App. A.1, ADR-015)",
+    )
 
     # --- quality checks (flags; nothing removed)
     m = df["p_mmHg"] <= 0
-    _flag(df, m, "P_NONPOSITIVE"); df.loc[m, "use_in_model"] = False
+    _flag(df, m, "P_NONPOSITIVE")
+    df.loc[m, "use_in_model"] = False
     log.add("flex", "flag+exclude", m.sum(), "pressure <= 0 (test 114, same in TP Table IX) -> use_in_model=False (ADR-015)")
 
     xsum = df[["x_o2", "x_n2", "x_co2", "x_he"]].sum(axis=1)
@@ -82,7 +100,12 @@ def clean_flex(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
 
     m = df["d_ext_mm"] == 0
     _flag(df, m, "D_EXT_ZERO")
-    log.add("flex", "flag", m.sum(), "extinction diameter = 0 -> d_ext target set missing; counted as 'no finite-diameter extinction' (ADR-015, ADR-018)")
+    log.add(
+        "flex",
+        "flag",
+        m.sum(),
+        "extinction diameter = 0 -> d_ext target set missing; counted as 'no finite-diameter extinction' (ADR-015, ADR-018)",
+    )
 
     m = df["d_ext_mm"] > df["d0_mm"]
     _flag(df, m, "D_EXT_GT_D0")
@@ -90,8 +113,9 @@ def clean_flex(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
 
     m = df["burn_time_s__raw"].str.startswith("~")
     _flag(df, m, "APPROX_BURN_TIME")
-    df["burn_time_s"] = df["burn_time_s"].where(~m, df["burn_time_s__raw"].str.lstrip("~").map(
-        lambda s: float(s) if s.replace(".", "", 1).isdigit() else np.nan))
+    df["burn_time_s"] = df["burn_time_s"].where(
+        ~m, df["burn_time_s__raw"].str.lstrip("~").map(lambda s: float(s) if s.replace(".", "", 1).isdigit() else np.nan)
+    )
     log.add("flex", "parse+flag", m.sum(), "burn time '~x' -> x with APPROX_BURN_TIME flag (ADR-015)")
 
     dup = df["flex_identifier"].duplicated(keep=False)
@@ -109,8 +133,14 @@ def clean_flex(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
     # duplicated identifier 193F001: two real tests (TP Figs. 74, 77) with the same timestamp in Table IX;
     # the row of CSV test 73 is internally inconsistent (ratio 1.52) -> excluded (ADR-019, delegated by Ruslan)
     m = (df["flex_identifier"] == "193F001") & (df["test_no"] == 73)
-    _flag(df, m, "DUP_ID_LESS_CONSISTENT"); df.loc[m.fillna(False), "use_in_model"] = False
-    log.add("flex", "flag+exclude", int(m.fillna(False).sum()), "193F001 second row (CSV test 73) excluded; test 70 row kept (ADR-019)")
+    _flag(df, m, "DUP_ID_LESS_CONSISTENT")
+    df.loc[m.fillna(False), "use_in_model"] = False
+    log.add(
+        "flex",
+        "flag+exclude",
+        int(m.fillna(False).sum()),
+        "193F001 second row (CSV test 73) excluded; test 70 row kept (ADR-019)",
+    )
 
     m = df["source_id"] != "PSI-69"
     _flag(df, m, "FROM_TP_SUPPLEMENT")
@@ -125,9 +155,10 @@ def clean_flex(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
     log.add("flex", "flag", full_dup.sum(), "rows identical except row/test number")
 
     # outliers: robust z of K within fuel (|z| > 3.5, MAD based)
-    for fuel, g in df.groupby("fuel"):
+    for _fuel, g in df.groupby("fuel"):
         k = g["K_mm2_s_orig"]
-        med = k.median(); mad = (k - med).abs().median()
+        med = k.median()
+        mad = (k - med).abs().median()
         if mad > 0:
             z = 0.6745 * (k - med) / mad
             idx = z.index[z.abs() > 3.5]
@@ -141,8 +172,13 @@ def clean_flex(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
     df["extinct_finite_d"] = pd.array([pd.NA] * n, dtype="Int8")
     df.loc[finite, "extinct_finite_d"] = 1
     df.loc[no_ext, "extinct_finite_d"] = 0
-    log.add("flex", "target", n, f"extinct_finite_d: 1 if d_ext>0 ({finite.sum()}), 0 if en dash or 0 ({no_ext.sum()}), "
-            f"NA if blank ({(~finite & ~no_ext).sum()}) (ADR-018)")
+    log.add(
+        "flex",
+        "target",
+        n,
+        f"extinct_finite_d: 1 if d_ext>0 ({finite.sum()}), 0 if en dash or 0 ({no_ext.sum()}), "
+        f"NA if blank ({(~finite & ~no_ext).sum()}) (ADR-018)",
+    )
     df["d_ext_m"] = (df["d_ext_mm"] * 1e-3).where(finite)
     df["d_ext_over_d0"] = (df["d_ext_mm"] / df["d0_mm"]).where(finite)
     m = ((df["test_end"].isin(["Completion", "Disruption"])) & finite) | ((df["test_end"] == "Extinction") & no_ext)
@@ -164,6 +200,7 @@ def clean_flex(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
 
 # --------------------------------------------------------------------------- CFI-G (PSI-159)
 
+
 def clean_cfig(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
     df = interim.copy()
     n = len(df)
@@ -178,7 +215,8 @@ def clean_cfig(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
             log.add("cfig", "flag", m.sum(), f"{col[:-5]}: spreadsheet error code -> NaN (ADR-015)")
 
     # normalise categorical case (raw kept)
-    df["flame_type_orig"] = df["flame_type"]; df["flame_type"] = df["flame_type"].str.lower()
+    df["flame_type_orig"] = df["flame_type"]
+    df["flame_type"] = df["flame_type"].str.lower()
     df["hot_ignition_orig"] = df["hot_ignition"]
     hi = df["hot_ignition"].str.lower()
     changed = df["hot_ignition"].isin(["yes", "no"])  # lower-case variants of Yes/No in the raw table
@@ -193,9 +231,12 @@ def clean_cfig(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
     df["fuel"] = df["fuel_label"].str.extract(r"(ethane|propane|butane)", expand=False)
     pct = df["fuel_label"].str.extract(r"(\d+)\s*%", expand=False).astype(float) / 100
     df["fuel_bottle_fraction"] = pct.fillna(1.0)
-    log.add("cfig", "derive", n, "fuel name and bottle fraction parsed from fuel label ('30% butane' -> butane, 0.30; no % -> 1.0)")
+    log.add(
+        "cfig", "derive", n, "fuel name and bottle fraction parsed from fuel label ('30% butane' -> butane, 0.30; no % -> 1.0)"
+    )
 
-    df["p_bar_orig"] = df["p_bar"]; df["p_Pa"] = df["p_bar"] * PA_PER_BAR
+    df["p_bar_orig"] = df["p_bar"]
+    df["p_Pa"] = df["p_bar"] * PA_PER_BAR
     df["m_fuel_kg_s"] = df["m_fuel_mg_s"] * 1e-6
     df["m_o2_kg_s"] = df["m_o2_mg_s"] * 1e-6 if "m_o2_mg_s" in df else np.nan
     df["peak_burner_T_K_from_C"] = df["peak_burner_T_C"] + 273.15
@@ -203,7 +244,12 @@ def clean_cfig(interim: pd.DataFrame, log: TransformLog) -> pd.DataFrame:
 
     df["x_o2_oxidizer"] = np.where(df["table"] == "normal", df["x_o2_chamber_before"], df["x_o2_supply"])
     df["p_o2_Pa"] = df["x_o2_oxidizer"] * df["p_Pa"]
-    log.add("cfig", "derive", n, "x_o2_oxidizer = chamber XO2 before test (normal) or supplied XO2 (inverse); p_o2_Pa = x_o2_oxidizer*p_Pa")
+    log.add(
+        "cfig",
+        "derive",
+        n,
+        "x_o2_oxidizer = chamber XO2 before test (normal) or supplied XO2 (inverse); p_o2_Pa = x_o2_oxidizer*p_Pa",
+    )
 
     m = df["p_Pa"] <= 0
     _flag(df, m, "P_NONPOSITIVE")

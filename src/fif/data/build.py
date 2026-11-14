@@ -7,6 +7,7 @@ Outputs (in ``out_root``; default = repository ``data/``):
 - processed/transform_log.tsv, processed/quality_flags.tsv
 Tests pass a temporary ``out_root`` so live files are never touched.
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -23,14 +24,24 @@ def build(repo_root: Path = catalog.REPO_ROOT, out_root: Path | None = None) -> 
     (out_root / "interim").mkdir(parents=True, exist_ok=True)
     (out_root / "processed").mkdir(parents=True, exist_ok=True)
     log = clean.TransformLog()
-    log.add("all", "verify", n_checked, "sha256 of all registered raw files match data/catalog.yaml")
+    log.add(
+        "all",
+        "verify",
+        n_checked,
+        "sha256 of all git-tracked registered raw files match data/catalog.yaml (on-demand files also checked when present)",
+    )
 
     tables = repo_root / "data" / "raw" / "psi_tables"
-    flex_i = pd.concat([flex.parse(catalog.raw_path("psi_tables", "PSI-69_", repo_root)),
-                        flex.parse_supplement(catalog.raw_path("ntrs_flex_tp_supplement", "flex_tp_supplement", repo_root))],
-                       ignore_index=True)
-    cfig_i = cfig.parse(catalog.raw_path("psi_tables", "CFI-G_Normal", repo_root),
-                        catalog.raw_path("psi_tables", "CFI-G_Inverse", repo_root))
+    flex_i = pd.concat(
+        [
+            flex.parse(catalog.raw_path("psi_tables", "PSI-69_", repo_root)),
+            flex.parse_supplement(catalog.raw_path("ntrs_flex_tp_supplement", "flex_tp_supplement", repo_root)),
+        ],
+        ignore_index=True,
+    )
+    cfig_i = cfig.parse(
+        catalog.raw_path("psi_tables", "CFI-G_Normal", repo_root), catalog.raw_path("psi_tables", "CFI-G_Inverse", repo_root)
+    )
     cat_i = psi_catalog.parse(repo_root / "data" / "raw" / "psi_records", tables)
     log.add("flex", "parse", len(flex_i), "PSI CSV (274) + TP supplement (2, ADR-020) -> interim (no corrections)")
     log.add("cfig", "parse", len(cfig_i), "raw CSVs (normal + inverse) -> interim (no corrections)")
@@ -40,8 +51,7 @@ def build(repo_root: Path = catalog.REPO_ROOT, out_root: Path | None = None) -> 
     cfig_p = schema.CFIG.validate(clean.clean_cfig(cfig_i, log))
     cat_p = schema.CATALOG.validate(clean.clean_catalog(cat_i, log))
 
-    for name, interim, processed in [("flex", flex_i, flex_p), ("cfig", cfig_i, cfig_p),
-                                     ("psi_investigations", cat_i, cat_p)]:
+    for name, interim, processed in [("flex", flex_i, flex_p), ("cfig", cfig_i, cfig_p), ("psi_investigations", cat_i, cat_p)]:
         interim.to_csv(out_root / "interim" / f"{name}.csv", index=False, lineterminator="\n")
         processed.to_csv(out_root / "processed" / f"{name}.csv", index=False, lineterminator="\n")
     log.frame().to_csv(out_root / "processed" / "transform_log.tsv", sep="\t", index=False, lineterminator="\n")
@@ -49,9 +59,15 @@ def build(repo_root: Path = catalog.REPO_ROOT, out_root: Path | None = None) -> 
     flags = []
     for name, df in [("flex", flex_p), ("cfig", cfig_p), ("psi_investigations", cat_p)]:
         for _, r in df[df["quality_flag"] != ""].iterrows():
-            flags.append({"dataset": name, "source_id": r["source_id"], "row_id": r["row_id"],
-                          "test": r.get("test_no", r.get("test_id", r.get("psi_id", ""))),
-                          "quality_flag": r["quality_flag"],
-                          "use_in_model": r.get("use_in_model", "")})
+            flags.append(
+                {
+                    "dataset": name,
+                    "source_id": r["source_id"],
+                    "row_id": r["row_id"],
+                    "test": r.get("test_no", r.get("test_id", r.get("psi_id", ""))),
+                    "quality_flag": r["quality_flag"],
+                    "use_in_model": r.get("use_in_model", ""),
+                }
+            )
     pd.DataFrame(flags).to_csv(out_root / "processed" / "quality_flags.tsv", sep="\t", index=False, lineterminator="\n")
     return {"flex": flex_p, "cfig": cfig_p, "catalog": cat_p, "log": log.frame()}

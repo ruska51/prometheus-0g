@@ -6,7 +6,13 @@
 - otherwise "in range".
 If both apply, "unreliable" wins and both reasons are listed.
 """
+
 from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 SIGMA_UNRELIABLE = 0.20
 
@@ -24,7 +30,7 @@ TESTED = {
 O2_WINDOW = 0.02  # joint check: tested pressures of the same fuel + diluent within +-0.02 O2
 
 
-def _tested_rows():
+def _tested_rows() -> pd.DataFrame:
     import functools
 
     import pandas as pd
@@ -32,13 +38,16 @@ def _tested_rows():
     from fif.data.catalog import REPO_ROOT
 
     @functools.lru_cache(maxsize=1)
-    def load():
+    def load() -> pd.DataFrame:
         f = pd.read_csv(REPO_ROOT / "data" / "processed" / "flex.csv")
         return f[f["use_in_model"]][["fuel", "diluent", "x_o2", "p_atm"]]
+
     return load()
 
 
-def reliability(fuel, p_atm, x_o2, x_co2, x_he, d0_mm, sigma_log=None) -> dict:
+def reliability(
+    fuel: str, p_atm: float, x_o2: float, x_co2: float, x_he: float, d0_mm: float, sigma_log: float | None = None
+) -> dict:
     reasons = []
     # joint (combination) check: was this O2 level tested at this pressure for this fuel and diluent?
     if fuel in TESTED["fuel"]:
@@ -48,8 +57,10 @@ def reliability(fuel, p_atm, x_o2, x_co2, x_he, d0_mm, sigma_log=None) -> dict:
         if near.empty:
             reasons.append(f"O2 {x_o2:.3g} with {dil} never tested for {fuel} (window +-{O2_WINDOW})")
         elif not (near["p_atm"].min() - 1e-9 <= p_atm <= near["p_atm"].max() + 1e-9):
-            reasons.append(f"pressure {p_atm:.3g} atm outside tested {near['p_atm'].min():.3f}-{near['p_atm'].max():.3f} atm "
-                           f"for {fuel}, {dil}, O2 {x_o2:.2f}+-{O2_WINDOW}")
+            reasons.append(
+                f"pressure {p_atm:.3g} atm outside tested {near['p_atm'].min():.3f}-{near['p_atm'].max():.3f} atm "
+                f"for {fuel}, {dil}, O2 {x_o2:.2f}+-{O2_WINDOW}"
+            )
     if fuel not in TESTED["fuel"]:
         reasons.append(f"fuel {fuel} not tested")
     for name, val in (("p_atm", p_atm), ("x_o2", x_o2), ("x_co2", x_co2), ("x_he", x_he), ("d0_mm", d0_mm)):

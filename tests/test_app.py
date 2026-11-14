@@ -1,4 +1,5 @@
 """Smoke test: every dashboard page runs inside the real navigation without exceptions (streamlit.testing AppTest)."""
+
 from __future__ import annotations
 
 import sys

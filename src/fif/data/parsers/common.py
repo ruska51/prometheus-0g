@@ -4,6 +4,7 @@ Parsing rule: a cell becomes a float only if ``float(cell)`` succeeds on the str
 Anything else (``""``, en dash ``"–"``, ``"~6"``, ``"#DIV/0!"``) becomes NaN and the original
 text is kept in a ``*_raw`` column by the caller, so nothing is lost or silently changed.
 """
+
 from __future__ import annotations
 
 import csv

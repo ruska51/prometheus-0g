@@ -1,19 +1,23 @@
 """Ranked insights with stage filter, evidence badges, history and Earth blocks (UI_SPEC page 2)."""
-import streamlit as st
 
+import streamlit as st
 from common import STAGE_LABEL, evidence_badge, insights
 
 st.title("Fire-safety insights")
-st.markdown("Ranked by evidence strength x number of tests x effect size (formula in Method & sources). "
-            "Every number is computed live from NASA data or our models.")
+st.markdown(
+    "Ranked by evidence strength x number of tests x effect size (formula in Method & sources). "
+    "Every number is computed live from NASA data or our models."
+)
 data = insights()
 stages = st.multiselect("Stage", list(STAGE_LABEL), default=list(STAGE_LABEL), format_func=lambda s: STAGE_LABEL[s])
 
 for rank, i in enumerate([x for x in data["ranked"] if x["stage"] in stages], 1):
     with st.container(border=True):
         st.markdown(f"#### {rank}. {i['title']}")
-        tags = evidence_badge(i["evidence_type"]) + f" &nbsp; **{STAGE_LABEL[i['stage']]}** &nbsp; n = {i['n_tests']} &nbsp; " \
-               f"confidence: **{i['confidence']}**" + (" &nbsp; :orange[extrapolation]" if i["extrapolation"] else "")
+        tags = (
+            evidence_badge(i["evidence_type"]) + f" &nbsp; **{STAGE_LABEL[i['stage']]}** &nbsp; n = {i['n_tests']} &nbsp; "
+            f"confidence: **{i['confidence']}**" + (" &nbsp; :orange[extrapolation]" if i["extrapolation"] else "")
+        )
         st.markdown(tags, unsafe_allow_html=True)
         st.write(i["finding"])
         st.markdown(f"**What to do:** {i['action']}")

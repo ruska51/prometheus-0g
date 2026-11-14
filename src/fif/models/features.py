@@ -4,10 +4,12 @@ Every feature must be known before ignition. ``check_pre_ignition`` raises if a 
 contains a post-ignition quantity (list in fif.data.features.POST_IGNITION) or anything that is
 not on the explicit allow-list below. Tests call it on every feature set.
 """
+
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from numpy.typing import ArrayLike
 
 from fif.data.features import POST_IGNITION
 from fif.physics.droplet import evaluate_flex
@@ -59,7 +61,11 @@ class LeakageError(ValueError):
 
 def check_pre_ignition(features: list[str]) -> None:
     """Raise LeakageError if any feature is post-ignition or not on the allow-list."""
-    post = [f for f in features if f in POST_IGNITION or any(f.startswith(p) for p in ("K_m2_s", "d_ext", "burn_time", "test_end", "extinct"))]
+    post = [
+        f
+        for f in features
+        if f in POST_IGNITION or any(f.startswith(p) for p in ("K_m2_s", "d_ext", "burn_time", "test_end", "extinct"))
+    ]
     unknown = [f for f in features if f not in ALLOWED]
     if post or unknown:
         raise LeakageError(f"post-ignition: {post}; not on allow-list: {unknown}")
@@ -83,20 +89,36 @@ def model_table(flex: pd.DataFrame) -> pd.DataFrame:
     return f
 
 
-def conditions_table(fuel, p_atm, x_o2, x_co2=0.0, x_he=0.0, d0_mm=3.0) -> pd.DataFrame:
+def conditions_table(
+    fuel: str, p_atm: ArrayLike, x_o2: ArrayLike, x_co2: ArrayLike = 0.0, x_he: ArrayLike = 0.0, d0_mm: ArrayLike = 3.0
+) -> pd.DataFrame:
     """Model features for arbitrary pre-ignition conditions (N2 is the balance). Arguments broadcast.
 
     Used for physicality checks (stage 6) and the scenario panel (Moon base, stage 8).
     """
-    b = np.broadcast_arrays(np.asarray(fuel, dtype=object), *(np.asarray(v, dtype=float)
-                                                              for v in (p_atm, x_o2, x_co2, x_he, d0_mm)))
+    b = np.broadcast_arrays(
+        np.asarray(fuel, dtype=object), *(np.asarray(v, dtype=float) for v in (p_atm, x_o2, x_co2, x_he, d0_mm))
+    )
     fuel, p_atm, x_o2, x_co2, x_he, d0_mm = (a.ravel() for a in b)
-    df = pd.DataFrame({"fuel": fuel, "p_atm": p_atm, "p_Pa": p_atm * 101325.0, "x_o2": x_o2, "x_co2": x_co2,
-                       "x_he": x_he, "x_n2": 1.0 - x_o2 - x_co2 - x_he, "d0_m": d0_mm * 1e-3})
+    df = pd.DataFrame(
+        {
+            "fuel": fuel,
+            "p_atm": p_atm,
+            "p_Pa": p_atm * 101325.0,
+            "x_o2": x_o2,
+            "x_co2": x_co2,
+            "x_he": x_he,
+            "x_n2": 1.0 - x_o2 - x_co2 - x_he,
+            "d0_m": d0_mm * 1e-3,
+        }
+    )
     df["fuel_methanol"] = (df["fuel"] == "Methanol").astype(int)
     df = pd.concat([df, evaluate_flex(df)], axis=1)
-    df["ln_p_atm"] = np.log(df["p_atm"]); df["ln_d0_mm"] = np.log(d0_mm)
-    df["ln_K_theory"] = np.log(df["K_theory"]); df["T_f_kK"] = df["T_f"] / 1000.0
-    df["ln_alpha_g"] = np.log(df["alpha_g"]); df["ln_chi_rad_proxy"] = np.log(df["chi_rad_proxy"])
+    df["ln_p_atm"] = np.log(df["p_atm"])
+    df["ln_d0_mm"] = np.log(d0_mm)
+    df["ln_K_theory"] = np.log(df["K_theory"])
+    df["T_f_kK"] = df["T_f"] / 1000.0
+    df["ln_alpha_g"] = np.log(df["alpha_g"])
+    df["ln_chi_rad_proxy"] = np.log(df["chi_rad_proxy"])
     df["ln_tau_res_proxy"] = np.log(df["tau_res_proxy"])
     return df

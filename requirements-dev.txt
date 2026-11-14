@@ -1,3 +1,5 @@
-# Development-only tools (not needed to run the app)
-playwright==1.48.0  # scripts/screenshots.py, uses the installed Microsoft Edge
-huggingface_hub==2.4.0  # scripts/deploy_hf.py
+# Development-only tools (not needed to run the app): python -m pip install -r requirements-dev.txt
+ruff==0.17.5            # lint + format (pyproject.toml [tool.ruff]); `python run.py lint`
+pytest-cov==7.1.0       # coverage: python -m pytest --cov=src/fif
+playwright==1.48.0      # scripts/screenshots.py, uses the installed Microsoft Edge
+huggingface_hub==2.4.0  # scripts/deploy_hf.py (fallback deploy, ADR-040)

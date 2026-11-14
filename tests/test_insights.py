@@ -1,4 +1,5 @@
 """Insight tests: every insight computes; its numbers equal a direct, independent calculation from the data."""
+
 from __future__ import annotations
 
 import math
@@ -35,8 +36,9 @@ def test_all_insights_complete(insights):
 def test_p1_matches_direct_regression(insights):
     f = _flex()
     f = f[(f["flex_identifier"] != "C13H201")].dropna(subset=["K_m2_s", "d0_m"])
-    X = np.column_stack([np.ones(len(f)), f["fuel_methanol"], f["x_o2"], np.log(f["p_atm"]), f["x_co2"], f["x_he"],
-                         np.log(f["d0_m"] * 1e3)])
+    X = np.column_stack(
+        [np.ones(len(f)), f["fuel_methanol"], f["x_o2"], np.log(f["p_atm"]), f["x_co2"], f["x_he"], np.log(f["d0_m"] * 1e3)]
+    )
     b = np.linalg.lstsq(X, np.log(f["K_m2_s"]), rcond=None)[0]
     assert insights["P1"].effect["value"] == pytest.approx(math.exp(b[2] * 0.09))
     assert insights["S1"].effect["value"] == pytest.approx(math.exp(b[4] * 0.30))
@@ -54,9 +56,17 @@ def test_physical_signs(insights):
 def test_d1_matches_direct_bass_ii(insights):
     b = pd.read_csv(REPO_ROOT / "data" / "raw" / "psi_tables" / "PSI-25_Experimental table_BASS-II.csv", encoding="cp1252")
     b.columns = [str(x).strip().lstrip("﻿").lstrip("ï»¿") for x in b.columns]
-    n = lambda c: pd.to_numeric(b[c], errors="coerce")
-    ok = n("Initial CO (ppm)").notna() & n("Final CO (ppm)").notna() & n("Calibrated  initial O2 % by vol").notna() \
-        & n("Calibrated final O2 % by vol").notna() & (n("Calibrated final O2 % by vol") <= n("Calibrated  initial O2 % by vol") + 0.5)
+
+    def n(c):
+        return pd.to_numeric(b[c], errors="coerce")
+
+    ok = (
+        n("Initial CO (ppm)").notna()
+        & n("Final CO (ppm)").notna()
+        & n("Calibrated  initial O2 % by vol").notna()
+        & n("Calibrated final O2 % by vol").notna()
+        & (n("Calibrated final O2 % by vol") <= n("Calibrated  initial O2 % by vol") + 0.5)
+    )
     d = (n("Final CO (ppm)") - n("Initial CO (ppm)"))[ok]
     assert insights["D1"].n_tests == int(ok.sum())
     assert insights["D1"].effect["value"] == pytest.approx(d.median())
@@ -96,6 +106,7 @@ def test_cabin_atmosphere_labels():
 
 def test_lunar_bound_between_microgravity_and_earth(insights):
     from fif.physics.droplet import G_MOON_RATIO, buoyancy_factor
+
     p5 = insights["P5"]
     assert p5.effect["value"] > 1.0 and p5.extrapolation
     for gr in (0.1, 1.0, 10.0, 100.0):  # property: 1 < moon factor < earth factor for any Gr

@@ -3,3 +3,9 @@
 
 # Raw data must stay byte-identical (sha256 in data/catalog.yaml): no line-ending conversion
 data/raw/** -text
+
+# Generated tables are written with LF by the pipeline: keep LF on checkout so a rebuild is byte-identical
+data/processed/** text eol=lf
+data/interim/** text eol=lf
+docs/verification/*.csv text eol=lf
+docs/verification/*.tsv text eol=lf

@@ -22,24 +22,36 @@ Earlier stage-4 variants are kept for comparison: ``K_theory_ambient_cp`` (cp of
 Burke-Schumann T_f) and ``K_theory_c1_only`` (c_1 = fuel vapour, lambda_1 = ambient, Burke-Schumann T_f).
 Ambient temperature T_inf = 298.15 K (assumption A1). Units: SI.
 """
+
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from numpy.typing import ArrayLike
 
 from . import flame, mixing
-from .properties import (DELTA_C_H_LIQ_KJ_MOL, fuel_vapor_conductivity, fuel_vapor_cp, fuel_vapor_cp_table,
-                         gas_T_range, molar_mass, sat_prop, t_sat)
+from .properties import (
+    DELTA_C_H_LIQ_KJ_MOL,
+    fuel_vapor_conductivity,
+    fuel_vapor_cp,
+    fuel_vapor_cp_table,
+    gas_T_range,
+    molar_mass,
+    sat_prop,
+    t_sat,
+)
 
 T_INF = 298.15
 G0 = 9.80665  # standard gravity, m/s^2
 G_MOON_RATIO = 1.0 / 6.0  # g_Moon / g_Earth: "lunar gravity is 1/6 of Earth gravity" (NTRS 20250004015, NASA GRC)
 
 
-def buoyancy_factor(gr_earth, g_ratio: float):
+def buoyancy_factor(gr_earth: ArrayLike, g_ratio: float) -> np.ndarray:
     """1 + f_B at gravity g = g_ratio * g_Earth. Gr is proportional to g (Gr = g rho^2 d^3 dT / (mu^2 T)), so
     Gr(g) = g_ratio * Gr_Earth; f_B = 0.533 Gr^0.52 (Law & Williams 1972 Eq. 9, fitted for Gr <~ 1)."""
     return 1.0 + 0.533 * (np.asarray(gr_earth, dtype=float) * g_ratio) ** 0.52
+
+
 SIGMA = 5.670374419e-8  # W/(m^2 K^4), CODATA 2018
 R_U = 8.314462618  # J/(mol K), CODATA 2018
 SPECIES = ["O2", "N2", "CO2", "He"]
@@ -65,7 +77,9 @@ def lower_heating_value(fuel: str) -> float:
     return higher_heating_value(fuel) - STOICH[fuel]["n_h2o"] * h_fg_w / molar_mass(fuel)
 
 
-def _burke_schumann_tf(Tb, L, Q, zst, xm, t_hi, n_iter=30):
+def _burke_schumann_tf(
+    Tb: np.ndarray, L: np.ndarray, Q: np.ndarray, zst: np.ndarray, xm: np.ndarray, t_hi: float, n_iter: int = 30
+) -> np.ndarray:
     """Constant-cp flame sheet without dissociation (FORMULAS.md section 2); kept for comparison."""
     Tf = np.full(len(Tb), 2000.0)
     for _ in range(n_iter):
@@ -74,17 +88,47 @@ def _burke_schumann_tf(Tb, L, Q, zst, xm, t_hi, n_iter=30):
     return Tf
 
 
-def evaluate(fuel, p_Pa, x, d0_m=None) -> pd.DataFrame:
+def evaluate(fuel: ArrayLike, p_Pa: ArrayLike, x: np.ndarray, d0_m: ArrayLike | None = None) -> pd.DataFrame:
     """Physics for each row. fuel: 'methanol'/'heptane'; p_Pa [Pa]; x: ambient mole fractions (rows x 4,
     SPECIES order, summing to 1); d0_m: initial droplet diameter [m] (proxies and Earth correction)."""
     fuel = np.asarray(fuel)
     p = np.asarray(p_Pa, dtype=float)
     x = np.asarray(x, dtype=float)
     n = len(p)
-    cols = ["T_b", "L", "rho_l", "Q", "nu_s", "Y_O2", "Z_st", "T_f", "T_1", "c1", "lambda_F1", "lambda_a1",
-            "lambda_1", "B", "K_theory", "T_f_burke_schumann", "K_theory_ambient_cp", "K_theory_c1_only",
-            "cp_g", "lambda_g", "mu_g", "rho_g", "alpha_g", "flame_standoff", "chi_rad_proxy", "tau_res_proxy",
-            "T_2", "rho_2", "mu_2", "Gr", "f_B", "K_earth_theory"]
+    cols = [
+        "T_b",
+        "L",
+        "rho_l",
+        "Q",
+        "nu_s",
+        "Y_O2",
+        "Z_st",
+        "T_f",
+        "T_1",
+        "c1",
+        "lambda_F1",
+        "lambda_a1",
+        "lambda_1",
+        "B",
+        "K_theory",
+        "T_f_burke_schumann",
+        "K_theory_ambient_cp",
+        "K_theory_c1_only",
+        "cp_g",
+        "lambda_g",
+        "mu_g",
+        "rho_g",
+        "alpha_g",
+        "flame_standoff",
+        "chi_rad_proxy",
+        "tau_res_proxy",
+        "T_2",
+        "rho_2",
+        "mu_2",
+        "Gr",
+        "f_B",
+        "K_earth_theory",
+    ]
     out = {k: np.full(n, np.nan) for k in cols}
     for k in ("T_1_capped", "Gr_above_fit_range"):
         out[k] = np.zeros(n, dtype=bool)
@@ -134,11 +178,35 @@ def evaluate(fuel, p_Pa, x, d0_m=None) -> pd.DataFrame:
         T2 = np.minimum(0.5 * (Tf + T_INF), t_hi_gas)
         rho2 = pm * M_mix[m] / (R_U * T2)
         mu2 = mixing.mixture_viscosity(xm, SPECIES, T2)
-        vals = dict(T_b=Tb, L=L, rho_l=rho_l, Q=np.full(m.sum(), Q), nu_s=np.full(m.sum(), ns), Y_O2=yo,
-                    Z_st=zst, T_f=Tf, T_1=T1, c1=c1, lambda_F1=lamF, lambda_a1=lama, lambda_1=lam1, B=B,
-                    K_theory=K, T_f_burke_schumann=Tf_bs, K_theory_ambient_cp=K_amb, K_theory_c1_only=K_c1,
-                    cp_g=cp_g, lambda_g=lama, mu_g=mu_g, rho_g=rho_g, alpha_g=alpha, flame_standoff=fs,
-                    T_2=T2, rho_2=rho2, mu_2=mu2)
+        vals = dict(
+            T_b=Tb,
+            L=L,
+            rho_l=rho_l,
+            Q=np.full(m.sum(), Q),
+            nu_s=np.full(m.sum(), ns),
+            Y_O2=yo,
+            Z_st=zst,
+            T_f=Tf,
+            T_1=T1,
+            c1=c1,
+            lambda_F1=lamF,
+            lambda_a1=lama,
+            lambda_1=lam1,
+            B=B,
+            K_theory=K,
+            T_f_burke_schumann=Tf_bs,
+            K_theory_ambient_cp=K_amb,
+            K_theory_c1_only=K_c1,
+            cp_g=cp_g,
+            lambda_g=lama,
+            mu_g=mu_g,
+            rho_g=rho_g,
+            alpha_g=alpha,
+            flame_standoff=fs,
+            T_2=T2,
+            rho_2=rho2,
+            mu_2=mu2,
+        )
         for k, v in vals.items():
             out[k][m] = v
         out["T_1_capped"][m] = T1_raw > t_hi
@@ -146,9 +214,9 @@ def evaluate(fuel, p_Pa, x, d0_m=None) -> pd.DataFrame:
             d0 = np.asarray(d0_m, dtype=float)[m]
             rs = d0 / 2
             # radiative-loss fraction proxy chi/kappa [Pa m] (FORMULAS.md section 3; kappa unknown)
-            out["chi_rad_proxy"][m] = SIGMA * pm * Tf ** 4 * rs ** 2 * fs ** 3 * c1 / (3 * lam1 * np.log1p(B) * Q)
+            out["chi_rad_proxy"][m] = SIGMA * pm * Tf**4 * rs**2 * fs**3 * c1 / (3 * lam1 * np.log1p(B) * Q)
             out["tau_res_proxy"][m] = (fs * rs) ** 2 / alpha
-            gr = G0 * rho2 ** 2 * d0 ** 3 / mu2 ** 2 * (Tf - T_INF) / T2
+            gr = G0 * rho2**2 * d0**3 / mu2**2 * (Tf - T_INF) / T2
             fb = buoyancy_factor(gr, 1.0) - 1.0
             out["Gr"][m], out["f_B"][m], out["K_earth_theory"][m] = gr, fb, K * (1 + fb)
             out["Gr_above_fit_range"][m] = gr > 1.0

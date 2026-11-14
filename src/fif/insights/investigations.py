@@ -11,6 +11,7 @@ Stage tags from the challenge text (docs/challenge/CHALLENGE.md): prevention - B
 ("Fire detection was tested"), DAFT ("used to detect dust"); suppression - FLEX ("Suppression was studied in FLEX"),
 FLEX-2 and CFI (same MDCA hardware, listed with FLEX under Hardware).
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -19,18 +20,50 @@ import pandas as pd
 from fif.data.catalog import REPO_ROOT
 
 STAGE_BY_ACRONYM = {
-    "BASS": "prevention", "BASS-II": "prevention", "SAFFIRE-I": "prevention", "SAFFIRE-II": "prevention",
-    "SAFFIRE-III": "prevention", "ACME BRE": "prevention",
-    "SAME": "detection", "SAME-R": "detection", "DAFT / DAFT-2": "detection",
-    "FLEX": "suppression", "FLEX-2": "suppression", "CFI": "suppression",
+    "BASS": "prevention",
+    "BASS-II": "prevention",
+    "SAFFIRE-I": "prevention",
+    "SAFFIRE-II": "prevention",
+    "SAFFIRE-III": "prevention",
+    "ACME BRE": "prevention",
+    "SAME": "detection",
+    "SAME-R": "detection",
+    "DAFT / DAFT-2": "detection",
+    "FLEX": "suppression",
+    "FLEX-2": "suppression",
+    "CFI": "suppression",
 }
-NAMED_IN_CHALLENGE = {"BASS", "BASS-II", "SAFFIRE-I", "SAFFIRE-II", "SAFFIRE-III", "SAME", "SAME-R", "FLEX", "DAFT / DAFT-2",
-                      "ACME BRE", "FLEX-2", "CFI"}
+NAMED_IN_CHALLENGE = {
+    "BASS",
+    "BASS-II",
+    "SAFFIRE-I",
+    "SAFFIRE-II",
+    "SAFFIRE-III",
+    "SAME",
+    "SAME-R",
+    "FLEX",
+    "DAFT / DAFT-2",
+    "ACME BRE",
+    "FLEX-2",
+    "CFI",
+}
 # Experimental tables with numeric outcomes (DATA_SOURCES.md section 2): FLEX, CFI-G; BASS-II partial outcomes (CO, O2)
 OUTCOMES = {"PSI-69": 1.0, "PSI-159": 1.0, "PSI-25": 1.0}
-FUEL_TYPE = {"FLEX": "droplet", "FLEX-2": "droplet", "CFI": "droplet", "BASS": "solid", "BASS-II": "solid",
-             "SAFFIRE-I": "solid", "SAFFIRE-II": "solid", "SAFFIRE-III": "solid", "SAME": "smoke", "SAME-R": "smoke",
-             "DAFT / DAFT-2": "dust", "SLICE": "gas jet", "SPICE": "gas jet"}
+FUEL_TYPE = {
+    "FLEX": "droplet",
+    "FLEX-2": "droplet",
+    "CFI": "droplet",
+    "BASS": "solid",
+    "BASS-II": "solid",
+    "SAFFIRE-I": "solid",
+    "SAFFIRE-II": "solid",
+    "SAFFIRE-III": "solid",
+    "SAME": "smoke",
+    "SAME-R": "smoke",
+    "DAFT / DAFT-2": "dust",
+    "SLICE": "gas jet",
+    "SPICE": "gas jet",
+}
 
 
 def ranked_investigations() -> pd.DataFrame:

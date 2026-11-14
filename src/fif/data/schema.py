@@ -4,9 +4,9 @@ Ranges are physical-plausibility bounds, not the observed ranges; the observed r
 docs/DATA_DICTIONARY.md. Rows excluded from modeling (``use_in_model = False``) are still
 validated, so values that are physically impossible must carry a quality flag (checked below).
 """
+
 from __future__ import annotations
 
-import pandera.pandas as pa
 from pandera.pandas import Check, Column, DataFrameSchema
 
 PROVENANCE = {
@@ -19,7 +19,9 @@ PROVENANCE = {
 FLEX = DataFrameSchema(
     {
         **PROVENANCE,
-        "test_no": Column("Int64", Check.in_range(1, 274), nullable=True, description="PSI CSV numbering; NA for TP-supplement rows"),
+        "test_no": Column(
+            "Int64", Check.in_range(1, 274), nullable=True, description="PSI CSV numbering; NA for TP-supplement rows"
+        ),
         "tp_test_no": Column("Int64", nullable=True, description="NASA/TP Table IX number (supplement rows only)"),
         "fuel": Column(str, Check.isin(["Methanol", "Heptane"])),
         "p_Pa": Column(float, Check.in_range(0, 5e5), description="ambient pressure, Pa (0 only with P_NONPOSITIVE)"),
@@ -41,10 +43,16 @@ FLEX = DataFrameSchema(
         "use_in_model": Column(bool),
     },
     checks=[
-        Check(lambda d: ~((d["p_Pa"] <= 0) & ~d["quality_flag"].str.contains("P_NONPOSITIVE")),
-              element_wise=False, error="non-positive pressure without P_NONPOSITIVE flag"),
-        Check(lambda d: ~((d["p_Pa"] <= 0) & d["use_in_model"]), element_wise=False,
-              error="non-positive pressure must not be used in the model"),
+        Check(
+            lambda d: ~((d["p_Pa"] <= 0) & ~d["quality_flag"].str.contains("P_NONPOSITIVE")),
+            element_wise=False,
+            error="non-positive pressure without P_NONPOSITIVE flag",
+        ),
+        Check(
+            lambda d: ~((d["p_Pa"] <= 0) & d["use_in_model"]),
+            element_wise=False,
+            error="non-positive pressure must not be used in the model",
+        ),
     ],
     strict=False,
     coerce=False,

@@ -6,6 +6,7 @@ The token is read from the environment variable HF_TOKEN or from a file given by
 README stays the jury document.
 Usage: ``.venv/Scripts/python scripts/deploy_hf.py [space_name]``
 """
+
 from __future__ import annotations
 
 import os
@@ -17,8 +18,21 @@ from pathlib import Path
 from huggingface_hub import HfApi
 
 ROOT = Path(__file__).resolve().parents[1]
-INCLUDE = ["app", "src", "models", ".streamlit", "data/processed", "data/catalog.yaml", "data/raw/psi_tables",
-           "data/raw/nist", "data/raw/nasa_tr_r132", "docs", "Dockerfile", "requirements.txt", "LICENSE"]
+INCLUDE = [
+    "app",
+    "src",
+    "models",
+    ".streamlit",
+    "data/processed",
+    "data/catalog.yaml",
+    "data/raw/psi_tables",
+    "data/raw/nist",
+    "data/raw/nasa_tr_r132",
+    "docs",
+    "Dockerfile",
+    "requirements.txt",
+    "LICENSE",
+]
 EXCLUDE_DIRS = {"__pycache__", ".pytest_cache"}
 GITHUB = "https://github.com/ruska51/prometheus-0g"
 
@@ -66,8 +80,12 @@ def main(space: str = "prometheus-0g") -> None:
     api.create_repo(repo_id, repo_type="space", space_sdk="docker", private=False, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmp:
         stage(Path(tmp))
-        api.upload_folder(folder_path=tmp, repo_id=repo_id, repo_type="space",
-                          commit_message="Deploy Prometheus-0g dashboard from GitHub " + GITHUB)
+        api.upload_folder(
+            folder_path=tmp,
+            repo_id=repo_id,
+            repo_type="space",
+            commit_message="Deploy Prometheus-0g dashboard from GitHub " + GITHUB,
+        )
     print(f"https://huggingface.co/spaces/{repo_id}")
 
 

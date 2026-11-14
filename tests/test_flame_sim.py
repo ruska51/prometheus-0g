@@ -1,4 +1,5 @@
 """Burning-droplet animation inputs (ADR-035): properties of the computed series, not fixed numbers."""
+
 import numpy as np
 import pytest
 
@@ -15,7 +16,7 @@ def test_series_follows_d2_law(fuel, name):
     t, d = np.array(s["t_s"]), np.array(s["d_mm"])
     assert d[0] == pytest.approx(3.0)
     assert np.all(np.diff(d) <= 1e-9)  # droplet only shrinks
-    np.testing.assert_allclose(d ** 2, 9.0 - r["K_mm2_s"] * t, atol=1e-3)  # d^2 linear in t with slope K
+    np.testing.assert_allclose(d**2, 9.0 - r["K_mm2_s"] * t, atol=1e-3)  # d^2 linear in t with slope K
     np.testing.assert_allclose(s["flame_d_mm"], np.array(s["d_mm"]) * r["standoff"], rtol=1e-3, atol=1e-3)
     assert d[-1] == pytest.approx(r["d_ext_mm"] if r["extinguishes"] else 0.0, abs=1e-3)
     assert 0.0 <= s["burned_frac"][-1] <= 1.0
@@ -51,8 +52,10 @@ def test_blackbody_colour_gets_whiter_and_bluer_with_temperature():
 def test_html_payload_is_safe():
     import sys
     from pathlib import Path
+
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
     from flame_view import html
+
     r = simulate("Methanol", 1.0, 0.21)
     r["label"] = "</script><b>x"
     page = html([r, r])

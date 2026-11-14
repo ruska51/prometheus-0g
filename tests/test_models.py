@@ -2,18 +2,18 @@
 
 Fast: no full cross-validation here (scripts/train_models.py does that, ~45 s).
 """
+
 from __future__ import annotations
 
 import numpy as np
 import pandas as pd
 import pytest
 
+from fif.data.catalog import REPO_ROOT
 from fif.data.features import POST_IGNITION
 from fif.models import classification as C
 from fif.models import regression as R
-from fif.models.features import (EXTINCTION_DIRECTIONS, FEATURE_SETS, LeakageError, check_pre_ignition,
-                                 model_table)
-from fif.data.catalog import REPO_ROOT
+from fif.models.features import EXTINCTION_DIRECTIONS, FEATURE_SETS, LeakageError, check_pre_ignition, model_table
 
 
 @pytest.fixture(scope="module")
@@ -53,7 +53,8 @@ def test_hybrid_recovers_calibration_constant_on_synthetic_data():
 
 def test_gp_uncertainty_grows_away_from_data():
     rng = np.random.default_rng(1)
-    X = rng.uniform(0, 1, size=(60, 1)); y = np.sin(3 * X[:, 0]) + rng.normal(0, 0.05, 60)
+    X = rng.uniform(0, 1, size=(60, 1))
+    y = np.sin(3 * X[:, 0]) + rng.normal(0, 0.05, 60)
     m = R.GPModel().fit(X, y)
     _, sd_in = m.predict(np.array([[0.5]]))
     _, sd_out = m.predict(np.array([[3.0]]))

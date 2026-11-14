@@ -27,13 +27,24 @@ _TBD._
 | R6 | [Fire Detector (NASA Spinoff)](https://spinoff.nasa.gov/node/9407) | _TBD_ |
 | R7 | [Fire Attire (NASA Spinoff)](https://spinoff.nasa.gov/node/9918) | _TBD_ |
 
-## Quick start
+## How to run
+
+Tested on 2026-11-14 from a fresh clone on Windows 11 with Python 3.12 (docs/WORKLOG.md, stage 10); the same commands work
+on macOS / Linux (`python3`). Dependencies are pinned in `requirements.txt`.
 
 ```
-make setup   # Python 3.12 venv + requirements
-make test
-make app
+git clone https://github.com/ruska51/prometheus-0g
+cd prometheus-0g
+python run.py setup   # .venv + pinned requirements + the fif package (about 1 min)
+python run.py all     # verify raw-data hashes -> build data -> train models -> build insights -> tests (about 2 min)
+python run.py app     # dashboard at http://localhost:8501
 ```
+
+Single steps: `python run.py verify | data | train | validate | insights | test | lint | app`
+(`validate` re-runs the stage-6 validation, about 5 min; `lint` needs `pip install -r requirements-dev.txt`).
+`make <task>` does the same where make is available. Nothing has to be downloaded: the NASA tables used are in
+`data/raw/` (CC0) with sha256 checksums in `data/catalog.yaml`; the 43 MB FLEX report is fetched only by
+`scripts/verify_flex_vs_tp.py`. Live version: https://prometheus-0g.streamlit.app/
 
 ## Validation
 

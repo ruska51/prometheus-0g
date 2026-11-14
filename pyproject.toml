@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "fif"
 version = "0.0.1"
 description = "Flame in Freefall: physics-informed fire-safety insights from NASA microgravity combustion data"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 license = "Apache-2.0"
 
 [tool.setuptools.packages.find]
@@ -15,3 +15,18 @@ where = ["src"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 130
+target-version = "py312"
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+# pycodestyle, pyflakes, isort, pyupgrade, bugbear; ANN: type hints on public functions of the package
+select = ["E", "F", "W", "I", "UP", "B"]
+# E501: line length is enforced by `ruff format`; what remains are long string literals (markdown / JS templates).
+# B905: zip() over arrays built with equal length in the same function.
+ignore = ["E501", "B905"]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["E402"]  # sys.path insertion before imports

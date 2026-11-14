@@ -8,6 +8,7 @@ Column meanings follow NASA/TP-2015-216046 Appendix A.1 (docs/DATA_SOURCES.md, T
 The CSV header labels the burning rate "mm"; the TP defines it as the burning-rate constant
 from a linear fit of d^2 vs t (mm^2/s). The unit is assigned in ``clean.py`` (ADR-015).
 """
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -18,7 +19,11 @@ from .common import read_csv_text, to_float
 
 SOURCE_ID = "PSI-69"
 EXPECTED_HEADER = [
-    "FLEX Test #", "FLEX Identifier", "Test Date", "Test GMT", "Fuel",
+    "FLEX Test #",
+    "FLEX Identifier",
+    "Test Date",
+    "Test GMT",
+    "Fuel",
     "Ambient pressure; mmHg",
     "O initial ambient composition; mole fraction",
     "N initial ambient composition; mole fraction",

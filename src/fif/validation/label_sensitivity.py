@@ -11,6 +11,7 @@ Rule fixed BEFORE running (2026-11-14, docs/WORKLOG.md): the extinction conclusi
 (3) the directions behind insights S3 / S4 hold: P(extinction) at O2 0.30 is below P at O2 0.15
     (methanol and heptane, 1 atm, 3 mm).
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -67,10 +68,14 @@ def run(t: pd.DataFrame) -> dict:
             p_lo_hi[fuel] = {"P_O2_0.15": float(pr[0]), "P_O2_0.30": float(pr[1])}
         both = a.notna() & y.notna()
         out["variants"][name] = {
-            "n": int(len(sub)), "n_positive": int(ye.sum()), "n_negative": int(len(ye) - ye.sum()),
+            "n": int(len(sub)),
+            "n_positive": int(ye.sum()),
+            "n_negative": int(len(ye) - ye.sum()),
             "agreement_with_A": float((a[both] == y[both]).mean()) if name != "A_diameter" else 1.0,
             "n_compared_with_A": int(both.sum()),
-            "models": per_model, "interface_worst_P_rise_along_O2": worst, "interface_P_at_O2": p_lo_hi,
+            "models": per_model,
+            "interface_worst_P_rise_along_O2": worst,
+            "interface_P_at_O2": p_lo_hi,
         }
     base = out["variants"]["A_diameter"]["models"][UI_SPEC]["AUC"]
     checks = {}

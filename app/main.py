@@ -3,6 +3,7 @@
 Run: ``.venv/Scripts/python -m streamlit run app/main.py``. Pages live in app/views/ (not app/pages/: Streamlit would auto-register that folder and bypass st.navigation); they only call the fif
 package and read generated artefacts.
 """
+
 from __future__ import annotations
 
 import sys

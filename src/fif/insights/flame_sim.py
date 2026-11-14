@@ -17,6 +17,7 @@ Physics per panel:
   converted to sRGB (IEC 61966-2-1 matrix); methanol (nearly soot-free) = faint blue, illustrative only.
   If the GP gives d_ext/d0 >= 1 the flame is not sustained (shown as a brief ignition flash, illustrative).
 """
+
 from __future__ import annotations
 
 import functools
@@ -32,16 +33,22 @@ from .scenario import PRESETS, predict
 
 ATMOSPHERES = {  # microgravity cabin atmospheres = scenario.PRESETS; Earth = ISS air at 1 g
     "ISS cabin air (microgravity)": {**PRESETS["ISS cabin air"], "g": 0},
-    "Earth sea-level air (1 g)": {**PRESETS["ISS cabin air"], "g": 1,
-                                  "src": "same air at 1 g; buoyancy: Law & Williams Eq. (9), extrapolated (docs/PHYSICS.md section 4)"},
+    "Earth sea-level air (1 g)": {
+        **PRESETS["ISS cabin air"],
+        "g": 1,
+        "src": "same air at 1 g; buoyancy: Law & Williams Eq. (9), extrapolated (docs/PHYSICS.md section 4)",
+    },
     "Moon base / rover (planned)": {**PRESETS["Moon base / rover (planned)"], "g": 0},
-    "Moon base on the lunar surface (1/6 g)": {**PRESETS["Moon base / rover (planned)"], "g": G_MOON_RATIO,
-                                               "src": "Moon-base air at 1/6 g (NTRS 20250004015); buoyancy: Law & Williams Eq. (9), upper bound"},
+    "Moon base on the lunar surface (1/6 g)": {
+        **PRESETS["Moon base / rover (planned)"],
+        "g": G_MOON_RATIO,
+        "src": "Moon-base air at 1/6 g (NTRS 20250004015); buoyancy: Law & Williams Eq. (9), upper bound",
+    },
     "Spacesuit (microgravity)": {**PRESETS["Spacesuit"], "g": 0},
 }
 
 
-def _g(lam, mu, s1, s2):
+def _g(lam: np.ndarray, mu: float, s1: float, s2: float) -> np.ndarray:
     return np.exp(-0.5 * ((lam - mu) / np.where(lam < mu, s1, s2)) ** 2)
 
 
@@ -53,7 +60,7 @@ def blackbody_srgb(T: float) -> tuple[float, float, float]:
     zb = 1.217 * _g(lam, 437.0, 11.8, 36.0) + 0.681 * _g(lam, 459.0, 26.0, 13.8)
     h, c, k = 6.62607015e-34, 2.99792458e8, 1.380649e-23  # SI 2019 exact constants
     lm = lam * 1e-9
-    B = 1.0 / (lm ** 5 * (np.exp(h * c / (lm * k * T)) - 1.0))
+    B = 1.0 / (lm**5 * (np.exp(h * c / (lm * k * T)) - 1.0))
     X, Y, Z = (B * xb).sum(), (B * yb).sum(), (B * zb).sum()
     M = np.array([[3.2406, -1.5372, -0.4986], [-0.9689, 1.8758, 0.0415], [0.0557, -0.2040, 1.0570]])
     rgb = np.clip(M @ np.array([X, Y, Z]), 0, None)
@@ -61,7 +68,7 @@ def blackbody_srgb(T: float) -> tuple[float, float, float]:
     return tuple(float(v) for v in rgb)
 
 
-def _to_srgb8(rgb) -> list[int]:
+def _to_srgb8(rgb: tuple[float, float, float]) -> list[int]:
     out = []
     for v in rgb:
         v = 12.92 * v if v <= 0.0031308 else 1.055 * v ** (1 / 2.4) - 0.055
@@ -70,12 +77,20 @@ def _to_srgb8(rgb) -> list[int]:
 
 
 @functools.lru_cache(maxsize=1)
-def _dext_model():
+def _dext_model() -> dict:
     return joblib.load(REPO_ROOT / "models" / "dext_hybrid_gp.joblib")
 
 
-def simulate(fuel: str, p_atm: float, x_o2: float, x_co2: float = 0.0, x_he: float = 0.0, d0_mm: float = 3.0,
-             gravity: float = 0.0, label: str = "") -> dict:
+def simulate(
+    fuel: str,
+    p_atm: float,
+    x_o2: float,
+    x_co2: float = 0.0,
+    x_he: float = 0.0,
+    d0_mm: float = 3.0,
+    gravity: float = 0.0,
+    label: str = "",
+) -> dict:
     """gravity = g / g_Earth (0 = microgravity, 1/6 = Moon, 1 = Earth)."""
     s = predict(fuel, p_atm, x_o2, x_co2, x_he, d0_mm)
     c = conditions_table(fuel, p_atm, x_o2, x_co2, x_he, d0_mm)
@@ -91,8 +106,10 @@ def simulate(fuel: str, p_atm: float, x_o2: float, x_co2: float = 0.0, x_he: flo
         k_src += f" x (1 + f_B) = x{fac:.2f} ({where} buoyancy, Gr = {s['earth_Gr'] * gravity:.2g}{bound})"
         notes.append("Buoyant flame shape is schematic; extinction is not modelled with gravity.")
         if gravity < 1:
-            notes.append("Partial gravity: the burning rate lies between the microgravity value and this upper bound "
-                         "(no partial-gravity data in PSI).")
+            notes.append(
+                "Partial gravity: the burning rate lies between the microgravity value and this upper bound "
+                "(no partial-gravity data in PSI)."
+            )
     d_ext = None
     extinguishes = False
     if gravity:
@@ -105,24 +122,44 @@ def simulate(fuel: str, p_atm: float, x_o2: float, x_co2: float = 0.0, x_he: flo
             extinguishes = True
     else:
         notes.append("Extinction not predicted outside the tested data (P(extinction) shown for reference only).")
-    t_end = (d0_mm ** 2 - (d_ext ** 2 if d_ext else 0.0)) / K
+    t_end = (d0_mm**2 - (d_ext**2 if d_ext else 0.0)) / K
     sustained = not (extinguishes and d_ext >= d0_mm * 0.999)
     if not sustained:
-        notes.append("Predicted extinction diameter >= initial diameter: no sustained flame (brief ignition flash, illustrative).")
+        notes.append(
+            "Predicted extinction diameter >= initial diameter: no sustained flame (brief ignition flash, illustrative)."
+        )
     t = np.linspace(0.0, t_end, 121)
-    d = np.sqrt(np.clip(d0_mm ** 2 - K * t, 0.0, None))
+    d = np.sqrt(np.clip(d0_mm**2 - K * t, 0.0, None))
     sooty = fuel == "Heptane"
     color = _to_srgb8(blackbody_srgb(s["T_f_K"])) if sooty else [96, 150, 255]
     return {
-        "label": label, "fuel": fuel, "gravity": float(gravity),
-        "shape_e": float((fac - 1) / (float(buoyancy_factor(s["earth_Gr"], 1.0)) - 1)) if gravity else 0.0, "x_o2": x_o2, "p_atm": p_atm, "p_psi": p_atm * 14.696,
-        "d0_mm": d0_mm, "K_mm2_s": float(K), "K_source": k_src, "t_end_s": float(t_end),
-        "extinguishes": extinguishes, "d_ext_mm": d_ext, "P_extinction": s["P_extinction"],
-        "standoff": float(c["flame_standoff"].iloc[0]), "T_f_K": s["T_f_K"], "status": status,
-        "unburned_fraction": float((d_ext / d0_mm) ** 3) if d_ext else 0.0, "notes": notes,
-        "sustained": sustained, "sooty": sooty, "flame_rgb": color,
-        "series": {"t_s": [round(float(v), 4) for v in t], "d_mm": [round(float(v), 5) for v in d],
-                   "flame_d_mm": [round(float(v) * float(c["flame_standoff"].iloc[0]), 4) for v in d],
-                   "burned_frac": [round(float(1 - (v / d0_mm) ** 3), 5) for v in d]},
+        "label": label,
+        "fuel": fuel,
+        "gravity": float(gravity),
+        "shape_e": float((fac - 1) / (float(buoyancy_factor(s["earth_Gr"], 1.0)) - 1)) if gravity else 0.0,
+        "x_o2": x_o2,
+        "p_atm": p_atm,
+        "p_psi": p_atm * 14.696,
+        "d0_mm": d0_mm,
+        "K_mm2_s": float(K),
+        "K_source": k_src,
+        "t_end_s": float(t_end),
+        "extinguishes": extinguishes,
+        "d_ext_mm": d_ext,
+        "P_extinction": s["P_extinction"],
+        "standoff": float(c["flame_standoff"].iloc[0]),
+        "T_f_K": s["T_f_K"],
+        "status": status,
+        "unburned_fraction": float((d_ext / d0_mm) ** 3) if d_ext else 0.0,
+        "notes": notes,
+        "sustained": sustained,
+        "sooty": sooty,
+        "flame_rgb": color,
+        "series": {
+            "t_s": [round(float(v), 4) for v in t],
+            "d_mm": [round(float(v), 5) for v in d],
+            "flame_d_mm": [round(float(v) * float(c["flame_standoff"].iloc[0]), 4) for v in d],
+            "burned_frac": [round(float(1 - (v / d0_mm) ** 3), 5) for v in d],
+        },
         "src": "K: docs/MODEL_CARD.md; d^2 law and r_f/r_s: docs/PHYSICS.md sections 3-5; d_ext: models/dext_hybrid_gp.joblib",
     }

@@ -3,14 +3,21 @@
 Every number in an insight's text is computed when the insight function runs (no hard-coded numbers in
 the text). Evidence types follow CLAUDE.md section 4.
 """
+
 from __future__ import annotations
 
 import math
 from dataclasses import asdict, dataclass, field
 
 # Evidence-type weights: docs/FORMULAS.md section 8 (Ruslan's default).
-EVIDENCE_WEIGHTS = {"NASA data": 1.0, "model": 0.7, "NASA literature": 0.6, "physics theory": 0.5,
-                    "NASA history": 0.5, "NASA spinoff": 0.3}
+EVIDENCE_WEIGHTS = {
+    "NASA data": 1.0,
+    "model": 0.7,
+    "NASA literature": 0.6,
+    "physics theory": 0.5,
+    "NASA history": 0.5,
+    "NASA spinoff": 0.3,
+}
 STAGES = ("prevention", "detection", "suppression")
 
 
@@ -64,8 +71,11 @@ def score_lexicographic(ins: Insight) -> float:
     return EVIDENCE_WEIGHTS[ins.evidence_type] * 1e6 + sig * 1e4 + min(ins.n_tests, 9999)
 
 
-RANKINGS = {"A_evidence_log_n": score_evidence_log_n, "B_multicriteria": score_multicriteria,
-            "C_lexicographic": score_lexicographic}
+RANKINGS = {
+    "A_evidence_log_n": score_evidence_log_n,
+    "B_multicriteria": score_multicriteria,
+    "C_lexicographic": score_lexicographic,
+}
 
 
 def rank(insights: list[Insight], method: str = "A_evidence_log_n") -> list[Insight]:

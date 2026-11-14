@@ -1,19 +1,11 @@
-# One-command pipeline. Targets are filled in stages 3-11.
-PY ?= .venv/Scripts/python
+# Thin wrapper around run.py (the cross-platform pipeline; Windows users run `python run.py <task>` directly).
+PY ?= python3
 
 setup:
-	py -3.12 -m venv .venv && $(PY) -m pip install -r requirements.txt && $(PY) -m pip install -e .
+	$(PY) run.py setup
+all:
+	$(PY) run.py all
+verify data train validate insights test lint app:
+	$(PY) run.py $@
 
-data:
-	$(PY) scripts/build_data.py
-
-train:
-	$(PY) scripts/train_models.py
-
-test:
-	$(PY) -m pytest -q
-
-app:
-	$(PY) -m streamlit run app/main.py
-
-.PHONY: setup data train test app
+.PHONY: setup all verify data train validate insights test lint app

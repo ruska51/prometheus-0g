@@ -1,5 +1,5 @@
 dataset	step	n_rows	detail
-all	verify	75	sha256 of all registered raw files match data/catalog.yaml
+all	verify	91	sha256 of all git-tracked registered raw files match data/catalog.yaml (on-demand files also checked when present)
 flex	parse	276	PSI CSV (274) + TP supplement (2, ADR-020) -> interim (no corrections)
 cfig	parse	333	raw CSVs (normal + inverse) -> interim (no corrections)
 catalog	parse	24	PSI records -> interim catalog

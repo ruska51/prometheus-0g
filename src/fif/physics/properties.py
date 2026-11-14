@@ -10,6 +10,7 @@ Every value used by the physics layer comes from these raw files; nothing is typ
 - Molar masses and liquid heats of combustion parsed from the NIST species pages.
 Units: SI. See docs/PHYSICS.md section "Property data".
 """
+
 from __future__ import annotations
 
 import functools
@@ -18,6 +19,7 @@ import re
 from pathlib import Path
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 ROOT = Path(__file__).resolve().parents[3]
 NIST = ROOT / "data" / "raw" / "nist"
@@ -53,14 +55,18 @@ def _read_tsv(path: Path) -> dict[str, np.ndarray]:
     return out
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def gas_table(species: str) -> dict[str, np.ndarray]:
     t = _read_tsv(NIST / f"gas_{GAS_IDS[species]}.tsv")
-    return {"T": t["Temperature (K)"], "cp": t["Cp (J/g*K)"] * 1000.0,
-            "mu": t["Viscosity (Pa*s)"], "k": t["Therm. Cond. (W/m*K)"]}
+    return {
+        "T": t["Temperature (K)"],
+        "cp": t["Cp (J/g*K)"] * 1000.0,
+        "mu": t["Viscosity (Pa*s)"],
+        "k": t["Therm. Cond. (W/m*K)"],
+    }
 
 
-def gas_prop(species: str, prop: str, T) -> np.ndarray:
+def gas_prop(species: str, prop: str, T: ArrayLike) -> np.ndarray:
     """cp [J/(kg K)], mu [Pa s] or k [W/(m K)] of a pure gas at temperature T [K] (1 atm table)."""
     t = gas_table(species)
     return np.interp(np.asarray(T, dtype=float), t["T"], t[prop])
@@ -71,22 +77,27 @@ def gas_T_range(species: str) -> tuple[float, float]:
     return float(t.min()), float(t.max())
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def sat_table(liquid: str) -> dict[str, np.ndarray]:
     t = _read_tsv(NIST / f"sat_{LIQ_IDS[liquid]}.tsv")
-    return {"T": t["Temperature (K)"], "P_atm": t["Pressure (atm)"],
-            "rho_l": t["Density (l, kg/m3)"], "cp_l": t["Cp (l, J/g*K)"] * 1000.0,
-            "h_l": t["Enthalpy (l, kJ/kg)"] * 1000.0, "h_v": t["Enthalpy (v, kJ/kg)"] * 1000.0}
+    return {
+        "T": t["Temperature (K)"],
+        "P_atm": t["Pressure (atm)"],
+        "rho_l": t["Density (l, kg/m3)"],
+        "cp_l": t["Cp (l, J/g*K)"] * 1000.0,
+        "h_l": t["Enthalpy (l, kJ/kg)"] * 1000.0,
+        "h_v": t["Enthalpy (v, kJ/kg)"] * 1000.0,
+    }
 
 
-def t_sat(liquid: str, p_Pa) -> np.ndarray:
+def t_sat(liquid: str, p_Pa: ArrayLike) -> np.ndarray:
     """Saturation (boiling) temperature [K] at pressure p [Pa]; interpolated in ln P."""
     t = sat_table(liquid)
     lnp = np.log(np.asarray(p_Pa, dtype=float) / 101325.0)
     return np.interp(lnp, np.log(t["P_atm"]), t["T"])
 
 
-def sat_prop(liquid: str, prop: str, T) -> np.ndarray:
+def sat_prop(liquid: str, prop: str, T: ArrayLike) -> np.ndarray:
     """Saturated-liquid property at T [K]: rho_l [kg/m3], cp_l [J/(kg K)], or h_fg [J/kg]."""
     t = sat_table(liquid)
     if prop == "h_fg":
@@ -94,7 +105,7 @@ def sat_prop(liquid: str, prop: str, T) -> np.ndarray:
     return np.interp(np.asarray(T, dtype=float), t["T"], t[prop])
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def molar_mass(species: str) -> float:
     """Molar mass [kg/mol] from 'Molecular weight' on the NIST species page."""
     nid = GAS_IDS.get(species) or LIQ_IDS[species]
@@ -113,7 +124,7 @@ def check_delta_c_h_on_page(fuel: str) -> bool:
     return DELTA_C_H_LIQ_KJ_MOL[fuel][1] in text
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def fuel_vapor_cp_table(fuel: str) -> tuple[np.ndarray, np.ndarray]:
     """Ideal-gas cp of fuel vapour from the FIRST 'Constant pressure heat capacity of gas' table on the
     NIST gas-phase page (thermo_gas_<ID>.html): methanol - Thermodynamics Research Center 1997 (50-3000 K);
@@ -128,12 +139,13 @@ def fuel_vapor_cp_table(fuel: str) -> tuple[np.ndarray, np.ndarray]:
         if len(cells) >= 2:
             cp_txt = html.unescape(re.sub(r"<[^>]+>", "", cells[0])).split("±")[0].strip()
             pairs.append((cp_txt, html.unescape(cells[1]).strip()))
-    T = np.array([float(b) for a, b in pairs]); cp = np.array([float(a) for a, b in pairs])
+    T = np.array([float(b) for a, b in pairs])
+    cp = np.array([float(a) for a, b in pairs])
     order = np.argsort(T)
     return T[order], cp[order] / molar_mass(fuel)
 
 
-def fuel_vapor_cp(fuel: str, T) -> np.ndarray:
+def fuel_vapor_cp(fuel: str, T: ArrayLike) -> np.ndarray:
     """cp of fuel vapour [J/(kg K)] at T [K] (NIST ideal-gas table, linear interpolation, clamped at ends)."""
     t, cp = fuel_vapor_cp_table(fuel)
     return np.interp(np.asarray(T, dtype=float), t, cp)
@@ -145,25 +157,32 @@ CAL_CM_S_K_TO_W_M_K = 418.4  # 1 cal/(cm s K) = 4.184 J/cal * 100 cm/m (thermoch
 R_CAL = 1.98726  # cal/(mol K), reproduces Svehla's Table III columns to the printed precision (tests)
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def svehla_table(species: str) -> dict[str, np.ndarray]:
     """Transcription of NASA TR R-132 (Svehla 1962): Table III p. 56 (CH3OH), Table IV p. 119 (n-C5H12, n-C6H14)."""
     import csv
+
     rows = [r for r in csv.DictReader(open(SVEHLA, encoding="utf-8")) if r["species"] == species]
-    def col(k):
+
+    def col(k: str) -> np.ndarray:
         return np.array([float(r[k]) if r[k] else np.nan for r in rows])
-    return {"T": col("T_K"), "cp_over_R": col("cp_over_R"), "eta_poise": col("eta_x1e6_poise") * 1e-6,
-            "lambda_cal": col("lambda_x1e6_cal_cm_s_K") * 1e-6}
+
+    return {
+        "T": col("T_K"),
+        "cp_over_R": col("cp_over_R"),
+        "eta_poise": col("eta_x1e6_poise") * 1e-6,
+        "lambda_cal": col("lambda_x1e6_cal_cm_s_K") * 1e-6,
+    }
 
 
-def svehla_lambda(eta_Pa_s, cp_J_kg_K, M_kg_mol) -> np.ndarray:
+def svehla_lambda(eta_Pa_s: ArrayLike, cp_J_kg_K: ArrayLike, M_kg_mol: float) -> np.ndarray:
     """Svehla (1962) Eq. (2): lambda = (R/M) [15/4 + 1.32 (Cp/R - 5/2)] eta  [W/(m K)], SI inputs."""
     R = 8.314462618
     cp_over_R = cp_J_kg_K * M_kg_mol / R
     return (R / M_kg_mol) * (15 / 4 + 1.32 * (cp_over_R - 2.5)) * eta_Pa_s
 
 
-def fuel_vapor_conductivity(fuel: str, T) -> np.ndarray:
+def fuel_vapor_conductivity(fuel: str, T: ArrayLike) -> np.ndarray:
     """lambda_F1 [W/(m K)] of fuel vapour at T [K] (clamped to 300-2000 K).
 
     methanol: Svehla Table III total conductivity (interpolated).

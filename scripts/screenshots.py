@@ -4,6 +4,7 @@ Requires a running app: ``.venv/Scripts/python -m streamlit run app/main.py --se
 Uses Playwright with the installed Microsoft Edge (no browser download).
 Usage: ``.venv/Scripts/python scripts/screenshots.py [port]``
 """
+
 from __future__ import annotations
 
 import sys
@@ -14,8 +15,16 @@ from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "docs" / "figures" / "ui"
-PAGES = {"overview": "", "insights": "insights", "scenario": "scenario", "risk_map": "risk_map",
-         "investigations": "investigations", "data_explorer": "data_explorer", "validation": "validation", "method": "method"}
+PAGES = {
+    "overview": "",
+    "insights": "insights",
+    "scenario": "scenario",
+    "risk_map": "risk_map",
+    "investigations": "investigations",
+    "data_explorer": "data_explorer",
+    "validation": "validation",
+    "method": "method",
+}
 
 
 def main(port: int = 8599) -> None:
@@ -31,7 +40,9 @@ def main(port: int = 8599) -> None:
                 page.goto(base + path, wait_until="networkidle", timeout=180_000)
                 page.wait_for_selector("h1", timeout=180_000)
                 time.sleep(4)  # let charts render
-                page.screenshot(path=str(OUT / f"{name}_{device}.png"), full_page=False)  # Streamlit scrolls an inner container: use a tall viewport
+                page.screenshot(
+                    path=str(OUT / f"{name}_{device}.png"), full_page=False
+                )  # Streamlit scrolls an inner container: use a tall viewport
                 print("saved", name, device)
             page.close()
         browser.close()

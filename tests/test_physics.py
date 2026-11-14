@@ -4,12 +4,14 @@ No textbook worked examples are used: the textbooks named in docs/FORMULAS.md we
 to Claude (docs/PHYSICS.md section 8). Instead every check is against NIST raw data, a NASA source
 equation, a limiting case or a physical monotonicity property.
 """
+
 from __future__ import annotations
 
 import numpy as np
 import pytest
 
-from fif.physics import droplet, mixing, properties as pr
+from fif.physics import droplet, mixing
+from fif.physics import properties as pr
 
 SP = droplet.SPECIES
 
@@ -47,7 +49,8 @@ def test_boiling_point_monotonic_in_pressure():
 
 @pytest.mark.parametrize("sp", ["N2", "O2", "CO2", "He"])
 def test_mixing_rules_reduce_to_pure_species(sp):
-    x = np.zeros((1, 4)); x[0, SP.index(sp)] = 1.0
+    x = np.zeros((1, 4))
+    x[0, SP.index(sp)] = 1.0
     for T in (400.0, 1000.0, 1450.0):
         assert mixing.mixture_viscosity(x, SP, T)[0] == pytest.approx(pr.gas_prop(sp, "mu", T))
         assert mixing.mixture_conductivity(x, SP, T)[0] == pytest.approx(pr.gas_prop(sp, "k", T))
@@ -55,7 +58,8 @@ def test_mixing_rules_reduce_to_pure_species(sp):
 
 
 def test_rp1311_phi_equals_wilke_form_in_formulas_md():
-    mu = np.array([[2.0e-5, 4.0e-5]]); M = np.array([0.032, 0.004])
+    mu = np.array([[2.0e-5, 4.0e-5]])
+    M = np.array([0.032, 0.004])
     phi = mixing._phi(mu, M)[0]
     wilke = (1 + np.sqrt(mu[0, 0] / mu[0, 1]) * (M[1] / M[0]) ** 0.25) ** 2 / np.sqrt(8 * (1 + M[0] / M[1]))
     assert phi[0, 1] == pytest.approx(wilke)
@@ -93,6 +97,7 @@ def test_dissociation_lowers_flame_temperature_vs_burke_schumann():
 
 def test_helium_raises_flame_temperature_co2_lowers_it():
     from fif.physics import flame
+
     tb = float(pr.t_sat("methanol", 101325))
     t_n2 = flame.adiabatic_flame_temperature("methanol", tb, np.array([0.21, 0.79, 0, 0]), 298.15, 101325)
     t_he = flame.adiabatic_flame_temperature("methanol", tb, np.array([0.21, 0.49, 0, 0.30]), 298.15, 101325)
@@ -143,6 +148,7 @@ def test_earth_gravity_increases_burning_rate():
 
 def test_physics_uses_only_pre_ignition_inputs():
     import inspect
+
     src = inspect.getsource(droplet.evaluate_flex)
     for post in ("K_m2_s", "d_ext", "burn_time", "test_end", "extinct"):
         assert post not in src

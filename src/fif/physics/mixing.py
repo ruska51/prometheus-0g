@@ -8,9 +8,11 @@ The sums in the denominators run over j != i (the i-th term is the explicit x_i)
 cp of the mixture: mass-fraction weighted (FORMULAS.md section 1).
 Inputs: mole fractions as a 2-D array (rows x species), species order given by ``species``.
 """
+
 from __future__ import annotations
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from .properties import gas_prop, molar_mass
 
@@ -43,7 +45,7 @@ def _mix(x: np.ndarray, prop: np.ndarray, inter: np.ndarray) -> np.ndarray:
     return terms.sum(axis=1)
 
 
-def mixture_viscosity(x: np.ndarray, species: list[str], T) -> np.ndarray:
+def mixture_viscosity(x: np.ndarray, species: list[str], T: ArrayLike) -> np.ndarray:
     """eta_mix [Pa s] at temperature T [K] (RP-1311 Eqs. 5.3, 5.5)."""
     T = np.broadcast_to(np.asarray(T, dtype=float), (x.shape[0],))
     mu = np.stack([gas_prop(s, "mu", T) for s in species], axis=1)
@@ -51,7 +53,7 @@ def mixture_viscosity(x: np.ndarray, species: list[str], T) -> np.ndarray:
     return _mix(x, mu, _phi(mu, M))
 
 
-def mixture_conductivity(x: np.ndarray, species: list[str], T) -> np.ndarray:
+def mixture_conductivity(x: np.ndarray, species: list[str], T: ArrayLike) -> np.ndarray:
     """Frozen lambda_mix [W/(m K)] at T [K] (RP-1311 Eqs. 5.4, 5.6)."""
     T = np.broadcast_to(np.asarray(T, dtype=float), (x.shape[0],))
     mu = np.stack([gas_prop(s, "mu", T) for s in species], axis=1)
@@ -63,7 +65,7 @@ def mixture_conductivity(x: np.ndarray, species: list[str], T) -> np.ndarray:
     return _mix(x, k, psi)
 
 
-def mixture_cp(x: np.ndarray, species: list[str], T) -> np.ndarray:
+def mixture_cp(x: np.ndarray, species: list[str], T: ArrayLike) -> np.ndarray:
     """cp_mix [J/(kg K)] = sum Y_i cp_i(T)."""
     T = np.broadcast_to(np.asarray(T, dtype=float), (x.shape[0],))
     Y = mass_fractions(x, species)

@@ -1,4 +1,5 @@
 """Method & sources (UI_SPEC page 8)."""
+
 import streamlit as st
 
 st.title("Method & sources")

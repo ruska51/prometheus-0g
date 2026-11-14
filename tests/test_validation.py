@@ -4,6 +4,7 @@ Run after scripts/train_models.py. Checks: K rises with O2 (N2 balance) for both
 sizes; P(extinction) of the interface model does not rise with O2; K stays in a physical range; the GP
 uncertainty grows outside the tested conditions; the reliability rule flags extrapolation.
 """
+
 from __future__ import annotations
 
 import joblib
@@ -75,6 +76,7 @@ def test_extinction_label_variants_follow_their_definitions():
     from fif.data.catalog import REPO_ROOT
     from fif.models.features import model_table
     from fif.validation.label_sensitivity import labels
+
     t = model_table(pd.read_csv(REPO_ROOT / "data" / "processed" / "flex.csv"))
     lab = labels(t)
     dis = t["test_end"] == "Disruption"
@@ -82,3 +84,21 @@ def test_extinction_label_variants_follow_their_definitions():
     assert (lab["C_test_end_disruption_0"][dis] == 0).all()
     assert (lab["C_test_end_disruption_0"][t["test_end"] == "Extinction"] == 1).all()
     assert lab["A_diameter"].equals(t["extinct_finite_d"].astype("Float64"))
+
+
+def test_grouped_cv_one_seed_reproduces_model_ordering():
+    """Runs the stage-6 grouped CV end to end (one seed, ~20 s): the hybrid beats mean and physics-only on K,
+    and the extinction models rank better than chance - the properties VALIDATION.md reports."""
+    import pandas as pd
+
+    from fif.data.catalog import REPO_ROOT
+    from fif.models.features import model_table
+    from fif.validation import core
+
+    t = model_table(pd.read_csv(REPO_ROOT / "data" / "processed" / "flex.csv"))
+    k, e = core.k_and_ext_tables(t)
+    s = core.repeated_cv(k, e, seeds=(0,))["summary"]
+    rmse = {m: v["RMSE_log"]["mean"] for m, v in s["K"].items()}
+    assert rmse["hybrid"] < rmse["physics"] < rmse["mean"] + 0.05
+    assert rmse["hybrid"] <= rmse["pure_ml_gp"] + 0.02
+    assert all(v["AUC"]["mean"] > 0.6 for m, v in s["extinction"].items() if m != "prior")

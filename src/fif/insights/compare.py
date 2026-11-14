@@ -7,6 +7,7 @@ Similarities and differences are derived from the raw PSI files, not typed by ha
 - platform, dates, tests, publications, raw-data volume = PSI record fields (fif.insights.investigations).
 A tick means "the table has a column of this kind", not that the values are complete or comparable across tables.
 """
+
 from __future__ import annotations
 
 import re
@@ -55,7 +56,7 @@ def _headers(file_name: str) -> list[str]:
     return [h.strip() for h in text.splitlines()[0].split(",") if h.strip()]
 
 
-def table_headers(experimental_tables) -> list[str]:
+def table_headers(experimental_tables: str | None) -> list[str]:
     if not isinstance(experimental_tables, str) or not experimental_tables.strip():
         return []
     out = []
@@ -70,10 +71,19 @@ def comparison_matrix() -> pd.DataFrame:
     rows = []
     for _, r in c.iterrows():
         heads = table_headers(r["experimental_tables"])
-        row = {"psi_id": r["psi_id"], "acronym": r["acronym"] or r["psi_id"], "title": r["title"], "stage": r["stage"],
-               "subject": r["fuel_type"], "platform": r["flight_platform"] if isinstance(r["flight_platform"], str) else "",
-               "start_year": pd.to_datetime(r["start_date"], errors="coerce").year, "tests": int(r["n_table_rows"]),
-               "publications": r["n_publications"], "has_table": bool(heads), "relevance": r["relevance"]}
+        row = {
+            "psi_id": r["psi_id"],
+            "acronym": r["acronym"] or r["psi_id"],
+            "title": r["title"],
+            "stage": r["stage"],
+            "subject": r["fuel_type"],
+            "platform": r["flight_platform"] if isinstance(r["flight_platform"], str) else "",
+            "start_year": pd.to_datetime(r["start_date"], errors="coerce").year,
+            "tests": int(r["n_table_rows"]),
+            "publications": r["n_publications"],
+            "has_table": bool(heads),
+            "relevance": r["relevance"],
+        }
         hw = r["hardware"] if isinstance(r["hardware"], str) else ""
         row["hardware_groups"] = [g for g, rx in HARDWARE.items() if re.search(rx, hw)]
         for label, _, rx in VARIABLES:

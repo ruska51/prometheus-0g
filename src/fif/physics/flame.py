@@ -8,12 +8,14 @@ enthalpy and pressure equilibrium (HP). Fuel enters as vapour at T_b, the oxidis
 ambient mixture (O2 + N2/CO2/He) at T_inf - the FLEX generalisation of "air" (assumption A8).
 Product species: CO2, CO, H2O, H2, OH, H, O, O2, N2, NO, N, He, plus the fuel itself.
 """
+
 from __future__ import annotations
 
 import functools
 
 import cantera as ct
 import numpy as np
+from numpy.typing import ArrayLike
 
 FUEL_SPECIES = {"methanol": "CH3OH", "heptane": "C7H16,n-heptane"}
 N_O2 = {"methanol": 1.5, "heptane": 11.0}
@@ -21,7 +23,7 @@ AMBIENT = ["O2", "N2", "CO2", "He"]
 PRODUCTS = ["CO2", "CO", "H2O", "H2", "OH", "H", "O", "O2", "N2", "NO", "N", "He"]
 
 
-@functools.lru_cache(maxsize=None)
+@functools.cache
 def _gas() -> ct.Solution:
     wanted = set(PRODUCTS) | set(FUEL_SPECIES.values())
     species = [s for s in ct.Species.list_from_file("nasa_gas.yaml") if s.name in wanted]
@@ -55,9 +57,12 @@ def adiabatic_flame_temperature(fuel: str, T_fuel: float, x_amb: np.ndarray, T_a
     return float(gas.T)
 
 
-def adiabatic_flame_temperatures(fuel, T_fuel, x_amb, T_amb, p) -> np.ndarray:
+def adiabatic_flame_temperatures(
+    fuel: ArrayLike, T_fuel: ArrayLike, x_amb: np.ndarray, T_amb: ArrayLike, p: ArrayLike
+) -> np.ndarray:
     """Vectorised wrapper (loops over rows; ~1 ms per row)."""
-    fuel = np.asarray(fuel); T_fuel = np.asarray(T_fuel, dtype=float); p = np.asarray(p, dtype=float)
+    fuel = np.asarray(fuel)
+    T_fuel = np.asarray(T_fuel, dtype=float)
+    p = np.asarray(p, dtype=float)
     x_amb = np.asarray(x_amb, dtype=float)
-    return np.array([adiabatic_flame_temperature(f, tf, xa, T_amb, pp)
-                     for f, tf, xa, pp in zip(fuel, T_fuel, x_amb, p)])
+    return np.array([adiabatic_flame_temperature(f, tf, xa, T_amb, pp) for f, tf, xa, pp in zip(fuel, T_fuel, x_amb, p)])

@@ -6,6 +6,7 @@ Visual elements and what they mean:
 - common scale in both panels (relative theoretical flame size, which NASA reports overestimates several-fold);
 - 1 g flame shape, flicker, soot sparks, ignition ramp, smoke after flame-out: illustrative only.
 """
+
 from __future__ import annotations
 
 import json
@@ -199,8 +200,24 @@ document.querySelectorAll('button[data-s]').forEach(b=>b.onclick=()=>{speed=+b.d
 
 
 def html(sims: list[dict]) -> str:
-    keep = ("label", "fuel", "gravity", "shape_e", "x_o2", "p_psi", "K_mm2_s", "t_end_s", "extinguishes", "sustained", "unburned_fraction",
-            "T_f_K", "status", "sooty", "flame_rgb", "series")
+    keep = (
+        "label",
+        "fuel",
+        "gravity",
+        "shape_e",
+        "x_o2",
+        "p_psi",
+        "K_mm2_s",
+        "t_end_s",
+        "extinguishes",
+        "sustained",
+        "unburned_fraction",
+        "T_f_K",
+        "status",
+        "sooty",
+        "flame_rgb",
+        "series",
+    )
     data = json.dumps([{k: s[k] for k in keep} for s in sims]).replace("</", "<\\/")
     return _HTML.replace("__DATA__", data)
 

@@ -18,6 +18,7 @@ Outputs (raw, never edited afterwards):
 
 Usage: ``python scripts/fetch_psi.py`` from the repository root.
 """
+
 from __future__ import annotations
 
 import gzip
@@ -62,8 +63,7 @@ def main() -> None:
     _write_gz(REC_DIR / "search_all.json.gz", search)
     hits = json.loads(search)["hits"]["hits"]
     ids = sorted(
-        (h["_source"]["Accession"] for h in hits
-         if h["_source"].get("Research Area") == "Combustion Science"),
+        (h["_source"]["Accession"] for h in hits if h["_source"].get("Research Area") == "Combustion Science"),
         key=lambda a: int(a.split("-")[1]),
     )
     print(f"repository total={len(hits)}  combustion={len(ids)}")
@@ -75,8 +75,7 @@ def main() -> None:
         rec = json.loads(rec_raw)
         for entry in rec.get("experimentalTable") or []:
             name = entry["file_name"]
-            query = urllib.parse.urlencode({"file": name, "redirect": "false"},
-                                           quote_via=urllib.parse.quote)
+            query = urllib.parse.urlencode({"file": name, "redirect": "false"}, quote_via=urllib.parse.quote)
             signed = _get(f"{BASE}/studies/{acc}/download?{query}").decode().strip()
             data = _get(signed, timeout=120)
             (TAB_DIR / name).write_bytes(data)

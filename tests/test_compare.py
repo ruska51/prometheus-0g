@@ -1,4 +1,5 @@
 """Comparison matrix (S5, ADR-037): headers-derived ticks agree with what the raw tables contain."""
+
 import pytest
 
 from fif.insights.compare import VARIABLES, comparison_matrix, hardware_groups, table_headers
@@ -15,8 +16,14 @@ def test_all_24_investigations(m):
 
 def test_flex_records_conditions_and_outcomes(m):
     f = m.loc["FLEX"]
-    for col in ("oxygen", "pressure", "inert / diluent", "sample / droplet size", "extinction outcome",
-                "burning, spread or mass-loss rate / time"):
+    for col in (
+        "oxygen",
+        "pressure",
+        "inert / diluent",
+        "sample / droplet size",
+        "extinction outcome",
+        "burning, spread or mass-loss rate / time",
+    ):
         assert f[col], col
     assert not f["air or gas flow"]  # FLEX: quiescent droplets, no flow column
 

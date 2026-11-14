@@ -4,6 +4,7 @@ Inputs: ``data/catalog.yaml`` (dataset id -> files with sha256).
 Outputs: Python dicts; :func:`verify` raises if any raw file changed.
 Units: none. See docs/ARCHITECTURE.md (Data layer).
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -32,7 +33,8 @@ def raw_path(dataset_id: str, name_contains: str, root: Path = REPO_ROOT) -> Pat
 
 
 def verify(root: Path = REPO_ROOT) -> int:
-    """Check sha256 of every registered file; return the number checked. Raises ValueError on mismatch."""
+    """Check sha256 of every registered file (on-demand files too, when present); return the number of git-tracked
+    files checked, so the count does not depend on whether on-demand downloads exist. Raises ValueError on mismatch."""
     checked = 0
     for entry in load_catalog(root / "data" / "catalog.yaml").values():
         for f in entry["files"]:
@@ -42,5 +44,5 @@ def verify(root: Path = REPO_ROOT) -> int:
             digest = hashlib.sha256(path.read_bytes()).hexdigest()
             if digest != f["sha256"]:
                 raise ValueError(f"checksum mismatch: {f['path']}")
-            checked += 1
+            checked += entry.get("in_git") is not False
     return checked

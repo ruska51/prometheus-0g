@@ -3,6 +3,7 @@
 The pipeline is always built into pytest's tmp_path, never into data/ (live files untouched).
 Reference values are copied from NASA/TP-2015-216046 Table IX (page numbers in comments).
 """
+
 from __future__ import annotations
 
 import math
@@ -94,7 +95,8 @@ def test_extinction_class_counts(built):
 
 def test_targets_not_features(built):
     # leakage guard: post-ignition columns must never be listed as pre-ignition features
-    from fif.data.features import PRE_IGNITION_FEATURES, POST_IGNITION
+    from fif.data.features import POST_IGNITION, PRE_IGNITION_FEATURES
+
     assert not set(PRE_IGNITION_FEATURES) & set(POST_IGNITION)
     assert set(PRE_IGNITION_FEATURES) <= set(built["flex"].columns)
 
@@ -103,8 +105,12 @@ def test_cv_groups(built):
     g = built["flex"]["cv_group"]
     assert g.nunique() == 81
     # repeats of one regime share a group: all cabin-air methanol tests near 760 mmHg
-    sel = built["flex"][(built["flex"]["fuel"] == "Methanol") & (built["flex"]["x_o2"] == 0.21)
-                        & (built["flex"]["diluent"] == "N2") & (built["flex"]["p_mmHg_orig"].between(735, 785))]
+    sel = built["flex"][
+        (built["flex"]["fuel"] == "Methanol")
+        & (built["flex"]["x_o2"] == 0.21)
+        & (built["flex"]["diluent"] == "N2")
+        & (built["flex"]["p_mmHg_orig"].between(735, 785))
+    ]
     assert sel["cv_group"].nunique() == 1
 
 
@@ -118,7 +124,7 @@ def test_cfig_reference_and_flags(built):
 
 
 def test_rebuild_is_deterministic(built, tmp_path):
-    res2 = build.build(out_root=tmp_path)
+    build.build(out_root=tmp_path)
     a = pd.read_csv(built["out"] / "processed" / "flex.csv")
     b = pd.read_csv(tmp_path / "processed" / "flex.csv")
     pd.testing.assert_frame_equal(a, b)

@@ -102,3 +102,11 @@ Open items:
 2026-11-14 ~14:14 | 7 | ADR-033: keep all, formula A, wording as drafted | docs/DECISIONS.md | docs
 2026-11-14 14:16 | 7 | scripts/build_insights.py -> docs/insights.json, INSIGHTS.md; 8 insight tests (91 total green) | docs/INSIGHTS.md, tests/test_insights.py | stage 8
 - Stage 7 duration: 14:10-14:16 (clock), budget 60 min.
+
+## Stage 8 - started 2026-11-14 14:17
+
+2026-11-14 ~14:19 | 8 | UI_SPEC.md draft; ADR-034 | docs/UI_SPEC.md | code
+2026-11-14 14:22 | 8 | Package logic (investigation ranking M2, scenario M4, risk grid); 8 Streamlit pages + common loaders; smoke tests through st.navigation (9 green) | src/fif/insights/, app/, tests/test_app.py | screenshots
+2026-11-14 14:24-14:30 | 8 | Screenshots via Playwright + Edge (desktop 1400 px, phone 390 px), reviewed; fixed truncated metric labels, pressure rounding, map overlay (grey veil instead of markers), clipped phone label, table headers, full-height capture | scripts/screenshots.py, docs/figures/ui/ | stage 9-12
+2026-11-14 14:30 | 8 | Docs (UI_SPEC final, ARCHITECTURE app layer, AI_USAGE) | docs/* | -
+- Stage 8 duration: 14:17-14:30 (clock), budget 150 min.

@@ -114,6 +114,14 @@ Command: `.venv/Scripts/python scripts/train_models.py` (~45 s). Details: docs/M
 | `fif.insights.catalog` | 12 insight functions computing numbers live (regression with regime bootstrap, model predictions, theory), history/spinoff blocks, cabin-atmosphere comparison with reliability labels |
 | `scripts/build_insights.py` | writes `docs/insights.json` and `docs/INSIGHTS.md` |
 
-## App
+## App layer (stage 8)
 
-_Stage 8._
+```mermaid
+flowchart LR
+    G["generated artefacts<br/>docs/insights.json, docs/validation_results.json,<br/>models/*.joblib, data/processed/*.csv"] --> C["app/common.py<br/>st.cache_data loaders, badges"]
+    P["fif.insights.scenario / investigations<br/>(predict, risk_grid, ranked_investigations)"] --> C
+    C --> PG["app/pages/*.py<br/>Overview, Insights, Moon-base scenario, Risk map,<br/>Investigations, Data explorer, Validation, Method"]
+    M["app/main.py<br/>st.navigation"] --> PG
+```
+
+The pages contain no physics or modeling; they display what the package returns. Run: `.venv/Scripts/python -m streamlit run app/main.py`. Theme: `.streamlit/config.toml` (ADR-034). Tests: `tests/test_app.py` (every page through the real navigation). Screenshots: `scripts/screenshots.py` -> `docs/figures/ui/`.

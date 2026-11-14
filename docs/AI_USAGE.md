@@ -12,3 +12,4 @@
 | 2026-11-14 | 5 | Claude Code (Anthropic, Claude Opus) | Model code (hybrid GP, classifiers), CV comparison, interpretation, MODEL_CARD.md | Ruslan Sharafutdinov (ADR-029 choices) |
 | 2026-11-14 | 6 | Claude Code (Anthropic, Claude Opus) | Validation code, variant selection, reliability rule, generated VALIDATION.md | Ruslan Sharafutdinov (ADR-030..032) |
 | 2026-11-14 | 7 | Claude Code (Anthropic, Claude Opus) | Insight functions, ranking, INSIGHTS.md generator, insight tests | Ruslan Sharafutdinov (ADR-033: catalog, formula, wording) |
+| 2026-11-14 | 8 | Claude Code (Anthropic, Claude Opus) | Streamlit dashboard code, page texts (English), screenshots and visual fixes; no AI-generated images | Ruslan Sharafutdinov (ADR-034: structure, style, headline, ranking) |

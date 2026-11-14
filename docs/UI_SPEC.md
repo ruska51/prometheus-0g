@@ -1,13 +1,13 @@
 # UI Specification - Prometheus-0g dashboard
 
-Stage 8 (2026-11-14), approved by Ruslan (ADR-034): structure and order as below, style B, headline "Prometheus-0g - Will it burn on the Moon?". Implemented in app/ (pages in app/views/); screenshots in docs/figures/ui/. Streamlit (ADR-001), multipage (`st.navigation`). The app only calls the `fif` package and reads generated artefacts (`docs/insights.json`, `docs/validation_results.json`, `models/*.joblib`, `data/processed/*.csv`); no physics in page code. Personas: P1 cabin materials engineer, P2 crew-safety specialist / mission planner, P3 combustion researcher (ADR-008).
+Stage 8 (2026-11-14), approved by Ruslan (ADR-034): structure and order as below, style B, headline "Prometheus-0g - Will it burn on the Moon?" (renamed "Prometheus-0g - Fire on the Moon" in ADR-046). Implemented in app/ (pages in app/views/); screenshots in docs/figures/ui/. Streamlit (ADR-001), multipage (`st.navigation`). The app only calls the `fif` package and reads generated artefacts (`docs/insights.json`, `docs/validation_results.json`, `models/*.joblib`, `data/processed/*.csv`); no physics in page code. Personas: P1 cabin materials engineer, P2 crew-safety specialist / mission planner, P3 combustion researcher (ADR-008).
 
 Evidence badges everywhere: `NASA data` / `model` / `physics theory` / `NASA literature` / `NASA history` / `NASA spinoff`; reliability badges: `in range` / `extrapolation` / `unreliable` (ADR-031).
 
 ## Pages (proposed order)
 
 ### 1. Overview (home)
-- Headline answer block (ADR-043): "Will it burn on the Moon? Yes - faster, hotter, and less likely to go out by itself." with four computed numbers (burning rate vs ISS with band, 3 mm burn-out time incl. lunar-surface bound, measured self-extinction share, flame temperature), evidence badges, NASA literature on solids, three actions, links to animation / assistant / validation.
+- Headline answer block (ADR-043): "Fire on the Moon: faster, hotter, and less likely to go out by itself." (ADR-046) with four computed numbers (burning rate vs ISS with band, 3 mm burn-out time incl. lunar-surface bound, measured self-extinction share, flame temperature), evidence badges, NASA literature on solids, three actions, links to animation / assistant / validation.
 - Goal: in 10 seconds the jury knows the problem, what we built and the headline result.
 - Users: all; jury first.
 - Components: title + tagline; one-paragraph problem statement (microgravity flames, Moon-base atmosphere O2 >= 30 % at <= 10.2 psi); 4 metric tiles; top-3 insight cards with badges; two buttons: "Try the Moon-base scenario", "See how we validated".

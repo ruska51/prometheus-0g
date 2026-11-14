@@ -69,7 +69,7 @@ FLAME_RU = {
 
 RU = {
     # navigation, common
-    "Prometheus-0g - Will it burn on the Moon?": "Prometheus-0g - загорится ли на Луне?",
+    "Prometheus-0g - Fire on the Moon": "Prometheus-0g - Пожар на Луне",
     "Overview": "Обзор",
     "Insights": "Выводы",
     "Moon-base scenario": "Сценарий лунной базы",
@@ -449,8 +449,8 @@ RU = {
     "O2 >= 0.30 (Moon-like O2)": "O2 >= 0.30 (как на лунной базе)",
     "O2 <= 0.15": "O2 <= 0.15",
     # overview headline answer (ADR-043)
-    "Will it burn on the Moon?": "Загорится ли на Луне?",
-    "Yes - faster, hotter, and less likely to go out by itself.": "Да - быстрее, жарче и реже гаснет само.",
+    "A fire on a Moon base, compared with the ISS": "Пожар на лунной базе в сравнении с МКС",
+    "Faster, hotter, and less likely to go out by itself.": "Быстрее, жарче и реже гаснет сам.",
     "Planned Moon-base / rover air (30 % O2, 10.2 psi) compared with ISS cabin air (21 % O2, 14.7 psi), a 3 mm {fuel} droplet as in NASA's FLEX experiment.": "Планируемая атмосфера лунной базы / лунохода (30 % O2, 10.2 psi) по сравнению с воздухом кабины МКС (21 % O2, 14.7 psi), капля {fuel} 3 мм, как в эксперименте NASA FLEX.",
     "Burning rate vs ISS air": "Скорость горения к МКС",
     "95 % band {lo:+.0f} to {hi:+.0f} %": "95 % полоса от {lo:+.0f} до {hi:+.0f} %",

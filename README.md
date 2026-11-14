@@ -1,4 +1,4 @@
-# Prometheus-0g - Will it burn on the Moon?
+# Prometheus-0g - Fire on the Moon
 
 **Physics-first, AI-assisted fire-safety insights from NASA microgravity combustion experiments.**
 NASA Space Apps Challenge 2026 - challenge *Flame in Freefall: AI-Powered Fire Safety Insights from Microgravity
@@ -7,7 +7,7 @@ Combustion Data*. Team **The Catalyst** (Ruslan Sharafutdinov), Uralsk, Kazakhst
 | | |
 |---|---|
 | **Live dashboard** | https://prometheus-0g.streamlit.app/ (English; Russian: https://prometheus-0g.streamlit.app/?lang=ru) |
-| **30-second demo** | [docs/demo/prometheus-0g_demo.mp4](docs/demo/prometheus-0g_demo.mp4) (screen recording of the live app, English subtitles) |
+| **Demo (7 slides)** | [docs/demo/prometheus-0g_slides.pdf](docs/demo/prometheus-0g_slides.pdf) (English; numbers and screenshots from the live app) |
 | **Source and data** | https://github.com/ruska51/prometheus-0g - code Apache-2.0, NASA data CC0 / public domain |
 
 ![Overview: the headline answer computed from NASA data](docs/figures/ui/overview_desktop.png)
@@ -35,7 +35,7 @@ NASA data.
 A public, bilingual web dashboard that turns the PSI combustion data into verified numbers, a physics-based model and
 ranked recommendations - for cabin-materials engineers, crew-safety planners and combustion researchers.
 
-- **Headline answer:** "Will it burn on the Moon? Yes - faster, hotter, and less likely to go out by itself", with
+- **Headline answer:** "Fire on the Moon: faster, hotter, and less likely to go out by itself", with
   every number computed live and labelled by type of evidence.
 - **Moon-base scenario:** choose an atmosphere (ISS, Moon base, spacesuit or custom O2 / pressure / diluent / droplet
   size) and get the burning rate from physics and from the hybrid model with a 95 % band, flame temperature, chance of
@@ -58,7 +58,7 @@ ranked recommendations - for cabin-materials engineers, crew-safety planners and
 | # | Insight | Number | Evidence |
 |---|---|---|---|
 | P2 | A Moon-base atmosphere burns droplets faster than ISS air | **+32 %** burning rate for a 3 mm droplet (95 % band -2 % to +77 %), methanol and heptane; labelled *extrapolation* (30 % O2 was tested only from 0.703 atm) | model (hybrid, 274 FLEX tests) |
-| S4 | At 30 % O2 droplet flames rarely put themselves out | the flame burned the droplet out without extinguishing in **54 % of 13** N2 tests at O2 >= 30 %, vs **14 % of 58** at O2 <= 21 % | NASA data (FLEX) |
+| S4 | At 30 % O2 droplet flames put themselves out less often | the flame burned the droplet out without extinguishing in **54 % of 13** N2 tests at O2 >= 30 %, vs **14 % of 58** at O2 <= 21 % | NASA data (FLEX) |
 | P1 | More oxygen burns fuel faster | O2 21 % -> 30 % changes the burning rate by **+44 %** (95 % CI +39 % to +55 %), 257 FLEX tests | NASA data (FLEX) |
 | D1 | Burning solids release CO - detect gases, not only smoke | CO rose by a median **45 ppm**, 90th percentile 413 ppm, maximum 575 ppm per test, 118 BASS-II tests | NASA data (BASS-II) |
 | P6 | For solid materials, lunar gravity may be the most flammable condition | NASA Glenn: "Lunar gravity is nearly the most flammable condition"; a partial-g habitat fire is expected to be "substantially worse than in 0-g and potentially worse than even 1-g" | NASA literature (NTRS 20210020516, 20260000646) |
@@ -171,7 +171,7 @@ src/fif/
 data/raw/           NASA files as downloaded (sha256 in data/catalog.yaml)
 data/processed/     clean tables used by models and app
 models/             trained models (joblib)
-scripts/            reproducible steps (build, train, validate, insights, screenshots, demo video)
+scripts/            reproducible steps (build, train, validate, insights, screenshots)
 tests/              153 tests: data, physics, models, validation, insights, app (EN/RU), assistant
 docs/               PHYSICS, MODEL_CARD, VALIDATION, INSIGHTS, DECISIONS (ADR log), WORKLOG, SUBMISSION, ...
 ```
@@ -191,8 +191,8 @@ docs/               PHYSICS, MODEL_CARD, VALIDATION, INSIGHTS, DECISIONS (ADR lo
 The analysis, code and texts were produced with Claude Code (Anthropic) under the direction of the team member, who
 made every scientific and design decision (logged in [docs/DECISIONS.md](docs/DECISIONS.md)). Inside the product the
 only AI component is the optional "Ask the data" assistant (Google Gemini), restricted to our results and NASA reports,
-with checked citations. All other numbers come from deterministic code. No AI-generated images or video; the demo is a
-screen recording of the app. Details: [docs/AI_USAGE.md](docs/AI_USAGE.md).
+with checked citations. All other numbers come from deterministic code. No AI-generated images or video; the demo slides
+use screenshots of the app. Details: [docs/AI_USAGE.md](docs/AI_USAGE.md).
 
 ## Sources
 

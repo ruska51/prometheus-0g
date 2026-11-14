@@ -40,3 +40,4 @@ images or video.
 | 2026-11-14 | 12 | Claude Code (Anthropic, Claude Opus) | README, submission texts, demo script and automated screen-recording script, flame shader | Ruslan Sharafutdinov (ADR-044; final texts to be read by Ruslan) |
 | 2026-11-14 | 12+ | Claude Code (Anthropic, Claude Opus) | 7-slide English presentation (texts, layout, validation bar chart drawn from docs numbers; images = app screenshots, no AI-generated images) | Ruslan Sharafutdinov (to review) |
 | 2026-11-14 | post-12 | Claude Code (Anthropic, Claude Opus) | Assistant retrieval/prompt/citation-display fix | Ruslan Sharafutdinov (ADR-045) |
+| 2026-11-14 | post-12 | Claude Code (Anthropic, Claude Opus) | Headline rename, slide-deck rewrite + Russian talk text, slide PDF, S4 wording, submission texts rewrite | Ruslan Sharafutdinov (ADR-046; texts to be proofread by Ruslan) |

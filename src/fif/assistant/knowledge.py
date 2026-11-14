@@ -399,7 +399,7 @@ def scenario_blocks() -> list[Block]:
 
 
 def moon_blocks() -> list[Block]:
-    """The Overview headline answer "Will it burn on the Moon?" per fuel (fif.insights.moon), as one block each, so a
+    """The Overview headline answer "Fire on the Moon" per fuel (fif.insights.moon), as one block each, so a
     Moon question gets the comparison numbers, not only scenario rows or report excerpts."""
     from fif.insights.moon import moon_answer
 
@@ -411,8 +411,8 @@ def moon_blocks() -> list[Block]:
         out.append(
             Block(
                 f"D:moon-answer-{fuel.lower()}",
-                f"Will it burn on the Moon? Moon base vs ISS - how a fire differs (headline answer, 3 mm {fuel.lower()} droplet)",
-                "Yes - faster, hotter, and less likely to go out by itself. Planned Moon-base / rover air (30 % O2, 10.2 "
+                f"Fire on the Moon: will it burn faster? Moon base vs ISS - how a fire differs (headline answer, 3 mm {fuel.lower()} droplet)",
+                "Faster, hotter, and less likely to go out by itself. Planned Moon-base / rover air (30 % O2, 10.2 "
                 f"psi) compared with ISS cabin air (21 % O2, 14.7 psi), 3 mm {fuel.lower()} droplet. Burning rate "
                 f"{(m['k_ratio'] - 1) * 100:+.0f} % vs ISS air (95 % band {lo:+.0f} % to {hi:+.0f} %; our hybrid model; "
                 f"{m['status']}). Burn-out time: {m['burn_time_iss_s']:.1f} s in ISS air, {m['burn_time_moon_s']:.1f} s "

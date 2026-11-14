@@ -7,7 +7,7 @@ import streamlit as st
 from common import ORANGE, ROOT, evidence_badge, flex, insights, investigations, moon, status_badge, validation
 from i18n import t, tr_insight
 
-st.title(t("Prometheus-0g - Will it burn on the Moon?"))
+st.title(t("Prometheus-0g - Fire on the Moon"))
 st.markdown(
     "**"
     + t("Physics-first, AI-assisted fire-safety insights from NASA microgravity combustion experiments.")
@@ -22,9 +22,9 @@ st.markdown(
 with st.container(border=True):
     head, pick = st.columns([3, 1])
     head.markdown(
-        f"<div style='font-size:1.05rem;color:#6B7280;margin-bottom:-0.4rem'>{t('Will it burn on the Moon?')}</div>"
+        f"<div style='font-size:1.05rem;color:#6B7280;margin-bottom:-0.4rem'>{t('A fire on a Moon base, compared with the ISS')}</div>"
         f"<div style='font-size:2.0rem;font-weight:800;color:{ORANGE};line-height:1.25'>"
-        f"{t('Yes - faster, hotter, and less likely to go out by itself.')}</div>",
+        f"{t('Faster, hotter, and less likely to go out by itself.')}</div>",
         unsafe_allow_html=True,
     )
     fuels = {t("Methanol"): "Methanol", t("Heptane"): "Heptane"}  # translated labels as options (no format_func)

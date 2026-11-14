@@ -527,7 +527,7 @@ def s4_high_o2_removes_self_extinction() -> Insight:
     hi, lo = lab[lab["x_o2"] >= 0.30], lab[lab["x_o2"] <= 0.21]
     s_hi, s_lo = 1 - hi["extinct_finite_d"].mean(), 1 - lo["extinct_finite_d"].mean()
     ru = dict(
-        title="При 30 % O2 пламя капли почти никогда не гаснет само",
+        title="При 30 % O2 пламя капли реже гаснет само",
         finding=f"Тесты FLEX с разбавлением N2: пламя выжгло каплю без погасания в {s_hi * 100:.0f} % из {len(hi)} тестов при "
         f"O2 не ниже 30 % против {s_lo * 100:.0f} % из {len(lo)} тестов при O2 не выше 21 %.",
         action="При повышенном O2 исходите из того, что пожар сам не погаснет: активное тушение нужно немедленно.",
@@ -535,7 +535,7 @@ def s4_high_o2_removes_self_extinction() -> Insight:
     return Insight(
         "S4",
         "suppression",
-        "At 30 % O2 droplet flames rarely put themselves out",
+        "At 30 % O2 droplet flames put themselves out less often",
         f"N2-diluted FLEX tests: the flame burned the droplet out without extinguishing in {s_hi * 100:.0f} % of {len(hi)} tests "
         f"at O2 >= 30 %, vs {s_lo * 100:.0f} % of {len(lo)} tests at O2 <= 21 %.",
         "At elevated O2 assume a fire will not self-extinguish; active suppression must be immediate.",

@@ -30,7 +30,7 @@ Stage-1 mapping: MVP items M1-M6, stretch S1-S6 and product questions Q1-Q8 are 
 |---|---|---|---|---|---|
 | SG-1 | Project Name | SG | M | SUBMISSION.md; name is Ruslan's decision | done: SUBMISSION.md |
 | SG-2 | High-Level Project Summary | SG | M | SUBMISSION.md, stage 12 | done: SUBMISSION.md (149 words) |
-| SG-3 | Link to Project Demo | SG | M | Video or slides (SG-9), stage 12 | ready: video docs/demo/prometheus-0g_demo.mp4; Ruslan uploads to YouTube |
+| SG-3 | Link to Project Demo | SG | M | Video or slides (SG-9), stage 12 | ready: 7 slides docs/demo/prometheus-0g_slides.pdf on public GitHub (ADR-046; the video was dropped) |
 | SG-4 | Link to Final Project, publicly accessible | SG | M | https://github.com/ruska51/prometheus-0g (public, ADR-002) + https://prometheus-0g.streamlit.app/ | done |
 | SG-5 | Detailed Project Description | SG | M | SUBMISSION.md + README.md | done: SUBMISSION.md + README.md |
 | SG-6 | NASA Data: what was used and how; all of R1-R7 explained | SG + CLAUDE.md 3.0 | M | README table + SUBMISSION.md, every R explained | done: R1-R7 one sentence each (SUBMISSION.md, README) |
@@ -47,6 +47,6 @@ Stage-1 mapping: MVP items M1-M6, stretch S1-S6 and product questions Q1-Q8 are 
 |---|---|---|---|---|---|
 | TC-1 | Confirm Terms and Conditions and originality of work | TC | M | Ruslan ticks in the form; no code from other 2026 teams (CLAUDE.md 3.2) | open: Ruslan ticks in the form |
 | TC-2 | AI allowed but disclosed: where and how | TC / SG | M | AI_USAGE.md | done: AI_USAGE.md, SUBMISSION.md |
-| TC-3 | AI-generated images/video carry a visible label | TC / SG | M | Label on every AI image/frame; checklist in SUBMISSION.md | done: no AI-generated images or video (demo = screen recording) |
-| TC-4 | AI content must not contain or alter NASA branding; no NASA logos, flags, mission insignia in own materials | TC / SG + CLAUDE.md 3.2 | M | No logos in app/slides/video; check at stage 12 | done: no NASA logos in app, README, video |
+| TC-3 | AI-generated images/video carry a visible label | TC / SG | M | Label on every AI image/frame; checklist in SUBMISSION.md | done: no AI-generated images or video (demo slides = app screenshots) |
+| TC-4 | AI content must not contain or alter NASA branding; no NASA logos, flags, mission insignia in own materials | TC / SG + CLAUDE.md 3.2 | M | No logos in app/slides/video; check at stage 12 | done: no NASA logos in app, README, slides |
 | TC-5 | Third-party data and library licenses respected | TC + CLAUDE.md 3.2 | M | DATA_SOURCES.md license column | done: DATA_SOURCES.md license column; copyrighted paper not redistributed; NTRS public-use only |

@@ -43,7 +43,7 @@ _refresh_code()
 
 from i18n import language_selector, t  # noqa: E402
 
-st.set_page_config(page_title=t("Prometheus-0g - Will it burn on the Moon?"), page_icon=":fire:", layout="wide")
+st.set_page_config(page_title=t("Prometheus-0g - Fire on the Moon"), page_icon=":fire:", layout="wide")
 language_selector()
 
 pages = [

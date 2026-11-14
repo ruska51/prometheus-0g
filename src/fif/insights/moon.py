@@ -1,4 +1,4 @@
-"""The headline answer "Will it burn on the Moon?" for the Overview page (post-stage 10, ADR-043).
+"""The headline answer "Fire on the Moon" for the Overview page (post-stage 10, ADR-043; renamed in ADR-046).
 
 Every number is computed here from the same sources the rest of the dashboard uses - nothing is typed by hand:
 - burning rate in Moon-base air vs ISS cabin air: hybrid model (fif.insights.scenario.predict), 95 % band of the

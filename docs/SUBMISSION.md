@@ -15,23 +15,23 @@ Prometheus-0g
 
 ## High-Level Project Summary
 
-Prometheus-0g answers a question NASA must settle before building a Moon base: will a fire in its planned
-oxygen-rich, low-pressure air (30 % O2, 10.2 psi) burn faster and go out less easily than on the ISS? We turned NASA's
-microgravity combustion data from the Physical Sciences Informatics repository into a public, bilingual dashboard.
-All 276 ISS droplet-fire tests (FLEX) were verified against NASA's technical report (0 differences). A physics-first
-hybrid model - Law & Williams droplet-burning theory plus machine learning - predicts the burning rate with an
-uncertainty band and is 1.2-1.9x more accurate than pure machine learning on atmospheres it never saw. The answer:
-yes - about 32 % faster, hotter, and flames rarely put themselves out. The dashboard ranks 20 evidence-labelled
-fire-safety insights and all 24 NASA combustion investigations, animates the burning flame, and includes an AI
-assistant that answers only from NASA data, with sources.
+Before NASA builds a Moon base, it has to know what a fire would do in the air planned for it: 30 % oxygen at
+10.2 psi, richer than the ISS cabin, at one sixth of Earth's gravity. NASA has burned hundreds of fuel droplets on the
+ISS, but the results are scattered across 24 investigations in its Physical Sciences Informatics repository. We checked
+all 276 FLEX droplet tests against NASA's own report (not one difference) and built a model that starts from the
+physics of a burning droplet and lets machine learning correct only what theory misses; on atmospheres it never saw,
+it is 1.2-1.9 times more accurate than machine learning alone. The answer: in Moon-base air a fire burns about a third
+faster, runs hotter and goes out on its own less often. Our public dashboard shows the numbers, animates the flame,
+ranks 20 findings and 24 investigations, and has an AI assistant that answers only from NASA data.
 
 ---
 
 ## Link to Project Demo
 
-`<YouTube link - Ruslan uploads docs/demo/prometheus-0g_demo.mp4 as "Unlisted" or "Public" and pastes the link here>`
+https://github.com/ruska51/prometheus-0g/blob/main/docs/demo/prometheus-0g_slides.pdf
 
-(30-second screen recording of the live app with burned-in English subtitles; no AI-generated imagery.)
+(7 slides including the title, in English; numbers and screenshots from the live app; no AI-generated imagery. GitHub
+shows the PDF without login.)
 
 ---
 
@@ -45,46 +45,49 @@ Source code, data and documentation: https://github.com/ruska51/prometheus-0g
 
 ## Detailed Project Description
 
-**What it does.** Prometheus-0g is a web dashboard that summarizes, ranks and interprets NASA's microgravity
-combustion investigations and turns them into fire-safety insights for crewed habitats, with a focus on the planned
-Moon base. Its home page answers the headline question directly: "Will it burn on the Moon? Yes - faster, hotter, and
-less likely to go out by itself." For a 3 mm fuel droplet in Moon-base air the burning rate is 32 % higher than in ISS
-air (model, 95 % band -2 % to +77 %, labelled extrapolation), the droplet burns out in 14.1 s instead of 18.5 s, the
-flame is 238 K hotter, and in NASA's FLEX tests at 30 % oxygen or more the flame went out by itself in 46 % of tests,
-versus 86 % at 21 % or less.
+**What it does.** Prometheus-0g is a public web dashboard that summarizes, ranks and interprets NASA's
+microgravity combustion experiments and turns them into fire-safety advice for crewed habitats, above all the planned
+Moon base. Its home page opens with the answer: "Fire on the Moon: faster, hotter, and less likely to go out by
+itself." Take a 3 mm fuel droplet, the size NASA burned in its FLEX experiment. In Moon-base air it burns 32 % faster
+than in ISS air (our model; 95 % band -2 % to +77 %, marked as extrapolation), it is gone in 14.1 s instead of 18.5 s,
+and the flame is 238 K hotter. Most important, in NASA's own tests at 30 % oxygen or more the flame went out by itself
+in 46 % of cases, compared with 86 % at 21 % or less.
 
-**How it works.** (1) Data: the PSI Experimental Tables of FLEX (droplets), ACME CFI-G (gas flames), BASS-II (solids)
-and SAME-R (smoke) are parsed, cleaned and flagged - anomalies are flagged, never silently fixed - and every raw file is
-registered with a checksum. The 276 FLEX tests were cross-checked cell by cell against NASA/TP-2015-216046 (3288 cells,
-0 differences; two tests missing from PSI were recovered from the report). (2) Physics: quasi-steady droplet
-combustion with the Law & Williams (1972) property prescription, equilibrium flame temperature with dissociation
-(Cantera with NASA thermodynamic data), and a buoyancy correction for Earth and for the lunar surface (1/6 g).
-(3) Models: a hybrid model (theory + fuel factor + Gaussian-process correction) that uses only conditions known before
-ignition and reports a 95 % band; extinction classifiers. (4) Validation: grouped cross-validation over 78 test regimes
-(typical hybrid error about 19 %), and leave-a-class-out tests showing that the physics makes the model 1.2-1.9x more
-accurate for helium, CO2, ~0.7 atm and Moon-like oxygen; failures (new fuels, high pressure) are reported openly.
-(5) Insights: 20 findings, each with its type of evidence (NASA data, model, physics theory, NASA literature), number
-of tests and a confidence label, ranked by evidence strength, sample size and effect size; lessons from Apollo 1,
-Apollo 13 and Mir; benefits on Earth.
+**How it works.** We started with the data. The PSI tables of FLEX (droplets), ACME CFI-G (gas flames), BASS-II
+(burning solids) and SAME-R (smoke) are parsed and cleaned; anything odd is flagged, never quietly fixed, and every raw
+file is registered with a checksum. We checked all 276 FLEX tests against NASA/TP-2015-216046 cell by cell: 3288
+cells, no differences, and two tests missing from PSI were recovered from the report. Next comes physics: the classic
+quasi-steady theory of a burning droplet with the Law & Williams (1972) property rules, the flame temperature from
+chemical equilibrium with dissociation (Cantera with NASA thermodynamic data), and a buoyancy correction for Earth and
+for the lunar surface at 1/6 g. The model builds on that theory: a fuel factor and a Gaussian-process correction learn
+only what the theory misses, use only what is known before ignition, and report a 95 % band; separate classifiers
+estimate the chance of self-extinction. Then we tried to break it. In cross-validation grouped by test regime (78
+regimes) the hybrid's typical error is about 19 %. When a whole kind of atmosphere is hidden from training - helium,
+CO2, about 0.7 atm, or Moon-like oxygen - physics makes the model 1.2-1.9 times more accurate than machine learning
+alone. Where it fails (a fuel it has never seen, high pressure) we say so in the app. Finally, 20 findings are ranked
+by the strength of their evidence, the number of tests and the size of the effect, and each is labelled as NASA data,
+model, physics theory or NASA literature. Lessons from Apollo 1, Apollo 13 and Mir, and NASA spinoffs that help
+firefighters on Earth, complete the picture.
 
-**What users get.** A Moon-base scenario tool (any O2, pressure, diluent, droplet size) with a reliability label and the
-nearest real NASA tests; an animation of the same droplet burning in two atmospheres, driven by the model; a risk map of
-oxygen x pressure; a ranked, searchable catalog and a comparison matrix of all 24 PSI combustion investigations; a data
-explorer with every raw NASA row downloadable; and "Ask the data", an AI assistant restricted to our results and 12
-public NASA technical reports that cites a source after every statement and says when the data do not cover a
-question. English by default, Russian on request.
+**What users get.** You can build your own Moon-base atmosphere (any oxygen, pressure, diluent and droplet size) and
+see the burning rate, how reliable the prediction is and which real NASA tests are closest. You can watch the same
+droplet burn side by side in two atmospheres, with the animation driven by the model. There is a risk map of oxygen
+against pressure, a ranked and searchable catalog with a comparison matrix of all 24 PSI combustion investigations, and
+a data explorer where every raw NASA row can be downloaded. And you can simply ask: "Ask the data" is an AI assistant
+that answers with numbers from our results and 12 public NASA reports, shows the source of every statement, and says
+plainly when the data do not cover a question. The app opens in English and switches to Russian.
 
-**Benefits and impact.** Habitat and rover designers get quantified, sourced reasons to plan for faster fires that do
-not self-extinguish: immediate suppression, CO sensing alongside smoke detectors, and material screening that does not
-rely on 1-g tests alone (NASA reports that lunar gravity may be the most flammable condition for solids). Researchers
-get a verified, reproducible FLEX dataset and an honest map of where the data stop. Students get an interactive view
-of how flames behave without gravity.
+**Benefits and impact.** Habitat and rover designers get measured, sourced reasons to plan for fires that are less
+likely to go out on their own: suppress at once, sense CO alongside smoke, and do not rely on Earth-gravity material
+tests alone, since NASA researchers expect lunar gravity to be nearly the most flammable condition for solids.
+Researchers get a verified, reproducible FLEX dataset and an honest map of where the data stop. Students get an
+interactive way to see how flames behave without gravity.
 
 **Tools.** Python 3.12, pandas, NumPy, SciPy, scikit-learn (Gaussian processes, logistic regression, gradient
 boosting), Cantera, pdfplumber, Streamlit, Plotly, WebGL (flame animation), Google Gemini API (assistant), Playwright
-and ffmpeg (screenshots, demo video), pytest and ruff (153 tests, lint), GitHub, Streamlit Community Cloud (hosting).
-Code Apache-2.0; NASA data CC0 / public domain. One command reproduces data, models, insights and tests from the raw
-NASA files.
+(screenshots, slide PDF), pytest and ruff (159 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
+Apache-2.0; NASA data CC0 / public domain. One command rebuilds data, models, insights and tests from the raw NASA
+files.
 
 ---
 
@@ -127,16 +130,17 @@ licenses: docs/DATA_SOURCES.md in the repository.
 
 ## Use of Artificial Intelligence
 
-AI was used in two places. (1) Development: the code, data analysis, documentation and texts were produced with Claude
-Code (Anthropic, Claude Opus) working under the direction of the team member, who made every scientific and design
-decision (theory level, property data, model choice, validation rules, ranking formula, interface); every decision is
-logged in docs/DECISIONS.md and every AI-assisted step in docs/AI_USAGE.md. All numbers in the dashboard come from
-deterministic, tested code, not from a language model. (2) In the product: the optional "Ask the data" assistant uses
-Google Gemini. It receives only excerpts of our verified results and of 12 public NASA technical reports (retrieved by
-keyword search), must cite a source after every statement and say when the data do not cover a question; the app
-checks every citation and flags numbers not found in the sources. Its behaviour on 10 test questions, including
-off-topic and prompt-injection questions, is documented in docs/ASSISTANT_EVAL.md. No AI-generated images, video or
-audio are used: the demo is a screen recording of the app, and NASA branding is not used or altered.
+We used AI in two places. First, to build the project: the code, data analysis, documentation and texts were
+written with Claude Code (Anthropic, Claude Opus), directed by the team member, who made every scientific and design
+decision - the level of theory, the property data, the model, the validation rules, the ranking formula and the
+interface. Each decision is logged in docs/DECISIONS.md and each AI-assisted step in docs/AI_USAGE.md. Every number in
+the dashboard comes from deterministic, tested code, not from a language model. Second, inside the product: the
+optional "Ask the data" assistant uses Google Gemini. It sees only excerpts of our verified results and of 12 public
+NASA technical reports (found by keyword search), must name a source for every statement and must say when the data
+do not cover a question; the app then checks every citation and flags any number it cannot find in the sources. How it
+behaves on 10 test questions, including off-topic and prompt-injection attempts, is documented in
+docs/ASSISTANT_EVAL.md. No AI-generated images, video or audio are used: the demo slides use screenshots of the app,
+and NASA branding is not used or altered.
 
 ---
 
@@ -145,13 +149,12 @@ audio are used: the demo is a screen recording of the app, and NASA branding is 
 Target: everything submitted by **Sunday 10:00** (team goal; check the official deadline of the Uralsk local event in
 the Space Apps Project Submission Guide).
 
-1. Upload `docs/demo/prometheus-0g_demo.mp4` to YouTube (visibility "Unlisted" or "Public"; title "Prometheus-0g -
-   Will it burn on the Moon? (NASA Space Apps 2026)"). Open the link in a private browser window - it must play
-   without login.
+1. Open the demo link (the slide PDF on GitHub) in a private browser window - it must open without login and show
+   7 pages.
 2. Open https://prometheus-0g.streamlit.app/ in a private window: the overview loads, and "Ask the data" answers one
    question (if it says the free quota is used up, it resets at 11:00 Uralsk time).
 3. Paste the fields from this file into the form: Project Name, High-Level Project Summary, Link to Project Demo
-   (YouTube link), Link to Final Project (app link; the GitHub link is in the description), Detailed Project
+   (slide PDF link), Link to Final Project (app link; the GitHub link is in the description), Detailed Project
    Description, NASA Data, Space Agency Partner & Other Data, Use of Artificial Intelligence.
 4. Team: The Catalyst; member Ruslan Sharafutdinov; local event Uralsk; challenge "Flame in Freefall".
 5. Tick the Terms and Conditions and the originality confirmation yourself (the work is ours; AI use is declared).
@@ -165,11 +168,11 @@ the Space Apps Project Submission Guide).
 | Field | Words | Characters |
 |---|---|---|
 | Project Name | 1 | 13 |
-| High-Level Project Summary | 149 | 963 |
-| Link to Project Demo | 29 | 222 |
+| High-Level Project Summary | 161 | 912 |
+| Link to Project Demo | 24 | 234 |
 | Link to Final Project | 7 | 115 |
-| Detailed Project Description | 603 | 3785 |
+| Detailed Project Description | 705 | 4190 |
 | NASA Data | 295 | 1891 |
 | Space Agency Partner & Other Data | 85 | 627 |
-| Use of Artificial Intelligence | 178 | 1145 |
+| Use of Artificial Intelligence | 190 | 1177 |
 <!-- COUNTS:END -->

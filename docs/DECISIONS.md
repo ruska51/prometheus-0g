@@ -440,3 +440,22 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   120 words; the page replaces citation brackets by superscript numbers with a numbered source list under the answer
   (block ids stay in the excerpts expander; citation and number checks unchanged). Tests: 4 new.
 - Sources: src/fif/assistant/knowledge.py, src/fif/assistant/llm.py, app/views/assistant.py
+
+## ADR-046: Headline "Fire on the Moon"; demo = 7 slides (video dropped); S4 wording; plainer texts
+- Date/time: 2026-11-14 20:36-21:02
+- Stage: post-12 (Ruslan's review before the local-event talk)
+- Context: Ruslan found "Will it burn on the Moon?" / "Загорится ли на Луне?" awkward in both languages and asked for a
+  catchier headline; then decided the 30-second video is not needed; asked for more connected, human texts; the talk at
+  the Uralsk event is in Russian (2-3 min), the deck in English. While renaming, Claude found that insight S4 and the
+  summary said flames "rarely" put themselves out, although FLEX shows 46 % (n 13) at O2 >= 30 % vs 86 % (n 58).
+- Options: headline A) "Fire on the Moon" B) "One-sixth gravity. Full-size fire." C) "How would a fire behave on a Moon
+  base?" D) "Moonfire"; S4: "less often" / "half as often" / unchanged.
+- Claude's recommendation: A (note: also the title of a NASA GRC presentation we cite, NTRS 20210020516); "less often".
+- Decision (Ruslan): A, everywhere; "the video is not needed, delete it"; S4 "less often"; rewrite the submission texts.
+- Consequences: app title and headline block (EN "Fire on the Moon" + "Faster, hotter, and less likely to go out by
+  itself."; RU "Пожар на Луне" + "Быстрее, жарче и реже гаснет сам."), README, SUBMISSION, UI_SPEC, assistant Moon
+  block. Video, subtitles and scripts/make_demo_video.py removed (in git history); the demo is
+  docs/demo/prometheus-0g_slides.pdf (7 slides, linked on GitHub, no login); ADR-044's video choice is superseded.
+  S4 title EN "At 30 % O2 droplet flames put themselves out less often", RU "При 30 % O2 пламя капли реже гаснет само"
+  (ranking unchanged). Summary, detailed description and AI field rewritten in plainer prose, same numbers.
+- Sources: docs/insights.json (S4), fif.insights.moon, docs/DEMO_SCRIPT.md

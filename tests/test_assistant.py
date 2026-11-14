@@ -88,3 +88,12 @@ def test_model_ranking_prefers_newest_stable_text_flash():
         "gemma-4-27b-it",
     ]
     assert rank_models(names) == ["gemini-3.5-flash", "gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-3.8-flash-preview"]
+
+
+def test_error_reason_never_contains_the_key():
+    from fif.assistant.llm import AllModelsFailed, _reason, friendly_error
+
+    e = RuntimeError("bad request for key AIzaSyA1234567890abcdefghijklmnopqrstuv")
+    assert "AIza" not in _reason(e)
+    assert friendly_error(AllModelsFailed([("m1", "ClientError 429 RESOURCE_EXHAUSTED")])) == "quota"
+    assert friendly_error(AllModelsFailed([("m1", "ServerError 503 overloaded")])) == "other"

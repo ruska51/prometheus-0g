@@ -7,7 +7,7 @@ import streamlit as st
 from common import source_note
 from i18n import t
 
-from fif.assistant.llm import DEFAULT_MODEL, MAX_QUESTION_CHARS, api_key, ask, friendly_error, gemini_generate
+from fif.assistant.llm import DEFAULT_MODEL, MAX_QUESTION_CHARS, _reason, api_key, ask, friendly_error, gemini_generate
 
 LIMIT = 10  # questions per browser session (protects the shared free-tier quota)
 
@@ -103,6 +103,7 @@ if q:
                 "model": t("The configured Gemini model is not available - the assistant is temporarily unavailable."),
             }.get(reason, t("The assistant could not answer right now - please try again later."))
             st.error(msg)
+            st.caption(t("Technical detail:") + " " + _reason(e))
             st.stop()
     st.rerun()
 source_note(

@@ -70,26 +70,38 @@ def rank_models(names: list[str]) -> list[str]:
     return sorted(cands, key=key)
 
 
+class AllModelsFailed(RuntimeError):
+    """Every candidate model failed; ``errors`` holds (model, short reason) pairs, without the key."""
+
+    def __init__(self, errors: list[tuple[str, str]]):
+        super().__init__("; ".join(f"{m}: {r}" for m, r in errors))
+        self.errors = errors
+
+
+def _reason(e: Exception) -> str:
+    code = getattr(e, "code", None) or getattr(e, "status_code", None)
+    msg = re.sub(r"AIza[0-9A-Za-z_-]{20,}", "<key>", str(getattr(e, "message", None) or e))
+    return f"{type(e).__name__} {code or ''} {msg[:160]}".strip()
+
+
 def gemini_generate(key: str, model: str = DEFAULT_MODEL) -> Callable[[str, str], str]:
     from google import genai
-    from google.genai import errors, types
+    from google.genai import types
 
     client = genai.Client(api_key=key)
     if model == "auto":
-        names = [
-            m.name.removeprefix("models/")
-            for m in client.models.list()
-            if m.name and "generateContent" in (m.supported_actions or [])
-        ]
-        candidates = rank_models(names) or names
+        listed = [m for m in client.models.list() if m.name]
+        names = [m.name.removeprefix("models/") for m in listed]
+        with_gc = [m.name.removeprefix("models/") for m in listed if "generateContent" in (m.supported_actions or [])]
+        candidates = rank_models(with_gc) or rank_models(names) or with_gc or names
     else:
         candidates = [model]
     if not candidates:
-        raise RuntimeError("no Gemini model with generateContent available for this key")
+        raise AllModelsFailed([("list", "no models returned for this key")])
 
     def gen(system: str, prompt: str) -> str:
-        last = None
-        for name in list(dict.fromkeys([gen.model, *candidates])):
+        failed = []
+        for name in list(dict.fromkeys([gen.model, *candidates]))[:6]:
             try:
                 r = client.models.generate_content(
                     model=name,
@@ -98,15 +110,18 @@ def gemini_generate(key: str, model: str = DEFAULT_MODEL) -> Callable[[str, str]
                         system_instruction=system, temperature=0.1, max_output_tokens=MAX_OUTPUT_TOKENS
                     ),
                 )
+                text = r.text or ""
+                if not text.strip():
+                    failed.append((name, "empty response"))
+                    continue
                 gen.model = name
-                return r.text or ""
-            except errors.ClientError as e:  # 404 model gone, 429 quota of this model: try the next candidate
-                last = e
-                if getattr(e, "code", None) not in (404, 429):
-                    raise
-        raise last
+                return text
+            except Exception as e:  # unavailable, overloaded, quota, unsupported config: try the next candidate
+                failed.append((name, _reason(e)))
+        raise AllModelsFailed(failed)
 
     gen.model = candidates[0]
+    gen.candidates = candidates
     return gen
 
 
@@ -127,6 +142,13 @@ def ask(question: str, generate: Callable[[str, str], str], k: int = 8) -> dict:
 
 def friendly_error(e: Exception) -> str:
     """Short reason for an API failure (quota, key, model) without exposing details."""
+    if isinstance(e, AllModelsFailed):
+        text = str(e)
+        if "429" in text or "RESOURCE_EXHAUSTED" in text:
+            return "quota"
+        if "API_KEY" in text or " 401 " in text or " 403 " in text:
+            return "key"
+        return "other"
     code = getattr(e, "code", None) or getattr(e, "status_code", None)
     if code == 429:
         return "quota"

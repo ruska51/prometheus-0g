@@ -1,6 +1,6 @@
-# Flame in Freefall
+# Prometheus-0g
 
-AI-powered fire-safety insights from NASA microgravity combustion data.
+Physics-first, AI-assisted fire-safety insights from NASA microgravity combustion experiments. Built for the challenge "Flame in Freefall".
 Team **The Catalyst**, NASA International Space Apps Challenge 2026 (Uralsk local event).
 
 > Work in progress (stage 0). Sections below are filled during the project.

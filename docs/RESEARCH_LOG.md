@@ -78,3 +78,18 @@ URL: https://spinoff.nasa.gov/node/9918 (accessed 2026-11-14)
 - Flags: PSI-108 (surface-tension-driven convection, Space Shuttle) and PSI-181 (solder alloys) are not combustion studies. Publication count = non-empty titles in the ISA file.
 - PDF `SAME EIRD Rev 2.00 02-25-05 HIgh Q.pdf` (5.4 MB): not read yet.
 - Conclusion: data tables must come from PSI file downloads (Ruslan) or from the linked NTRS reports. Detailed recon = stage 2.
+
+## 2026-11-14 11:29 | Stage 1: is there hope of data for each product question?
+- Where: ISA `Comment[Objective]` / `Comment[Approach]` in `data/raw/psi_metadata/`; NTRS API.
+- Found in ISA text (test-condition ranges stated by NASA):
+  - FLEX (PSI-69): goal is the Limiting Oxygen Index vs ambient pressure and suppressant effect; suppressants CO2, He, SF6 named in the objective.
+  - FLEX-2 (PSI-68): pressure 0.5-3.0 atm, O2 mole fraction 0.1-0.4, diluent balance.
+  - CFI (PSI-39): chamber 0.25-0.5 atm; droplets on needles or SiC fibers.
+  - BASS-II (PSI-25): flow speeds up to 40 cm/s; "Main variables are airflow speed and oxygen".
+  - BASS (PSI-26): cotton/fiberglass fabric (75/25 by mass), Nomex, Ultem.
+  - Saffire-I (PSI-98): Sibal fabric (75% cotton, 25% fiberglass); Saffire-III (PSI-100): 30 cm/s vs 20 cm/s in Saffire-I, concurrent or opposed flow; Saffire-II (PSI-99): SIBAL, silicone, PMMA variants; goal includes low-g vs normal-g flammability limits.
+  - SAME (PSI-102): goal is smoke particle size in low gravity.
+  - SPICE (PSI-107): methane, ethylene, propane, propylene; burners 0.41/0.76/1.6 mm; co-flow 5.4-65 cm/s.
+  - ACME CFI-G (PSI-159): spherical diffusion flames, multiple fuels, dilutions, flows, pressures.
+- NTRS (title search, page.size=4): "FLEX droplet extinction" 1 hit (20130014061, methanol droplet combustion in O2-inert, microgravity); "BASS flame spread microgravity" 8 (e.g. 20160000593 BASS-II results presentation); "Saffire flame spread" 12; "Smoke Aerosol Measurement Experiment" 16 (20130000422 SAME-2 particle morphology and size); "Burning Rate Emulator microgravity" 2.
+- Conclusion: catalog-level questions are answerable now from metadata; quantitative questions depend on tables in PSI files or NTRS papers (stage 2 confirms).

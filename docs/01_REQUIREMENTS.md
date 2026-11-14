@@ -6,21 +6,23 @@ Status: `open` / `partial` / `done`. Priority: **M** = must (core objective or s
 
 ## A. Challenge (what the dashboard must do)
 
-| ID | Requirement | Origin | Pri | How we close it | Status |
-|---|---|---|---|---|---|
-| CH-1 | Web-based dashboard, AI-powered | CH Objectives | M | Streamlit app on HF Spaces (ADR-001); physics-informed ML layer (stages 5-6) | open |
-| CH-2 | Summarize combustion science investigations | CH Objectives | M | Investigation catalog from PSI ISA metadata (25 studies in `data/raw/psi_metadata/`) + extracted test conditions; summary page | open |
-| CH-3 | Rank investigations | CH Objectives | M | Relevance ranking to fire-safety needs; formula is Ruslan's decision (FORMULAS.md section 8 is a draft) | open |
-| CH-4 | Interpret investigations -> foundational fire-safety insights | CH Objectives | M | Insight engine (stage 7), each insight tagged with evidence type and N tests | open |
-| CH-5 | Identify investigations most relevant to habitable crew environments (spacecraft, stations, lunar/Martian bases, pressurized rovers) | CH Objectives | S | Relevance filter by environment; rockets/propellants out of scope (CH footnote) | open |
-| CH-6 | Extract data that supports predictive modeling of flammability and fire scenarios | CH Objectives | S | data layer (stage 3) + calibrated hybrid model (stages 4-5); downloadable tables | open |
-| CH-7 | Highlight research informing next-generation fire-safety controls/equipment | CH Objectives | S | Insights grouped by prevention / detection / suppression | open |
-| CH-8 | (Optional) Applications of PSI data to fire safety on Earth | CH Objectives | C | Impact section: R5-R7 spinoffs; water mist mentioned on the page (source to find) | open |
-| CH-9 | Audience: professors, students, aerospace researchers and engineers | CH Considerations | C | Technical language, units shown, links to sources | open |
-| CH-10 | Display objectives, fuels (shape/size of samples or burners), O2 concentration, airflow speed, within-investigation variables, sensors/measurement types | CH Considerations | C | Per-investigation card with these fields; DATA_DICTIONARY.md | open |
-| CH-11 | Show similarities and differences between investigations | CH Considerations | C | Comparison view (shared hardware: ACME/CIR, MDCA/CIR, MSG/SPICE duct) | open |
-| CH-12 | Moon Base / rover atmosphere: >=30% O2 at <=10.2 psi vs 21% at 14.7 psi; spacesuit 100% O2 at 4.3 psi | CH Considerations | C | Scenario input on the dashboard; any prediction outside tested ranges is flagged as extrapolation (CLAUDE.md section 4) | open |
-| CH-13 | No partial-gravity data in PSI; micro- and normal-gravity results may bound intermediate gravity | CH Considerations | C | State explicitly; any partial-g output is a labelled bound, not data | open |
+Stage-1 mapping: MVP items M1-M6, stretch S1-S6 and product questions Q1-Q8 are defined in docs/00_PROJECT_BRIEF.md (ADR-007..010).
+
+| ID | Requirement | Origin | Pri | How we close it | MVP / stretch | Status |
+|---|---|---|---|---|---|---|
+| CH-1 | Web-based dashboard, AI-powered | CH Objectives | M | Streamlit app on HF Spaces (ADR-001); physics-informed ML layer (stages 5-6) | M3, M6 | open |
+| CH-2 | Summarize combustion science investigations | CH Objectives | M | Catalog of all combustion investigations from PSI ISA metadata in `data/raw/psi_metadata/` | M1 | open |
+| CH-3 | Rank investigations | CH Objectives | M | Relevance ranking by habitat and fire-safety stage; formula approved by Ruslan (FORMULAS.md section 8 is a draft) | M2 (Q1) | open |
+| CH-4 | Interpret investigations -> foundational fire-safety insights | CH Objectives | M | Insight engine (stage 7), each insight tagged with evidence type and N tests | M5 | open |
+| CH-5 | Identify investigations most relevant to habitable crew environments (spacecraft, stations, lunar/Martian bases, pressurized rovers) | CH Objectives | S | Habitat filter in the ranking; rockets/propellants out of scope (CH footnote) | M2 (Q1) | open |
+| CH-6 | Extract data that supports predictive modeling of flammability and fire scenarios | CH Objectives | S | Data layer (stage 3) + calibrated hybrid model (stages 4-5); downloadable tables | M3 (Q2, Q3) | open |
+| CH-7 | Highlight research informing next-generation fire-safety controls/equipment | CH Objectives | S | Insights grouped by prevention / detection / suppression | M5 (Q8) | open |
+| CH-8 | (Optional) Applications of PSI data to fire safety on Earth | CH Objectives | C | Insights tagged `NASA spinoff` (R5-R7) in MVP; dedicated page is stretch; water-mist source still to find | M5, S6 | open |
+| CH-9 | Audience: professors, students, aerospace researchers and engineers | CH Considerations | C | Personas P1-P3 (ADR-008); technical language, units shown, links to sources | all | open |
+| CH-10 | Display objectives, fuels (shape/size of samples or burners), O2 concentration, airflow speed, within-investigation variables, sensors/measurement types | CH Considerations | C | Per-investigation card with these fields ("not stated" when absent); DATA_DICTIONARY.md | M1 | open |
+| CH-11 | Show similarities and differences between investigations | CH Considerations | C | Comparison matrix (shared hardware: ACME/CIR, MDCA/CIR, MSG/SPICE duct) | S5 (first stretch) | open |
+| CH-12 | Moon Base / rover atmosphere: 30% O2 or greater at 10.2 psi or less; spacesuit 100% O2 at 4.3 psi; sea level 14.7 psi | CH Considerations | C | Moon-base scenario panel; any prediction outside tested ranges flagged as extrapolation (CLAUDE.md section 4) | M4 (Q5) | open |
+| CH-13 | No partial-gravity data in PSI; micro- and normal-gravity results may bound intermediate gravity | CH Considerations | C | Stated explicitly in the UI; bounds only as stretch, labelled as bounds, not data | S2 (Q6) | open |
 
 ## B. Submission (what must be handed in)
 

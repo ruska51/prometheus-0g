@@ -23,11 +23,18 @@ Format: `YYYY-MM-DD HH:MM | stage | what was done | files | next`. Times UTC+5 (
 
 2026-11-14 11:25 | 0 | Correction: earlier entries of this log carried invented times (11:25/11:35/11:45, written before checking the clock) and a claimed stage duration of ~55 min. Replaced with clock/git times; actual stage-0 work 10:57-11:18 (~21 min) | docs/WORKLOG.md | -
 
-2026-11-14 ~11:30 | 0 | Challenge text pasted by Ruslan into CHALLENGE.md (verbatim); requirements matrix written | docs/challenge/CHALLENGE.md, docs/01_REQUIREMENTS.md | tag stage-0
+2026-11-14 11:24 | 0 | Challenge text pasted by Ruslan into CHALLENGE.md (verbatim); requirements matrix written | docs/challenge/CHALLENGE.md, docs/01_REQUIREMENTS.md | tag stage-0
 
 Open items:
-- `NASA PSI data/` not committed: whether raw files go into git (and moving them to `data/raw/psi_metadata/`) is Ruslan's decision.
+- (closed in stage 1, ADR-006)
 
 ## Stage 1 - started 2026-11-14 11:27
 
 2026-11-14 11:27 | 1 | `NASA PSI data/` -> `data/raw/psi_metadata/` (ADR-006); sha256 per file in data/catalog.yaml; live docs repointed | data/raw/psi_metadata/, data/catalog.yaml, docs/* | stage 1 analysis
+
+2026-11-14 11:29 | 1 | Data-outlook research: ISA objectives/approaches of key studies + 5 NTRS queries | docs/RESEARCH_LOG.md | options for Ruslan
+
+2026-11-14 11:32 | 1 | Ruslan's decisions: scope C, personas P1-P3, questions Q1/Q2/Q3/Q5/Q8, MVP M1-M6 (S5 first stretch), name Prometheus-0g | docs/DECISIONS.md (ADR-007..011) | brief
+
+2026-11-14 11:33 | 1 | 00_PROJECT_BRIEF.md filled; 01_REQUIREMENTS.md traceability mapped to M/S/Q; README name + tagline; CH-12 no longer carries "21% O2" (not in the challenge text, was from memory) | docs/00_PROJECT_BRIEF.md, docs/01_REQUIREMENTS.md, README.md | stage 2: data recon
+- Stage 1 duration: 11:27-11:33 (clock).

@@ -77,3 +77,53 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Decision (Ruslan): "Yes, move the folder and commit; the data is open anyway."
 - Consequences: Folder renamed to `data/raw/psi_metadata/` (older log entries keep the old name as history); sha256 of every file in `data/catalog.yaml`.
 - Sources: data/catalog.yaml
+
+## ADR-007: Project scope
+- Date/time: 2026-11-14 11:31 (UTC+5)
+- Stage: 1
+- Context: ~15 h total budget; the challenge asks to summarize, rank and interpret investigations; quantitative data availability is unconfirmed until stage 2.
+- Options: A) droplets only, maximum depth B) droplets + solids, two models C) catalog of all PSI combustion investigations + one deep model.
+- Claude's recommendation: C - summarize/rank/compare is the literal objective, metadata is already parsed, depth stays on one dataset.
+- Decision (Ruslan): C.
+- Consequences: Two tracks: catalog/ranking from ISA metadata (all studies) and one hybrid model (default FLEX droplets, final pick after stage 2).
+- Sources: docs/00_PROJECT_BRIEF.md; docs/RESEARCH_LOG.md 2026-11-14 11:29
+
+## ADR-008: Personas
+- Date/time: 2026-11-14 11:31 (UTC+5)
+- Stage: 1
+- Context: Who the dashboard serves determines pages and insight wording.
+- Options: P1 cabin materials engineer; P2 crew-safety specialist / mission planner; P3 combustion researcher / graduate student; subsets.
+- Claude's recommendation: all three - P3 is the audience named by the challenge, P1/P2 carry the Moon-base scenario and Impact.
+- Decision (Ruslan): all three.
+- Consequences: UI_SPEC pages map to P1-P3 tasks (stage 8).
+- Sources: docs/00_PROJECT_BRIEF.md
+
+## ADR-009: Product questions
+- Date/time: 2026-11-14 11:31 (UTC+5)
+- Stage: 1
+- Context: Eight candidate questions (Q1-Q8) with different data outlooks.
+- Options: A) Q1, Q2, Q3, Q5, Q8 B) Q1, Q4, Q5, Q8 (solids) C) all eight.
+- Claude's recommendation: A - fits scope C with a droplet model; Q4/Q6/Q7 go to stretch.
+- Decision (Ruslan): A.
+- Consequences: Model targets serve Q2/Q3 (extinction / suppression); Q5 needs a tested-range envelope; Q4, Q6, Q7 deferred (stretch S1-S3).
+- Sources: docs/00_PROJECT_BRIEF.md
+
+## ADR-010: MVP definition
+- Date/time: 2026-11-14 11:32 (UTC+5)
+- Stage: 1
+- Context: What must work by Sat 22:30 (end of stage 8).
+- Options: A) M1-M6 B) without M4 (Moon-base scenario) C) M1-M6 + S5 comparison matrix.
+- Claude's recommendation: A.
+- Decision (Ruslan): A; "if time remains, we do the extended one" -> S5 is the first stretch item.
+- Consequences: MVP = catalog, ranking, one hybrid model, Moon-base scenario, insights page, one-command local run. Stretch order: S5 first, then Claude's proposed order S1, S2, S3, S6, S4.
+- Sources: docs/00_PROJECT_BRIEF.md
+
+## ADR-011: Project name and tagline
+- Date/time: 2026-11-14 11:31 (UTC+5)
+- Stage: 1
+- Context: Name for the submission form and UI.
+- Options: A) Prometheus-0g B) Flame in Freefall Explorer C) ZeroG FireAtlas D) FlameScope μg.
+- Claude's recommendation: A - matches the repository name, memorable.
+- Decision (Ruslan): A.
+- Consequences: Name "Prometheus-0g"; tagline "Physics-first, AI-assisted fire-safety insights from NASA microgravity combustion experiments." Used in README, app title, SUBMISSION.md.
+- Sources: -

@@ -1,0 +1,154 @@
+{
+ "rule": "the extinction conclusions are robust if, for both B and C, (1) the mean grouped-CV AUC of the interface model (hybrid logistic) differs from A by <= 0.05, (2) the refitted interface model's P(extinction) does not rise with O2 on the 8-case grid (as in stage 6), and (3) the directions behind insights S3 / S4 hold: P(extinction) at O2 0.30 is below P at O2 0.15 (methanol and heptane, 1 atm, 3 mm).",
+ "interface_model": "hybrid_logistic",
+ "variants": {
+  "A_diameter": {
+   "n": 223,
+   "n_positive": 188,
+   "n_negative": 35,
+   "agreement_with_A": 1.0,
+   "n_compared_with_A": 225,
+   "models": {
+    "prior": {
+     "AUC": 0.3838652482269504,
+     "Brier": 0.13491342467106332,
+     "balanced_accuracy": 0.5
+    },
+    "physics_logistic": {
+     "AUC": 0.7429584599797364,
+     "Brier": 0.1981346159099122,
+     "balanced_accuracy": 0.6797365754812564
+    },
+    "pure_ml_boosting": {
+     "AUC": 0.7077001013171226,
+     "Brier": 0.1442128840409869,
+     "balanced_accuracy": 0.6301925025329281
+    },
+    "hybrid_logistic": {
+     "AUC": 0.7874873353596757,
+     "Brier": 0.18334861398674837,
+     "balanced_accuracy": 0.7572695035460993
+    },
+    "hybrid_boosting_monotonic": {
+     "AUC": 0.8034447821681864,
+     "Brier": 0.11568875605678441,
+     "balanced_accuracy": 0.699417426545086
+    }
+   },
+   "interface_worst_P_rise_along_O2": 0.0,
+   "interface_P_at_O2": {
+    "Methanol": {
+     "P_O2_0.15": 0.8354737316015453,
+     "P_O2_0.30": 0.13555968855302486
+    },
+    "Heptane": {
+     "P_O2_0.15": 0.8020786747129766,
+     "P_O2_0.30": 0.06317822429594862
+    }
+   }
+  },
+  "B_test_end_no_disruption": {
+   "n": 206,
+   "n_positive": 178,
+   "n_negative": 28,
+   "agreement_with_A": 0.9120879120879121,
+   "n_compared_with_A": 182,
+   "models": {
+    "prior": {
+     "AUC": 0.3913857677902622,
+     "Brier": 0.11869000874172485,
+     "balanced_accuracy": 0.5
+    },
+    "physics_logistic": {
+     "AUC": 0.7925361155698233,
+     "Brier": 0.18524865732380227,
+     "balanced_accuracy": 0.7176966292134832
+    },
+    "pure_ml_boosting": {
+     "AUC": 0.7655163188871054,
+     "Brier": 0.12417800259994327,
+     "balanced_accuracy": 0.6694087747458534
+    },
+    "hybrid_logistic": {
+     "AUC": 0.8201578384162653,
+     "Brier": 0.1651896318108578,
+     "balanced_accuracy": 0.7530096308186196
+    },
+    "hybrid_boosting_monotonic": {
+     "AUC": 0.7843766720171215,
+     "Brier": 0.12208996387336905,
+     "balanced_accuracy": 0.7051230604601392
+    }
+   },
+   "interface_worst_P_rise_along_O2": 0.0,
+   "interface_P_at_O2": {
+    "Methanol": {
+     "P_O2_0.15": 0.9125271379210746,
+     "P_O2_0.30": 0.16837111352660325
+    },
+    "Heptane": {
+     "P_O2_0.15": 0.7364898163372591,
+     "P_O2_0.30": 0.03582300888147266
+    }
+   }
+  },
+  "C_test_end_disruption_0": {
+   "n": 262,
+   "n_positive": 178,
+   "n_negative": 84,
+   "agreement_with_A": 0.84,
+   "n_compared_with_A": 225,
+   "models": {
+    "prior": {
+     "AUC": 0.378555823078295,
+     "Brier": 0.2243009810290072,
+     "balanced_accuracy": 0.5
+    },
+    "physics_logistic": {
+     "AUC": 0.8287185660781166,
+     "Brier": 0.1712784080059154,
+     "balanced_accuracy": 0.7375824861779918
+    },
+    "pure_ml_boosting": {
+     "AUC": 0.8560839129659353,
+     "Brier": 0.1491309110207197,
+     "balanced_accuracy": 0.7764624576422329
+    },
+    "hybrid_logistic": {
+     "AUC": 0.8821562332798288,
+     "Brier": 0.14048504475707135,
+     "balanced_accuracy": 0.791466024612092
+    },
+    "hybrid_boosting_monotonic": {
+     "AUC": 0.8783551810237205,
+     "Brier": 0.13512927866246568,
+     "balanced_accuracy": 0.7846664883181736
+    }
+   },
+   "interface_worst_P_rise_along_O2": 0.0,
+   "interface_P_at_O2": {
+    "Methanol": {
+     "P_O2_0.15": 0.9589207911802851,
+     "P_O2_0.30": 0.03650507392824761
+    },
+    "Heptane": {
+     "P_O2_0.15": 0.8941757077976036,
+     "P_O2_0.30": 0.01019911813400859
+    }
+   }
+  }
+ },
+ "checks": {
+  "B_test_end_no_disruption": {
+   "auc_within_tol": true,
+   "no_P_rise_with_O2": true,
+   "S3_S4_direction_holds": true
+  },
+  "C_test_end_disruption_0": {
+   "auc_within_tol": false,
+   "no_P_rise_with_O2": true,
+   "S3_S4_direction_holds": true
+  }
+ },
+ "robust": false
+}

@@ -172,5 +172,5 @@ Automated tests: `tests/test_validation.py` (monotonicity of the saved interface
 ## 10. Limitations
 
 - Two fuels, one experiment (FLEX), ISS ambient about 298 K; partial gravity untested.
-- Extinction: 35 negative examples; class definition has an open question (ADR-021).
+- Extinction: 35 negative examples; class definition has an open question (ADR-021). Sensitivity to the definition (docs/verification/extinction_label_sensitivity.md): interface-model AUC A 0.787, B 0.820, C 0.882; P(extinction) falls with O2 under every definition (S3, S4 hold); pre-declared checks failed: C_test_end_disruption_0: auc_within_tol (variant C ranks better because 'Disruption' tests become negatives).
 - Earth (1 g) numbers are outside the fitted range of the L&W buoyancy correlation (PHYSICS.md section 4).

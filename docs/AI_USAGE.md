@@ -16,3 +16,4 @@
 | 2026-11-14 | 8+ | Claude Code (Anthropic, Claude Opus) | Flame-animation code (package inputs + canvas drawing); the drawing is procedural code, not an AI-generated image | Ruslan Sharafutdinov (ADR-035) |
 | 2026-11-14 | post-8 | Claude Code (Anthropic, Claude Opus) | Lunar-gravity bound code, insights P5/P6 texts (quotes from NTRS), animation update | Ruslan Sharafutdinov (ADR-036) |
 | 2026-11-14 | post-8 | Claude Code (Anthropic, Claude Opus) | Comparison-matrix code and page text | Ruslan Sharafutdinov (ADR-037) |
+| 2026-11-14 | post-8 | Claude Code (Anthropic, Claude Opus) | Extinction label sensitivity code and generated report | Ruslan Sharafutdinov (ADR-018 'all the others if time remains') |

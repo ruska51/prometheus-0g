@@ -67,3 +67,18 @@ def test_reliability_rule():
     assert moon["status"] == "extrapolation" and "pressure" in " ".join(moon["reasons"])
     wide = reliability("Heptane", 1.0, 0.21, 0.0, 0.0, 3.0, sigma_log=SIGMA_UNRELIABLE + 0.01)
     assert wide["status"] == "unreliable"
+
+
+def test_extinction_label_variants_follow_their_definitions():
+    import pandas as pd
+
+    from fif.data.catalog import REPO_ROOT
+    from fif.models.features import model_table
+    from fif.validation.label_sensitivity import labels
+    t = model_table(pd.read_csv(REPO_ROOT / "data" / "processed" / "flex.csv"))
+    lab = labels(t)
+    dis = t["test_end"] == "Disruption"
+    assert lab["B_test_end_no_disruption"][dis].isna().all()
+    assert (lab["C_test_end_disruption_0"][dis] == 0).all()
+    assert (lab["C_test_end_disruption_0"][t["test_end"] == "Extinction"] == 1).all()
+    assert lab["A_diameter"].equals(t["extinct_finite_d"].astype("Float64"))

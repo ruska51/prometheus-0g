@@ -280,3 +280,14 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Decision (Ruslan): A ("in general the recommendation ... I am for honest physics without deviations").
 - Consequences: new physics/flame.py (Cantera HP equilibrium, NASA Glenn thermo); lambda_F1 from NASA TR R-132 (methanol table; heptane via Svehla Eq. 2 with C5/C6 -> C7 viscosity extrapolation, as L&W did for hexadecane); L&W buoyancy correction f_B = 0.533 Gr^0.52 replaces the Nu-based estimate (outside its fitted range for 256 of 274 FLEX rows, flagged). Result: median K_meas/K_theory 0.97 (methanol, 74 % within 15 %), 0.73 (heptane); residual trend with d0 for both fuels. Deviations from L&W stated as assumptions A8 (actual ambient mixture instead of air), A9 (heptane lambda_F1), A10 (Earth correction range). q = LHV still to be confirmed by Ruslan. Tag stage-4.2.
 - Sources: L&W 1972 pp. 394-396, 399, 403-404; NASA TR R-132; NASA TM-4513; NTRS 20205008449; NIST SRD 69
+
+## ADR-028: Heat of combustion q in B = lower heating value
+- Date/time: 2026-11-14 13:11 (UTC+5)
+- Stage: 4
+- Context: L&W (p. 395) take q "from thermochemical tables" without saying higher or lower heating value; their ref. [23] is Rossini et al., NBS Circular C461 (1947). Our NIST values come from the same Rossini measurements (heptane page cites Prosen and Rossini 1945; methanol value is Chao and Rossini 1965).
+- Options: A) LHV (water vapour in the flame) B) HHV.
+- Sensitivity (FLEX, 274 rows): HHV raises K_theory by 7.8 % (methanol) and 3.4 % (heptane); median K_meas/K_theory methanol 0.974 -> 0.905, heptane 0.733 -> 0.710; share within 15 % methanol 74 % -> 69 %.
+- Claude's recommendation: A.
+- Decision (Ruslan): "In general yes, but taking the higher one would also be fine" -> A (LHV) kept; HHV variant documented as a sensitivity check.
+- Consequences: no code change; PHYSICS.md section 3 updated.
+- Sources: L&W 1972 p. 395 and ref. 23; NIST SRD 69 species pages

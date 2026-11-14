@@ -77,3 +77,4 @@ Open items:
 2026-11-14 ~12:58 | 4 | Full L&W paper received; prescription extracted (pp. 394-395, 399, 404) | - | implement
 2026-11-14 ~13:02 | 4 | NASA TR R-132 (Svehla) transcribed (CH3OH table, C5/C6 viscosity), Eq. (2) self-check 0.1 %; Cantera 3.2.0 + NASA Glenn thermo for equilibrium T_f | data/raw/nasa_tr_r132, src/fif/physics/flame.py | droplet rewrite
 2026-11-14 13:07 | 4 | droplet.py rewritten to the L&W prescription; K_meas/K_theory methanol 0.97 (74 % within 15 %), heptane 0.73; size trend confirmed; 39 tests green; PHYSICS.md rewritten; ADR-027; tag stage-4.2 | src/fif/physics, tests/test_physics.py, docs/PHYSICS.md | stage 5
+2026-11-14 13:11 | 4 | ADR-028: q = LHV confirmed by Ruslan; HHV sensitivity +7.8 % / +3.4 % in K | docs/DECISIONS.md, docs/PHYSICS.md | stage 5

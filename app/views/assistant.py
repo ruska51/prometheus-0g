@@ -112,6 +112,18 @@ st.caption(
     if key
     else t("Questions left in this session: {n} of {total}. Answers without AI, quoted from the data.", n=left, total=LIMIT)
 )
+SUGGESTIONS = [
+    "How much faster would a droplet burn on a Moon base?",
+    "Does helium dilution slow burning?",
+    "Why may lunar gravity be dangerous for solid materials?",
+    "How much CO do burning solids release?",
+    "What did the fire on Mir teach us?",
+]
+if left > 0:
+    st.caption(t("Or tap a question:"))
+    picked = st.pills(" ", [t(x) for x in SUGGESTIONS], key=f"suggest-{len(chat)}", label_visibility="collapsed")
+    if picked and not q:
+        q = picked
 if st.query_params.get("debug") == "1" and "gen_failed" in st.session_state:  # diagnosis of model fall-through
     st.caption("debug: " + ("; ".join(f"{m}: {r}" for m, r in st.session_state["gen_failed"]) or "no failures"))
 if q:

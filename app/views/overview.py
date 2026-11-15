@@ -4,7 +4,19 @@ import math
 
 import pandas as pd
 import streamlit as st
-from common import ORANGE, ROOT, evidence_badge, flame_sim, flex, insights, investigations, moon, status_badge, validation
+from common import (
+    ORANGE,
+    ROOT,
+    evidence_badge,
+    flame_sim,
+    flex,
+    insights,
+    investigations,
+    moon,
+    next_step,
+    status_badge,
+    validation,
+)
 from flame_view import render as render_flame
 from i18n import flame_labels, t, tr_insight
 
@@ -197,3 +209,5 @@ st.caption(
         "NIST. No NASA endorsement implied."
     )
 )
+
+next_step("views/overview.py")

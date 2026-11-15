@@ -48,16 +48,22 @@ from i18n import language_selector, t  # noqa: E402
 st.set_page_config(page_title=t("Prometheus-0g - Fire on the Moon"), page_icon=":fire:", layout="wide")
 language_selector()
 
-pages = [
-    st.Page("views/overview.py", title=t("Overview"), icon=":material/home:", default=True),
-    st.Page("views/insights.py", title=t("Insights"), icon=":material/insights:"),
-    st.Page("views/assistant.py", title=t("Ask the data"), icon=":material/forum:"),
-    st.Page("views/scenario.py", title=t("Moon-base scenario"), icon=":material/science:"),
-    st.Page("views/module.py", title=t("Module fire"), icon=":material/local_fire_department:"),
-    st.Page("views/risk_map.py", title=t("Risk map"), icon=":material/map:"),
-    st.Page("views/investigations.py", title=t("Investigations"), icon=":material/table_view:"),
-    st.Page("views/data_explorer.py", title=t("Data explorer"), icon=":material/dataset:"),
-    st.Page("views/validation.py", title=t("Validation"), icon=":material/fact_check:"),
-    st.Page("views/method.py", title=t("Method & sources"), icon=":material/menu_book:"),
-]
+pages = {  # three groups: start here, explore the Moon base, check the evidence (ADR-054)
+    t("Start here"): [
+        st.Page("views/overview.py", title=t("Overview"), icon=":material/home:", default=True),
+        st.Page("views/assistant.py", title=t("Ask the data"), icon=":material/forum:"),
+    ],
+    t("Moon base"): [
+        st.Page("views/scenario.py", title=t("Moon-base scenario"), icon=":material/science:"),
+        st.Page("views/module.py", title=t("Module fire"), icon=":material/local_fire_department:"),
+        st.Page("views/risk_map.py", title=t("Risk map"), icon=":material/map:"),
+    ],
+    t("Evidence"): [
+        st.Page("views/insights.py", title=t("Insights"), icon=":material/insights:"),
+        st.Page("views/investigations.py", title=t("Investigations"), icon=":material/table_view:"),
+        st.Page("views/data_explorer.py", title=t("Data explorer"), icon=":material/dataset:"),
+        st.Page("views/validation.py", title=t("Validation"), icon=":material/fact_check:"),
+        st.Page("views/method.py", title=t("Method & sources"), icon=":material/menu_book:"),
+    ],
+}
 st.navigation(pages).run()

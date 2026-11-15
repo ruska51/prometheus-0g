@@ -4,6 +4,13 @@ Stage 8 (2026-11-14), approved by Ruslan (ADR-034): structure and order as below
 
 Evidence badges everywhere: `NASA data` / `model` / `physics theory` / `NASA literature` / `NASA history` / `NASA spinoff`; reliability badges: `in range` / `extrapolation` / `unreliable` (ADR-031).
 
+## Navigation (ADR-054)
+Sidebar in three groups: **Start here** (Overview, Ask the data), **Moon base** (Moon-base scenario, Module fire, Risk
+map), **Evidence** (Insights, Investigations, Data explorer, Validation, Method & sources). Every page ends with Back /
+Next step links along one tour: Overview -> Scenario -> Module fire -> Risk map -> Insights -> Investigations -> Data
+explorer -> Validation -> Method -> Ask the data. The Module fire page puts the set-up (wall, ventilation, atmosphere)
+above four tabs: Fire spread, Module air, Safer design, Lunar gravity & checklist.
+
 ## Pages (proposed order)
 
 ### 1. Overview (home)

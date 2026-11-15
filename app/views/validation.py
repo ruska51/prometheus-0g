@@ -3,7 +3,7 @@
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from common import PLOT_TEMPLATE, source_note, validation
+from common import PLOT_TEMPLATE, next_step, source_note, validation
 from i18n import t
 
 st.title(t("How much can you trust it?"))
@@ -25,11 +25,41 @@ st.markdown(
     + "**"
 )
 
+# Plain-language model names (ADR-054); the raw keys stay in docs/validation_results.json
+MODEL_NAMES = {
+    "mean": "Average of all tests (baseline)",
+    "physics": "Physics only (Law & Williams)",
+    "pure_ml_gp": "Machine learning only (Gaussian process)",
+    "hybrid": "Hybrid: physics + ML (used in the app)",
+    "prior": "Share of extinctions (baseline)",
+    "physics_logistic": "Physics features, logistic regression",
+    "pure_ml_boosting": "Machine learning only (gradient boosting)",
+    "hybrid_logistic": "Hybrid, logistic (used in the app)",
+    "hybrid_boosting_monotonic": "Hybrid, gradient boosting",
+}
+FLAG_NAMES = {
+    "KTB_INCONSISTENT": "K, t_b and d0 disagree",
+    "MOLE_SUM_OFF": "mole fractions do not sum to 1",
+    "D_EXT_ZERO": "extinction diameter 0",
+    "DUP_IDENTIFIER": "duplicate test id",
+}
+
+
+def model_name(m: str) -> str:
+    return t(MODEL_NAMES.get(m, m))
+
+
 st.subheader(t("Grouped cross-validation (5 folds by test regime, 5 seeds)"))
+st.caption(
+    t(
+        "Lower error is better; 95 % coverage should be close to 0.95. AUC: 1 = perfect, 0.5 = guessing. "
+        "Repeats of the same test regime are never split between training and test."
+    )
+)
 k = pd.DataFrame(
     [
         {
-            t("model"): t(m),
+            t("model"): model_name(m),
             "RMSE ln K": f"{d['RMSE_log']['mean']:.3f} ± {d['RMSE_log']['sd']:.3f}",
             "MAE, mm²/s": f"{d['MAE']['mean']:.3f}",
             t("95 % coverage"): f"{d['coverage95']['mean']:.2f}",
@@ -40,7 +70,7 @@ k = pd.DataFrame(
 e = pd.DataFrame(
     [
         {
-            t("model"): t(m),
+            t("model"): model_name(m),
             "AUC": "n/a" if m == "prior" else f"{d['AUC']['mean']:.3f} ± {d['AUC']['sd']:.3f}",
             "Brier": f"{d['Brier']['mean']:.3f}",
             t("balanced accuracy"): f"{d['balanced_accuracy']['mean']:.2f}",
@@ -48,20 +78,20 @@ e = pd.DataFrame(
         for m, d in s["extinction"].items()
     ]
 )
-c1, c2 = st.columns(2)
-c1.markdown(t("Burning-rate constant K"))
-c1.dataframe(k, hide_index=True, width="stretch")
-c2.markdown(t("Flame extinction (yes / no)"))
-c2.dataframe(e, hide_index=True, width="stretch")
+st.markdown("**" + t("Burning-rate constant K") + "**")
+st.dataframe(k, hide_index=True, width="stretch")
+st.markdown("**" + t("Flame extinction (yes / no)") + "**")
+st.dataframe(e, hide_index=True, width="stretch")
 
 st.subheader(t("Extrapolation: train without a class of conditions, predict it"))
+st.caption(t("Each group of bars: that class was removed from training and then predicted. Lower bars = better."))
 ex = v["extrapolation"]
 names = [n for n in ex if ex[n]["K"]]
 fig = go.Figure()
 for mdl, col in (("physics", "#7C3AED"), ("pure_ml_gp", "#6B7280"), ("hybrid", "#1D4ED8")):
     fig.add_trace(
         go.Bar(
-            name=t({"pure_ml_gp": "pure ML"}.get(mdl, mdl)),
+            name=t({"pure_ml_gp": "ML only", "physics": "physics only", "hybrid": "hybrid (ours)"}[mdl]),
             x=[t(n) for n in names],
             y=[ex[n]["K"][mdl]["RMSE_log"] for n in names],
             marker_color=col,
@@ -114,6 +144,10 @@ fl = fl.rename(
         "quality_flag": t("flags"),
     }
 )
+fl[t("flags")] = fl[t("flags")].map(
+    lambda f: "" if not isinstance(f, str) else "; ".join(t(FLAG_NAMES.get(x, x)) for x in f.split(";"))
+)
+fl[t("fuel")] = fl[t("fuel")].map(t)
 st.dataframe(fl.round(3), hide_index=True, width="stretch")
 st.caption(
     t(
@@ -122,3 +156,5 @@ st.caption(
     )
 )
 source_note(t("docs/validation_results.json (generated {ts}); method in docs/VALIDATION.md", ts=v["created_utc"]))
+
+next_step("views/validation.py")

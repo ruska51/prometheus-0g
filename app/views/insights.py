@@ -1,7 +1,7 @@
 """Ranked insights with stage filter, evidence badges, history and Earth blocks (UI_SPEC page 2)."""
 
 import streamlit as st
-from common import STAGE_LABEL, evidence_badge, insights
+from common import STAGE_LABEL, evidence_badge, insights, next_step
 from i18n import t, tr_insight
 
 st.title(t("Fire-safety insights"))
@@ -48,3 +48,5 @@ for col, i in zip(cols, [x for x in data["history_and_earth"] if x["stage"] == "
         st.markdown(f"**{tr_insight(i, 'title')}**  \n" + evidence_badge(i["evidence_type"]), unsafe_allow_html=True)
         st.write(tr_insight(i, "finding"))
         st.caption(tr_insight(i, "action") + " " + t("Source:") + " " + i["sources"][0])
+
+next_step("views/insights.py")

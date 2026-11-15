@@ -2,7 +2,7 @@
 
 import plotly.graph_objects as go
 import streamlit as st
-from common import BLUE, ORANGE, PLOT_TEMPLATE, comparison, investigations, source_note
+from common import BLUE, ORANGE, PLOT_TEMPLATE, comparison, investigations, next_step, source_note
 from i18n import t
 
 from fif.insights.compare import VARIABLES
@@ -155,3 +155,5 @@ with tab_cmp:
     source_note(
         t("NASA PSI Experimental Table headers and investigation records; rules in src/fif/insights/compare.py (ADR-037)")
     )
+
+next_step("views/investigations.py")

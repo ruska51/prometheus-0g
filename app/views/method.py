@@ -1,6 +1,7 @@
 """Method & sources (UI_SPEC page 8)."""
 
 import streamlit as st
+from common import next_step
 from i18n import lang, t
 
 EN = """
@@ -87,3 +88,5 @@ NASA не подразумевается.
 
 st.title(t("Method & sources"))
 st.markdown(RU if lang() == "ru" else EN)
+
+next_step("views/method.py")

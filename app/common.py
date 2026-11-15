@@ -127,3 +127,32 @@ def moon(fuel: str, schema: int = RESULT_SCHEMA) -> dict:
     from fif.insights.moon import moon_answer
 
     return moon_answer(fuel)
+
+
+# Guided path through the dashboard (ADR-054): question -> Moon base -> evidence. Each page ends with a link to the next.
+TOUR = [
+    ("views/overview.py", "Overview"),
+    ("views/scenario.py", "Moon-base scenario"),
+    ("views/module.py", "Module fire"),
+    ("views/risk_map.py", "Risk map"),
+    ("views/insights.py", "Insights"),
+    ("views/investigations.py", "Investigations"),
+    ("views/data_explorer.py", "Data explorer"),
+    ("views/validation.py", "Validation"),
+    ("views/method.py", "Method & sources"),
+    ("views/assistant.py", "Ask the data"),
+]
+
+
+def next_step(page: str) -> None:
+    """A 'Next step' link at the bottom of a page, to the next page of the tour (and back to the previous one)."""
+    paths = [p for p, _ in TOUR]
+    i = paths.index(page)
+    st.divider()
+    left, right = st.columns(2)
+    if i > 0:
+        p, name = TOUR[i - 1]
+        left.page_link(p, label=_t("Back: {page}").format(page=_t(name)), icon=":material/arrow_back:")
+    if i + 1 < len(TOUR):
+        p, name = TOUR[i + 1]
+        right.page_link(p, label=_t("Next step: {page}").format(page=_t(name)), icon=":material/arrow_forward:")

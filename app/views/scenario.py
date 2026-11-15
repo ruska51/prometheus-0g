@@ -1,7 +1,7 @@
 """Moon-base scenario: conditions in, physics + hybrid prediction with band, reliability, ISS/Earth comparison (UI_SPEC page 3)."""
 
 import streamlit as st
-from common import evidence_badge, flame_sim, scenario, source_note, status_badge
+from common import evidence_badge, flame_sim, next_step, scenario, source_note, status_badge
 from flame_view import render as render_flame
 from i18n import flame_labels, lang, t
 
@@ -45,12 +45,12 @@ with c_out:
     m1, m2, m3 = st.columns(3)
     if r["K_hybrid_mm2_s"] is not None:
         band = t("95 % band {lo:.2f}-{hi:.2f} mm²/s", lo=r["K_band_mm2_s"][0], hi=r["K_band_mm2_s"][1])
-        m1.metric(t("K, hybrid model"), f"{r['K_hybrid_mm2_s']:.2f} " + t("mm²/s"), help=band)
+        m1.metric(t("K, hybrid model, mm²/s"), f"{r['K_hybrid_mm2_s']:.2f}", help=band)
         m1.caption(band)
     else:
-        m1.metric(t("K, hybrid model"), t("withheld"))
+        m1.metric(t("K, hybrid model, mm²/s"), t("withheld"))
         m1.caption(t("Model uncertainty too large: physics only"))
-    m2.metric(t("K, physics only"), f"{r['K_theory_mm2_s']:.2f} " + t("mm²/s"))
+    m2.metric(t("K, physics only, mm²/s"), f"{r['K_theory_mm2_s']:.2f}")
     m3.metric(t("vs ISS cabin air"), f"{(r['ratio_vs_iss'] - 1) * 100:+.0f} %", help=t("Basis:") + " " + t(r["ratio_basis"]))
     m4, m5, m6 = st.columns(3)
     m4.metric(t("Flame temperature"), f"{r['T_f_K']:.0f} K")
@@ -69,7 +69,7 @@ with c_out:
     )
     m7, m8 = st.columns([1, 2])
     m7.metric(
-        t("On the lunar surface (1/6 g)"),
+        t("Lunar surface, 1/6 g"),
         f"×1.0–{r['moon_factor']:.2f}",
         help=t(
             "Partial-gravity bound: lower = microgravity rate, upper = Law & Williams buoyancy correction at 1/6 g "
@@ -146,3 +146,5 @@ st.dataframe(
     width="stretch",
 )
 source_note(t("NASA PSI-69 FLEX + NASA/TP-2015-216046; models: docs/MODEL_CARD.md; reliability rule: ADR-031"))
+
+next_step("views/scenario.py")

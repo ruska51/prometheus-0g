@@ -3,7 +3,7 @@
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
-from common import PLOT_TEMPLATE, flex, risk_grid, source_note
+from common import PLOT_TEMPLATE, flex, next_step, risk_grid, source_note
 from i18n import t
 
 from fif.insights.scenario import PRESETS
@@ -18,6 +18,18 @@ st.markdown(
         "are the FLEX tests, stars are real or planned cabin atmospheres."
     )
 )
+with st.expander(t("How to read this map"), expanded=True):
+    st.markdown(
+        "\n".join(
+            "- " + t(x)
+            for x in (
+                "Right = more oxygen, up = higher cabin pressure.",
+                "Darker red = the droplet burns faster than in ISS air (1 = same as the ISS); pale yellow = slower.",
+                "Bright cells are backed by NASA tests nearby; dimmed cells are model extrapolation - trust them less.",
+                "Compare the two stars: the planned Moon-base air sits in a redder cell than ISS air.",
+            )
+        )
+    )
 fuel = st.radio(t("Fuel"), ["Methanol", "Heptane"], horizontal=True, format_func=t)
 g = risk_grid(fuel, 3.0)
 o2 = np.sort(g["x_o2"].unique())
@@ -87,7 +99,7 @@ for name, a in PRESETS.items():
         )
 fig.update_layout(
     template=PLOT_TEMPLATE,
-    height=560,
+    height=700,
     xaxis_title=t("Oxygen mole fraction"),
     yaxis_title=t("Cabin pressure, psi"),
     legend=dict(orientation="h", y=-0.18),
@@ -106,3 +118,5 @@ source_note(
         "the challenge page"
     )
 )
+
+next_step("views/risk_map.py")

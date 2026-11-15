@@ -2,7 +2,7 @@
 
 import plotly.express as px
 import streamlit as st
-from common import PLOT_TEMPLATE, cfig, flex, source_note
+from common import PLOT_TEMPLATE, cfig, flex, next_step, source_note
 from i18n import t
 
 st.title(t("Data explorer"))
@@ -100,3 +100,5 @@ with tab2:
     st.dataframe(c[ccols], hide_index=True, width="stretch")
     st.download_button(t("Download CFI-G data (CSV)"), c[ccols].to_csv(index=False).encode("utf-8"), "cfig.csv", "text/csv")
     source_note(t("NASA PSI-159 ACME CFI-G Experimental Tables (CC0); Tad and Zst as computed by the table authors"))
+
+next_step("views/data_explorer.py")

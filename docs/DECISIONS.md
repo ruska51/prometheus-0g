@@ -598,3 +598,19 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   the page shown with their sources.
 - Decision (Ruslan): "more science"; the analysis choice (0.3-point threshold, slope through the origin) is Claude's
   and is shown on the page.
+
+## ADR-054: Easier navigation - grouped menu, guided tour, module page in tabs, plain-language tables
+- Date/time: 2026-11-15 20:06-20:15
+- Stage: post-12
+- Context: Ruslan: make the design more logical and user-friendly. Ten pages in a flat menu; the module page was one
+  6500 px scroll; validation tables showed code names (pure_ml_gp, None); scenario numbers were cut off.
+- Options: menu - A) three groups, B) keep, C) top tabs; polish - module tabs, "Next step" links, plain tables, bigger
+  risk map; features - shareable scenario link, module report download, glossary.
+- Claude's recommendation: A; module tabs and "Next step" links.
+- Decision (Ruslan): three groups; all four polish items; all three features.
+- Consequences: menu "Start here" (Overview, Ask the data) / "Moon base" (Scenario, Module fire, Risk map) / "Evidence"
+  (Insights, Investigations, Data explorer, Validation, Method); every page ends with Back / Next step links along one
+  tour (common.TOUR); module page in four tabs (Fire spread, Module air, Safer design, Lunar gravity & checklist), set-up
+  (wall, ventilation, atmosphere) above them; validation tables with plain model names and readable quality flags;
+  risk map 700 px with a "How to read this map" box; scenario metric units moved into the labels so values are not cut.
+  Stale limits text on the module page updated (oxygen use and atmosphere scaling are now modelled).

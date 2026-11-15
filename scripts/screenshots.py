@@ -20,6 +20,7 @@ PAGES = {
     "insights": "insights",
     "scenario": "scenario",
     "module": "module",
+    "base": "base",
     "risk_map": "risk_map",
     "investigations": "investigations",
     "data_explorer": "data_explorer",

@@ -87,7 +87,11 @@ rates, not a fire simulation, and says so. There is a risk map of oxygen against
 catalog with a comparison matrix of all 24 PSI combustion investigations, and a data explorer where every raw NASA row
 can be downloaded. And you can simply ask: "Ask the data" is an AI assistant that answers with numbers from our
 results and 12 public NASA reports, shows the source of every statement, and says plainly when the data do not cover a
-question. Pages are grouped into Start here, Moon base and Evidence, each ends with a link to the next step, a
+question. A Detection & suppression tab places detectors and extinguishers on the wall and gives the time until a
+CO2 alarm sounds, and a Moon-base planner lays out a whole base of modules to scale and shows which module to fix
+first. An AI pilot on every page turns a request such as "detectors in the lab module in Moon-base air" into the
+right page with its inputs set, from a fixed list the code checks. Pages are grouped into Start here, Moon base and
+Evidence, each ends with a link to the next step, a
 glossary explains every term, and a scenario or a module wall can be shared as a link or downloaded as a report. The
 app opens in English and switches to Russian, and its dark style matches the demo slides.
 
@@ -117,7 +121,7 @@ logos or branding are used.
 
 **Tools.** Python 3.12, pandas, NumPy, SciPy, scikit-learn (Gaussian processes, logistic regression, gradient
 boosting), Cantera, pdfplumber, Streamlit, Plotly, WebGL (flame animation), Google Gemini API (assistant), Playwright
-(screenshots, slide PDF), pytest and ruff (190 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
+(screenshots, slide PDF), pytest and ruff (199 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
 Apache-2.0; NASA data CC0 / public domain. One command rebuilds data, models, insights and tests from the raw NASA
 files.
 
@@ -166,8 +170,9 @@ We used AI in two places. First, to build the project: the code, data analysis, 
 written with Claude Code (Anthropic, Claude Opus), directed by the team member, who made every scientific and design
 decision - the level of theory, the property data, the model, the validation rules, the ranking formula and the
 interface. Each decision is logged in docs/DECISIONS.md and each AI-assisted step in docs/AI_USAGE.md. Every number in
-the dashboard comes from deterministic, tested code, not from a language model. Second, inside the product: the
-optional "Ask the data" assistant uses Google Gemini. It sees only excerpts of our verified results and of 12 public
+the dashboard comes from deterministic, tested code, not from a language model. Second, inside the product, Google
+Gemini runs an AI pilot that opens pages and sets their inputs (it may only choose from a fixed list of pages and
+allowed values, which the code checks, and it states no results itself), and the optional "Ask the data" assistant. It sees only excerpts of our verified results and of 12 public
 NASA technical reports (found by keyword search), must name a source for every statement and must say when the data
 do not cover a question; the app then checks every citation and flags any number it cannot find in the sources. How it
 behaves on 10 test questions, including off-topic and prompt-injection attempts, is documented in
@@ -203,10 +208,10 @@ the Space Apps Project Submission Guide).
 | High-Level Project Summary | 180 | 1016 |
 | Link to Project Demo | 24 | 234 |
 | Link to Final Project | 7 | 115 |
-| Detailed Project Description | 1271 | 7406 |
+| Detailed Project Description | 1346 | 7804 |
 | NASA Data | 295 | 1891 |
 | Space Agency Partner & Other Data | 85 | 627 |
-| Use of Artificial Intelligence | 190 | 1177 |
+| Use of Artificial Intelligence | 224 | 1356 |
 <!-- COUNTS:END -->
 
 ## Form link lists (Link Text + Link Url)

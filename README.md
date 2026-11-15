@@ -54,19 +54,31 @@ ranked recommendations - for cabin-materials engineers, crew-safety planners and
   (LUCI sounding rocket) and on Earth, in test air or any cabin atmosphere (scaled with NASA's flame-spread
   theory); a smooth animation of the same fire in all three, the time until it reaches the hatch, a well-mixed zone
   model of the module air (oxygen, CO2, heat, fire power), a search for the best 50 cm firebreak, what NASA has found about
-  solids at lunar gravity (quoted), and a 7-item fire-safety checklist with the evidence for each item.
+  solids at lunar gravity (quoted), and a 7-item fire-safety checklist with the evidence for each item. A
+  *Detection & suppression* tab places detectors (shortest average time to see a fire starting anywhere) and
+  extinguishers / fire ports (covering first the material from which a fire reaches the hatch soonest), and gives
+  the time until a CO2 alarm in the module air; module length, diameter and racks set the air volume. The wall is
+  drawn like an engineering sheet (metres, hatching, isochrones).
+- **Moon-base planner:** lay out a whole base of modules in an editable table; a to-scale side view shows, for
+  each module, how soon a fire reaches its hatch, what it does to the air and how many detectors it needs, and
+  which module to fix first.
 - **20 ranked insights** for prevention, detection and suppression, plus lessons from Apollo 1, Apollo 13 and Mir and
   benefits on Earth (NASA spinoffs).
 - **All 24 PSI combustion investigations** ranked by relevance to crew fire safety, with a comparison matrix of what
   each data table records and which investigations share hardware.
 - **Ask the data:** an AI assistant that answers only from our verified results and public NASA technical reports,
   cites a source after every statement, and says so when the data do not cover a question.
+- **AI pilot on every page:** say what you want ("detectors in the lab module in Moon-base air", "heptane on the
+  Moon, 2 mm") and it opens the right page with the inputs set; every value it picks is checked against the
+  allowed options and ranges, and without AI a rule-based parser handles the common requests.
 - **Honest validation page** and a data explorer with every raw NASA row downloadable.
 - **Easy to use:** the menu is grouped into *Start here*, *Moon base* and *Evidence*, every page ends with a *Next step* link, a searchable glossary of 20 terms sits in the sidebar, the scenario and module pages keep their settings in a shareable link, and the module page downloads a report of the wall you drew.
 
 ![See it burn: Moon base in microgravity vs on the lunar surface (heptane droplet)](docs/figures/ui/flame_window_moon_heptane.png)
 
 ![Fire in a Moon-base module: the same crew-quarters wall and the same spark at lunar gravity, in microgravity and on Earth (flame front white-yellow to red, embers, char; hatch green)](docs/figures/ui/module_fire.png)
+
+![Moon-base planner: modules to scale, coloured by how soon a fire reaches each hatch](docs/figures/ui/base_desktop.png)
 
 ## Key insights (Moon-base set)
 
@@ -175,7 +187,7 @@ needs a free Google Gemini key in the environment (`GEMINI_API_KEY`); everything
 ## Project structure
 
 ```
-app/                Streamlit dashboard: main.py, views/ (10 pages), animations, glossary, EN/RU texts
+app/                Streamlit dashboard: main.py, views/ (11 pages), animations, AI pilot, glossary, EN/RU texts
 src/fif/
   data/             parsers, schema, cleaning, raw-file registry
   physics/          droplet burning (Law & Williams), properties, mixing rules, flame temperature
@@ -187,7 +199,7 @@ data/raw/           NASA files as downloaded (sha256 in data/catalog.yaml)
 data/processed/     clean tables used by models and app
 models/             trained models (joblib)
 scripts/            reproducible steps (build, train, validate, insights, screenshots)
-tests/              190 tests: data, physics, models, validation, insights, app (EN/RU), assistant
+tests/              199 tests: data, physics, models, validation, insights, app (EN/RU), assistant
 docs/               PHYSICS, MODEL_CARD, VALIDATION, INSIGHTS, DECISIONS (ADR log), WORKLOG, SUBMISSION, ...
 ```
 
@@ -207,8 +219,9 @@ docs/               PHYSICS, MODEL_CARD, VALIDATION, INSIGHTS, DECISIONS (ADR lo
 
 The analysis, code and texts were produced with Claude Code (Anthropic) under the direction of the team member, who
 made every scientific and design decision (logged in [docs/DECISIONS.md](docs/DECISIONS.md)). Inside the product the
-only AI component is the optional "Ask the data" assistant (Google Gemini), restricted to our results and NASA reports,
-with checked citations. All other numbers come from deterministic code. No AI-generated images; the demo slides
+AI components are the optional "Ask the data" assistant (Google Gemini), restricted to our results and NASA reports,
+with checked citations, and the AI pilot (Google Gemini), which only picks a page and inputs from a fixed list that the
+code validates. All other numbers come from deterministic code. No AI-generated images; the demo slides
 use screenshots of the app. Details: [docs/AI_USAGE.md](docs/AI_USAGE.md).
 
 ## Sources

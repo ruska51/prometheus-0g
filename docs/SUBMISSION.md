@@ -123,7 +123,7 @@ logos or branding are used.
 boosting), Cantera, pdfplumber, Streamlit, Plotly, WebGL (flame animation), Google Gemini API (assistant), Playwright
 (screenshots, slide PDF), pytest and ruff (198 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
 Apache-2.0; NASA data CC0 / public domain. One command rebuilds data, models, insights and tests from the raw NASA
-files.
+files. Source code, data and documentation: https://github.com/ruska51/prometheus-0g
 
 ---
 
@@ -256,6 +256,7 @@ The form asks for these two fields as lists of links. All URLs were opened on 20
 
 | Link Text | Link Url |
 |---|---|
+| Prometheus-0g source code, data and documentation (our repository, Apache-2.0) | https://github.com/ruska51/prometheus-0g |
 | No Space Agency Partner data used - NIST Chemistry WebBook (fuel and gas properties) | https://webbook.nist.gov |
 | Law & Williams 1972, Combustion and Flame 19 - droplet property rules (cited, not redistributed) | https://doi.org/10.1016/0010-2180(72)90009-0 |
 | Wyman, Sloan & Shirley 2013, JCGT - CIE colour approximation (flame colour) | https://jcgt.org/published/0002/02/01/ |

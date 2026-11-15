@@ -13,14 +13,14 @@ import streamlit.components.v1 as components
 _HTML = r"""<!doctype html><html><head><meta charset="utf-8"><style>
 body{margin:0;background:#0d1322;font-family:Inter,system-ui,sans-serif;color:#e8ecf4}
 #panels{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.p{position:relative;border-radius:12px;overflow:hidden;background:#0a0f1c}
+.p{position:relative;border-radius:12px;overflow:hidden;background:#0a0f1c;justify-self:center;width:max-content}
 .p.big{grid-column:1 / span 2}
 @media (max-width:600px){#panels{grid-template-columns:1fr}.p.big{grid-column:auto}}
-.p canvas{display:block;width:100%;height:auto;image-rendering:auto}
+.p canvas{display:block;margin:0 auto}
 .t{position:absolute;left:12px;top:8px;font-size:13px;font-weight:600;text-shadow:0 1px 3px #000}
 .h{position:absolute;right:12px;top:8px;font-size:12px;padding:2px 8px;border-radius:9px;background:#2fd27a;color:#06210f;font-weight:700}
 .h.no{background:#5c6678;color:#e8ecf4}
-.bar{display:flex;align-items:center;gap:10px;margin-top:4px;font-size:13px}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:4px;font-size:13px}
 button{background:#f0843f;border:0;color:#0d1322;font-weight:700;border-radius:8px;padding:6px 12px;cursor:pointer}
 button.s{background:#151d33;color:#e8ecf4;border:1px solid #26304a;font-weight:500}button.s.on{border-color:#f0843f;color:#f0843f}
 input[type=range]{flex:1;accent-color:#f0843f}
@@ -101,6 +101,15 @@ function loop(ts){ if(last===null) last=ts; const dt=(ts-last)/1000; last=ts;
 document.getElementById('play').onclick=()=>{ if(T>=TEND){T=0;} playing=!playing; document.getElementById('play').textContent=playing?L.pause:L.play; };
 document.getElementById('seek').oninput=(ev)=>{ T=TEND*ev.target.value/1000; playing=false; document.getElementById('play').textContent=L.play; draw(); };
 document.querySelectorAll('button.s').forEach(b=>b.onclick=()=>{ speed=+b.dataset.s; document.querySelectorAll('button.s').forEach(q=>q.classList.toggle('on',q===b)); });
+// size the panels from the frame height so everything (three panels + controls) is always visible
+function fit(){
+  const bar=document.querySelector('.bar'), avail=window.innerHeight-bar.offsetHeight-22;
+  const one=window.innerWidth<=600, bigH=one? Math.floor((avail-20)/3) : Math.floor((avail-10)*0.58), smallH=one? bigH : avail-10-bigH;
+  const full=document.getElementById('panels').clientWidth, half=one? full : (full-10)/2;
+  panels.forEach((p,i)=>{ const hh=i===0?bigH:smallH, cw=(i===0||one)? full : half;
+    const ww=Math.min(cw, hh*W/H), h2=Math.round(ww*H/W); p.cv.style.width=ww+'px'; p.cv.style.height=h2+'px'; });
+}
+window.addEventListener('resize', fit); fit();
 draw(); requestAnimationFrame(loop);
 // start when the animation scrolls into view (it would otherwise be over before anyone sees it)
 document.getElementById('play').textContent=L.play;

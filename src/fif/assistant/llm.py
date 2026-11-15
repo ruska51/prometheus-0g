@@ -15,7 +15,7 @@ import re
 import time
 from collections.abc import Callable
 
-from .knowledge import CORE_FACTS, Block, search
+from .knowledge import CORE_FACTS, Block, _tokens, expand_query, search, search_scored
 
 DEFAULT_MODEL = "auto"
 MAX_QUESTION_CHARS = 600
@@ -196,6 +196,56 @@ def ask(question: str, generate: Callable[..., str], k: int = 12, on_text: Calla
         "unknown_citations": [i for i in ids if i not in known],
         "uncited": not ids,
         "retrieved": [b.id for b in blocks],
+    }
+
+
+SENTENCE = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9\"(])")
+
+
+def key_sentences(block: Block, query: str, n: int = 2, max_chars: int = 420) -> str:
+    """The ``n`` sentences of a block that share most words with the question, in their original order (the first
+    sentences if none match). Deterministic, no language model: used when the AI model is unavailable."""
+    q = set(_tokens(expand_query(query)))
+    sents = [s.strip() for s in SENTENCE.split(" ".join(block.text.split())) if s.strip()]
+    if not sents:
+        return ""
+
+    def score(i: int) -> int:  # shared words, plus one for a sentence with a number (the facts we want to quote)
+        return len(q & set(_tokens(sents[i]))) + (1 if re.search(r"\d", sents[i]) else 0)
+
+    ranked = sorted(range(len(sents)), key=lambda i: (-score(i), i))
+    keep = sorted(ranked[:n]) if len(q & set(_tokens(" ".join(sents)))) else list(range(min(n, len(sents))))
+    out = " ".join(sents[i] for i in keep)
+    return out if len(out) <= max_chars else out[: max_chars - 3].rsplit(" ", 1)[0] + "..."
+
+
+def offline_answer(question: str, n_data: int = 2, n_report: int = 1) -> dict:
+    """Answer without a language model (quota used up, no key, API down): the most relevant verified facts, quoted
+    from our result blocks and NASA report excerpts with numbered sources. Same keys as ``ask`` plus ``offline`` and
+    ``covered`` (False when nothing in the index matches the question; then the coverage note is shown)."""
+    hits = [(b, s) for b, s in search_scored(question) if s > 0]
+    data = [b for b, _ in hits if b.kind == "data"][:n_data]
+    rep = [b for b, _ in hits if b.kind == "report"][:n_report]
+    chosen = data + rep
+    covered = bool(chosen)
+    if not covered:
+        chosen = [CORE_FACTS]
+    lines = [
+        f"- **{b.title}**: {key_sentences(b, question, n=3 if b.kind == 'data' else 2, max_chars=520)} [{b.id}]" for b in chosen
+    ]
+    text = "\n".join(lines)
+    display, order = render_citations(text, {b.id for b in chosen})
+    sources = [next(b for b in chosen if b.id == i) for i in order]
+    return {
+        "answer": text,
+        "display": display,
+        "sources": sources,
+        "unsupported_numbers": [],
+        "unknown_citations": [],
+        "uncited": False,
+        "retrieved": [b.id for b in chosen],
+        "offline": True,
+        "covered": covered,
     }
 
 

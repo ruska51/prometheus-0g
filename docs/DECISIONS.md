@@ -514,3 +514,19 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Sources: https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app ;
   https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows ;
   https://docs.github.com/en/billing/concepts/product-billing/github-actions
+
+## ADR-049: Improvements for global judging until the deadline; assistant answers without AI when Gemini fails
+- Date/time: 2026-11-15 18:04
+- Stage: post-12
+- Context: Ruslan: "improve the project for the global stage". Project Submission Guide: submission closes Sunday,
+  November 15, 11:59 p.m. local event time; "Only your last saved submission will be reviewed by the judges". The free
+  Gemini quota ran out during the day (ADR-047), so a judge could see only an error on "Ask the data".
+- Options (time): until 23:59 then freeze / continue after the deadline; features: assistant without quota, Moon-base
+  checklist, solids at lunar gravity, nothing new.
+- Claude's recommendation: until 23:59 then freeze; assistant without quota first.
+- Decision (Ruslan): until 23:59, then freeze; all three features, plus "module design and fire spread in it, if
+  applicable".
+- Consequences (step 1): when Gemini fails or no key is set, the assistant quotes the most relevant sentences of our
+  result blocks and NASA report excerpts (deterministic, numbered sources, sentences with numbers preferred) with a
+  note that no AI was used; off-topic questions get the coverage note. The page works without a key.
+- Sources: https://www.spaceappschallenge.org/resources/project-submission-guide/ (read 2026-11-15)

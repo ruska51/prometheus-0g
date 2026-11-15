@@ -295,3 +295,22 @@ def test_prompt_guards_names_ownership_and_language():
     assert "methanol is not" in SYSTEM and "methane" in SYSTEM
     assert "not\n   NASA's" in SYSTEM or "not NASA's" in SYSTEM
     assert "language of the QUESTION" in SYSTEM
+
+
+def test_offline_answer_quotes_verified_numbers_with_numbered_sources():
+    from fif.assistant.llm import offline_answer
+
+    r = offline_answer("Насколько быстрее горит капля на лунной базе?")
+    assert r["offline"] and r["covered"]
+    assert r["sources"][0].id.startswith("D:moon-answer-")
+    assert "+32 %" in r["display"] and "¹" in r["display"] and "[D:" not in r["display"]
+    off = offline_answer("Какая погода в Уральске?")
+    assert not off["covered"] and [s.id for s in off["sources"]] == ["D:core"]
+
+
+def test_offline_answer_numbers_come_from_the_cited_blocks():
+    from fif.assistant.llm import offline_answer, unsupported_numbers
+
+    for q in ["Does helium dilution slow burning?", "How much CO did BASS-II produce?", "Moon base burn time"]:
+        r = offline_answer(q)
+        assert unsupported_numbers(r["answer"], r["sources"]) == [], q

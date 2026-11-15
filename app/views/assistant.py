@@ -17,6 +17,7 @@ from fif.assistant.llm import (
     ask,
     friendly_error,
     gemini_generate,
+    offline_answer,
 )
 
 LIMIT = 10  # questions per browser session (protects the shared free-tier quota)
@@ -50,11 +51,10 @@ model = str(sec.get("GEMINI_MODEL") or os.environ.get("GEMINI_MODEL") or DEFAULT
 if not key:
     st.info(
         t(
-            "The assistant is not enabled on this server: it needs a Google Gemini API key (GEMINI_API_KEY in the "
-            "environment or in Streamlit secrets). Everything else in the dashboard works without it."
+            "No AI model is configured on this server, so answers are quoted directly from our verified results and "
+            "NASA reports, without AI."
         )
     )
-    st.stop()
 
 
 @st.cache_resource(show_spinner=False)
@@ -73,6 +73,8 @@ for turn in chat:
     with st.chat_message("user"):
         st.write(turn["q"])
     with st.chat_message("assistant"):
+        if turn.get("offline_note"):
+            st.caption(turn["offline_note"])
         st.markdown(turn.get("display") or turn["text"])
         if turn.get("uncited"):
             st.warning(t("This answer has no source citations - treat it with caution."))
@@ -107,6 +109,8 @@ st.caption(
         total=LIMIT,
         m=st.session_state.get("model_used", model),
     )
+    if key
+    else t("Questions left in this session: {n} of {total}. Answers without AI, quoted from the data.", n=left, total=LIMIT)
 )
 if st.query_params.get("debug") == "1" and "gen_failed" in st.session_state:  # diagnosis of model fall-through
     st.caption("debug: " + ("; ".join(f"{m}: {r}" for m, r in st.session_state["gen_failed"]) or "no failures"))
@@ -116,34 +120,45 @@ if q:
     with st.chat_message("assistant"):
         live = st.empty()
         live.caption(t("Searching the data and NASA reports..."))
+        note = ""
         try:
+            if not key:
+                raise LookupError("no key")
             gen = _generator(key, model)
             r = ask(q, gen, on_text=live.markdown)
             st.session_state["model_used"] = getattr(gen, "model", model)
             st.session_state["gen_failed"] = list(getattr(gen, "failed", []))
-            chat.append(
-                {
-                    "q": q,
-                    "text": r["answer"] or t("No answer was returned."),
-                    "display": r["display"],
-                    "uncited": r["uncited"],
-                    "unsupported": r.get("unsupported_numbers", []),
-                    "sources": [{"id": s.id, "title": s.title, "text": s.text, "url": s.url} for s in r["sources"]],
-                }
-            )
-        except Exception as e:  # API errors: quota, key, model, network
-            reason = friendly_error(e)
-            msg = {
-                "quota": t("The free Gemini quota is used up for now - please try again later."),
-                "key": t("The Gemini API key was rejected - the assistant is temporarily unavailable."),
-                "model": t("The configured Gemini model is not available - the assistant is temporarily unavailable."),
-            }.get(reason, t("The assistant could not answer right now - please try again later."))
-            live.empty()
-            st.error(msg)
-            st.caption(t("Technical detail:") + " " + _reason(e))
-            st.stop()
+        except Exception as e:  # quota, key, model, network, no key: answer from the data without AI (ADR-049)
+            if key:
+                why = {
+                    "quota": t("the free Gemini quota is used up for now"),
+                    "key": t("the Gemini API key was rejected"),
+                    "model": t("the Gemini model is not available"),
+                }.get(friendly_error(e), t("the Gemini service did not respond"))
+                note = t(
+                    "The AI model is not available right now ({why}). These are the most relevant verified facts, "
+                    "quoted directly from our results and NASA reports without AI.",
+                    why=why,
+                )
+                st.session_state["gen_failed"] = [("all", _reason(e))]
+            r = offline_answer(q)
+            if not r["covered"]:
+                note = (note + " " if note else "") + t(
+                    "The NASA data and reports in this tool do not cover this question. What the tool covers:"
+                )
+        chat.append(
+            {
+                "q": q,
+                "text": r["answer"] or t("No answer was returned."),
+                "display": r["display"],
+                "uncited": r["uncited"],
+                "unsupported": r.get("unsupported_numbers", []),
+                "offline_note": note,
+                "sources": [{"id": s.id, "title": s.title, "text": s.text, "url": s.url} for s in r["sources"]],
+            }
+        )
     st.rerun()
-elif left > 0 and not chat:
+elif key and left > 0 and not chat:
     # warm-up while the visitor reads the page: model list and retrieval index, so the first answer starts at once
     try:
         _generator(key, model)

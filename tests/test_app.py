@@ -34,3 +34,13 @@ def test_scenario_moon_preset_shows_extrapolation():
     md = " ".join(m.value for m in at.markdown)
     assert "extrapolation" in md
     assert "vs ISS cabin air" in [m.label for m in at.metric]
+
+
+def test_assistant_without_key_answers_from_the_data(monkeypatch):
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    at = _run("assistant")
+    at.chat_input[0].set_value("How much faster does a droplet burn on a Moon base?").run()
+    assert not at.exception, [e.value for e in at.exception]
+    md = " ".join(m.value for m in at.markdown)
+    assert "+32 %" in md
+    assert any("without AI" in c.value for c in at.caption)

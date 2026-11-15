@@ -458,6 +458,11 @@ def index() -> tuple[list[Block], list[Counter], dict[str, float], float]:
 def search(query: str, k: int = 12, k1: float = 1.5, b: float = 0.75) -> list[Block]:
     """BM25: the best half of the blocks from our results and the best half from NASA report excerpts, so a question
     is always answered with both kinds of evidence when both match."""
+    return [bl for bl, _ in search_scored(query, k, k1, b)]
+
+
+def search_scored(query: str, k: int = 12, k1: float = 1.5, b: float = 0.75) -> list[tuple[Block, float]]:
+    """Same selection as ``search``, with the BM25 score of each block (pinned Moon blocks get +1e6)."""
     blocks, docs, idf, avg = index()
     q = _tokens(expand_query(query))
     scores = []
@@ -474,4 +479,4 @@ def search(query: str, k: int = 12, k1: float = 1.5, b: float = 0.75) -> list[Bl
     half = k // 2
     pick = data[:half] + rep[:half]
     pick += [i for i in order if i not in pick][: k - len(pick)]  # fill up if one kind has few matches
-    return [blocks[i] for i in sorted(pick, key=lambda i: scores[i], reverse=True)]
+    return [(blocks[i], scores[i]) for i in sorted(pick, key=lambda i: scores[i], reverse=True)]

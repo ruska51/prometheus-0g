@@ -87,7 +87,9 @@ rates, not a fire simulation, and says so. There is a risk map of oxygen against
 catalog with a comparison matrix of all 24 PSI combustion investigations, and a data explorer where every raw NASA row
 can be downloaded. And you can simply ask: "Ask the data" is an AI assistant that answers with numbers from our
 results and 12 public NASA reports, shows the source of every statement, and says plainly when the data do not cover a
-question. The app opens in English and switches to Russian, and its dark style matches the demo slides.
+question. Pages are grouped into Start here, Moon base and Evidence, each ends with a link to the next step, a
+glossary explains every term, and a scenario or a module wall can be shared as a link or downloaded as a report. The
+app opens in English and switches to Russian, and its dark style matches the demo slides.
 
 **Benefits and impact.** Habitat and rover designers get measured, sourced reasons to plan for fires that are less
 likely to go out on their own: suppress at once, sense CO alongside smoke, and do not rely on Earth-gravity material
@@ -115,7 +117,7 @@ logos or branding are used.
 
 **Tools.** Python 3.12, pandas, NumPy, SciPy, scikit-learn (Gaussian processes, logistic regression, gradient
 boosting), Cantera, pdfplumber, Streamlit, Plotly, WebGL (flame animation), Google Gemini API (assistant), Playwright
-(screenshots, slide PDF), pytest and ruff (186 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
+(screenshots, slide PDF), pytest and ruff (190 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
 Apache-2.0; NASA data CC0 / public domain. One command rebuilds data, models, insights and tests from the raw NASA
 files.
 
@@ -201,7 +203,7 @@ the Space Apps Project Submission Guide).
 | High-Level Project Summary | 180 | 1016 |
 | Link to Project Demo | 24 | 234 |
 | Link to Final Project | 7 | 115 |
-| Detailed Project Description | 1229 | 7220 |
+| Detailed Project Description | 1271 | 7406 |
 | NASA Data | 295 | 1891 |
 | Space Agency Partner & Other Data | 85 | 627 |
 | Use of Artificial Intelligence | 190 | 1177 |

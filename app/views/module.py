@@ -284,6 +284,9 @@ ATM_LABEL = {
 a1, a2, a3 = st.columns([1.6, 1, 1])
 atm = a1.selectbox(t("Cabin atmosphere"), list(ATM_LABEL), format_func=lambda k: ATM_LABEL[k](), key="mod_atm")
 if atm == "custom":
+    # Streamlit forgets the state of a widget that was not shown on the last run: restore the defaults, not the minimum
+    ss.setdefault("mod_o2", 30)
+    ss.setdefault("mod_psi", 10.2)
     x_o2 = a2.slider(t("Oxygen, %"), 17, 40, key="mod_o2") / 100
     p_atm = a3.slider(t("Pressure, psi"), 5.0, 15.0, step=0.1, key="mod_psi") / 14.696
 else:

@@ -616,7 +616,7 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   Stale limits text on the module page updated (oxygen use and atmosphere scaling are now modelled).
 
 ## ADR-055: Shareable links, module report download, glossary
-- Date/time: 2026-11-15 20:16-20:26
+- Date/time: 2026-11-15 20:16-20:25
 - Stage: post-12
 - Context: Ruslan chose three additions (see ADR-054 question): a link to one's own scenario, a downloadable module report,
   a glossary of terms.

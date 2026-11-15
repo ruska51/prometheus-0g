@@ -98,3 +98,10 @@ def test_glossary_has_both_languages():
     assert len(TERMS) >= 15
     assert all(all(x.strip() for x in row) for row in TERMS)
     assert len({row[0] for row in TERMS}) == len(TERMS)
+
+
+def test_module_custom_atmosphere_starts_at_moon_base_values():
+    at = _run("module")
+    at.selectbox(key="mod_atm").set_value("custom").run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.slider(key="mod_o2").value == 30 and at.slider(key="mod_psi").value == 10.2

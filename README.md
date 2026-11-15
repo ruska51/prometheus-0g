@@ -62,6 +62,7 @@ ranked recommendations - for cabin-materials engineers, crew-safety planners and
 - **Ask the data:** an AI assistant that answers only from our verified results and public NASA technical reports,
   cites a source after every statement, and says so when the data do not cover a question.
 - **Honest validation page** and a data explorer with every raw NASA row downloadable.
+- **Easy to use:** the menu is grouped into *Start here*, *Moon base* and *Evidence*, every page ends with a *Next step* link, a searchable glossary of 20 terms sits in the sidebar, the scenario and module pages keep their settings in a shareable link, and the module page downloads a report of the wall you drew.
 
 ![See it burn: Moon base in microgravity vs on the lunar surface (heptane droplet)](docs/figures/ui/flame_window_moon_heptane.png)
 
@@ -71,7 +72,7 @@ ranked recommendations - for cabin-materials engineers, crew-safety planners and
 
 | # | Insight | Number | Evidence |
 |---|---|---|---|
-| P2 | A Moon-base atmosphere burns droplets faster than ISS air | **+32 %** burning rate for a 3 mm droplet (95 % band -2 % to +77 %), methanol and heptane; labelled *extrapolation* (30 % O2 was tested only from 0.703 atm) | model (hybrid, 274 FLEX tests) |
+| P2 | A Moon-base atmosphere burns droplets faster than ISS air | **+32 %** burning rate for a 3 mm droplet (95 % band -2 % to +77 % for methanol, -2 % to +79 % for heptane); labelled *extrapolation* (30 % O2 was tested only from 0.703 atm) | model (hybrid, 274 FLEX tests) |
 | S4 | At 30 % O2 droplet flames put themselves out less often | the flame burned the droplet out without extinguishing in **54 % of 13** N2 tests at O2 >= 30 %, vs **14 % of 58** at O2 <= 21 % | NASA data (FLEX) |
 | P1 | More oxygen burns fuel faster | O2 21 % -> 30 % changes the burning rate by **+44 %** (95 % CI +39 % to +55 %), 257 FLEX tests | NASA data (FLEX) |
 | D1 | Burning solids release CO - detect gases, not only smoke | CO rose by a median **45 ppm**, 90th percentile 413 ppm, maximum 575 ppm per test, 118 BASS-II tests | NASA data (BASS-II) |
@@ -174,7 +175,7 @@ needs a free Google Gemini key in the environment (`GEMINI_API_KEY`); everything
 ## Project structure
 
 ```
-app/                Streamlit dashboard: main.py, views/ (9 pages), flame animation, EN/RU texts
+app/                Streamlit dashboard: main.py, views/ (10 pages), animations, glossary, EN/RU texts
 src/fif/
   data/             parsers, schema, cleaning, raw-file registry
   physics/          droplet burning (Law & Williams), properties, mixing rules, flame temperature
@@ -186,7 +187,7 @@ data/raw/           NASA files as downloaded (sha256 in data/catalog.yaml)
 data/processed/     clean tables used by models and app
 models/             trained models (joblib)
 scripts/            reproducible steps (build, train, validate, insights, screenshots)
-tests/              165 tests: data, physics, models, validation, insights, app (EN/RU), assistant
+tests/              190 tests: data, physics, models, validation, insights, app (EN/RU), assistant
 docs/               PHYSICS, MODEL_CARD, VALIDATION, INSIGHTS, DECISIONS (ADR log), WORKLOG, SUBMISSION, ...
 ```
 
@@ -199,7 +200,8 @@ docs/               PHYSICS, MODEL_CARD, VALIDATION, INSIGHTS, DECISIONS (ADR lo
   extrapolation (just below the tested pressure for 30 % O2).
 - The flame animation's size uses quasi-steady theory (it overestimates measured flames) and its shape is illustrative.
 - The AI assistant can attach a real number to a wrong label; the cited excerpts are shown under each answer.
-- Next: spread rates in Moon-base air (30 % O2), Mars gravity, the FM2 lunar results when published.
+- Next: measured spread rates in Moon-base air (30 % O2; now scaled with theory), Mars gravity, the FM2 lunar results
+  when published.
 
 ## Use of AI
 

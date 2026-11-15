@@ -53,3 +53,18 @@ Sources: GitHub repository search API (query "flame in freefall"); READMEs of OS
 Mohammed-Ayman-2023/Flame-in-FreeFall-NASA-Space-Apps, WingManOO7/ignis-lab, mnb60704-netizen/flex-explorer,
 hibawaheed/ember-atlas, Faruk042/Nasa, Moaz-Hassanein/Flame-in-Freefall, Team-Efesto/Flame-in-freefall,
 z1xO/flame-in-freefall, subhansh-dev/fleur; https://arxiv.org/pdf/2509.03347; https://discovery-pp.ucl.ac.uk/10106831/1/Xi-et-al-Deposited.pdf
+
+## 5. Comparison with nasaprojecthsociety2.netlify.app (checked 2026-11-15 15:47-15:52 UTC+5)
+
+Ruslan asked for a comparison with https://nasaprojecthsociety2.netlify.app/#home ("Flame in Freefall - knowledge base
+and FlameAI agent"). Rendered in a headless browser; pages Home, Research catalog, Earth vs microgravity and FlameAI
+read; one question asked to the agent. No code was copied.
+
+| Aspect | That site | Prometheus-0g |
+|---|---|---|
+| Core | Knowledge base: 25 catalog entries (13 experiments, 4 models, 3 facilities, 2 technologies, 2 incidents, 1 program), timeline, 14 topic tags | Analysis of PSI data tables: FLEX, ACME CFI-G, BASS-II, SAME-R; 24 PSI investigations ranked |
+| NASA PSI data | The pages read do not mention PSI or its data tables; sources are articles (NASA, ZARM/ESA, publications) | 276 FLEX tests checked cell by cell against NASA/TP-2015-216046 (3288 cells, 0 differences) |
+| Model | Simplified thin-fuel flammability model ("calibrated to BASS-II and Ferkul 2026"); sliders for gravity, pressure, O2, ventilation; no validation shown. At "ISS, no flow" it shows "Radiative loss fraction 1.671" - a fraction above 1 | Physics + ML hybrid with grouped CV and leave-a-class-out tests; failures shown |
+| Moon atmosphere | 8.2 psia / 34 % O2 ("Exploration Atmosphere") | 30 % O2 at 10.2 psi, as written in the challenge text (docs/challenge/CHALLENGE.md) |
+| AI | "Offline" rule-based agent in the browser; a language model needs the user's own key. Asked "How much faster does a methanol droplet burn at 30% O2 and 10.2 psi than in ISS air?", it returned a generic fire-safety audit (requirements, response logic, 5x5 risk register) without a burning-rate number | Gemini assistant limited to our results and 12 NASA reports, with checked citations |
+| Strengths over us | Breadth (cool flames, soot, drop towers, Saffire, SoFIE, Exploration Atmosphere); engineering outputs ("shall" requirements, risk register, response logic); interactive Earth vs microgravity view with Moon/Mars presets; polished design | - |

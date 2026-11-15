@@ -485,6 +485,7 @@ RU = {
     "This answer has no source citations - treat it with caution.": "В этом ответе нет ссылок на источники - относитесь к нему осторожно.",
     "Sources ({n})": "Источники ({n})",
     "Source excerpts ({n})": "Фрагменты источников ({n})",
+    'A heptane droplet burning on the lunar surface - our model, rendered in the app.': 'Капля гептана горит на поверхности Луны - наша модель, отрисованная в приложении.',
     "Gravity for all protection results": "Гравитация для всех результатов защиты",
     "A · Firebreak": "A · Противопожарная преграда",
     "B · Detectors and extinguishers": "B · Датчики и огнетушители",

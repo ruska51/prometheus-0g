@@ -747,3 +747,12 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   text, no monospaced labels; text in a reading column (74 characters); metrics as large figures over a thin rule, no
   boxes; evidence badges as quiet labels with a coloured dot instead of filled pills; the AI pilot as one dark round
   button. Paper #F7F5F0, ink #16181C, accent #C8501D.
+
+## ADR-064: "Science agency" look
+- Date/time: 2026-11-15 22:33-22:37
+- Stage: post-12
+- Context: Ruslan: the editorial version still felt machine-made; the problem is not the copy. Asked for a reference,
+  he chose "a science site of NASA / ESA" (mood only - no agency logos, colours or fonts are copied).
+- Consequences: white pages, a dark cover band on the home page with the title and a still of our own lunar-surface
+  flame (app/static/hero_flame.png, cropped from the app's screenshot), bold grotesque type (Public Sans 700-800) for
+  headings and big figures, 3 px black rules above figures and steps, square corners, one red-orange accent #D9461E.

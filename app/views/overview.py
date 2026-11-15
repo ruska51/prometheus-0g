@@ -22,16 +22,24 @@ from theme import kicker
 
 from fif.insights.flame_sim import ATMOSPHERES
 
-kicker(t("NASA Space Apps 2026 · Flame in Freefall · Team The Catalyst"))
-st.title(t("Prometheus-0g - Fire on the Moon"))
-st.markdown(
-    "**"
-    + t("Physics-first, AI-assisted fire-safety insights from NASA microgravity combustion experiments.")
-    + "**  \n"
-    + t(
-        "NASA's ISS fire experiments, verified and turned into ranked fire-safety insights for spacecraft, stations and Moon bases."
+with st.container(key="hero"):  # dark cover band, like a space-agency science page (ADR-064)
+    h_text, h_img = st.columns([1.7, 1], vertical_alignment="center")
+    with h_text:
+        kicker(t("NASA Space Apps 2026 · Flame in Freefall · Team The Catalyst"))
+        st.title(t("Prometheus-0g - Fire on the Moon"))
+        st.markdown(
+            "**"
+            + t("Physics-first, AI-assisted fire-safety insights from NASA microgravity combustion experiments.")
+            + "**  \n"
+            + t(
+                "NASA's ISS fire experiments, verified and turned into ranked fire-safety insights for spacecraft, stations and Moon bases."
+            )
+        )
+    h_img.image(
+        str(ROOT / "app" / "static" / "hero_flame.png"),
+        caption=t("A heptane droplet burning on the lunar surface - our model, rendered in the app."),
+        use_container_width=True,
     )
-)
 
 
 # ---- the headline answer (ADR-043): every number from fif.insights.moon
@@ -39,8 +47,7 @@ with st.container(border=True):
     head, pick = st.columns([3, 1])
     head.markdown(
         f"<div class='kicker'>{t('A fire on a Moon base, compared with the ISS')}</div>"
-        "<div style='font-family:Newsreader,Georgia,serif;font-size:2.4rem;font-weight:500;line-height:1.12;"
-        "letter-spacing:-.015em;color:#16181c;margin:.1rem 0 .3rem'>"
+        "<div style='font-size:2.3rem;font-weight:800;line-height:1.1;letter-spacing:-.02em;color:#0b0d12;margin:.1rem 0 .3rem'>"
         f"{t('Faster, hotter, and less likely to go out by itself.')}</div>",
         unsafe_allow_html=True,
     )

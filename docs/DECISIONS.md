@@ -461,7 +461,7 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Sources: docs/insights.json (S4), fif.insights.moon, docs/DEMO_SCRIPT.md
 
 ## ADR-047: Assistant answers stream; per-request timeout; warm-up
-- Date/time: 2026-11-15 09:15-09:30
+- Date/time: 2026-11-15 09:20-09:30
 - Stage: post-12 (talk day)
 - Context: Ruslan saw the assistant spinner for a long time and asked that it answer fast and correctly, as requested
   the day before (ADR-045). Measured on the live app before the change: 6.6 s and 6.0 s per answer (gemini-3.6-flash,

@@ -225,6 +225,6 @@ According to grouped cross-validation, our hybrid model has a typical error of a
   for the answer and its key numbers first (at most 120 words), and the page shows citations as superscript numbers with
   a numbered source list. Covered by offline tests (tests/test_assistant.py); the live 10-question run above predates
   this change and has not been repeated yet (no API key on the development machine).
-- 2026-11-15 09:30 (ADR-047): answers are streamed (same prompt, retrieval and checks); each request times out after
+- 2026-11-15 09:25 (ADR-047): answers are streamed (same prompt, retrieval and checks); each request times out after
   20 s and falls through to the next model. Live latency before the change: 6.6 s and 6.0 s for two questions
   (gemini-3.6-flash).

@@ -78,15 +78,16 @@ and watch it spread at the flame-spread rates NASA measured for those materials 
 gravity (the LUCI sounding rocket) and on Earth, in test air or, scaled with NASA's flame-spread theory, in any cabin
 atmosphere; the same fire burns side by side in the three gravities, the page shows when the flame reaches the hatch
 in each case, what the fire does to the module air (a well-mixed zone model of the kind fire engineers use: oxygen,
-CO2, heat and fire power, from NASA's oxygen and heat-release data), and searches for the 50 cm metal strip that best
-protects the hatch (from this fire or from a fire starting anywhere; the ventilation direction counts in
-microgravity), what NASA has found about solid materials at lunar gravity (quoted from the reports) and a seven-point
-fire-safety checklist with the evidence for each point. It is a sketch on measured rates, not a fire simulation, and
-says so. There is a risk map of oxygen against pressure, a ranked and searchable catalog with a comparison matrix of
-all 24 PSI combustion investigations, and a data explorer where every raw NASA row can be downloaded. And you can
-simply ask: "Ask the data" is an AI assistant that answers with numbers from our results and 12 public NASA reports,
-shows the source of every statement, and says plainly when the data do not cover a question. The app opens in English
-and switches to Russian, and its dark style matches the demo slides.
+CO2, heat and fire power, from NASA's oxygen and heat-release data; its oxygen-to-CO2 chemistry is checked against 66
+BASS-II burns, where the measured CO2 + CO per O2 is 0.833, exactly the 5/6 that PMMA chemistry predicts), and
+searches for the 50 cm metal strip that best protects the hatch (from this fire or from a fire starting anywhere; the
+ventilation direction counts in microgravity), what NASA has found about solid materials at lunar gravity (quoted from
+the reports) and a seven-point fire-safety checklist with the evidence for each point. It is a sketch on measured
+rates, not a fire simulation, and says so. There is a risk map of oxygen against pressure, a ranked and searchable
+catalog with a comparison matrix of all 24 PSI combustion investigations, and a data explorer where every raw NASA row
+can be downloaded. And you can simply ask: "Ask the data" is an AI assistant that answers with numbers from our
+results and 12 public NASA reports, shows the source of every statement, and says plainly when the data do not cover a
+question. The app opens in English and switches to Russian, and its dark style matches the demo slides.
 
 **Benefits and impact.** Habitat and rover designers get measured, sourced reasons to plan for fires that are less
 likely to go out on their own: suppress at once, sense CO alongside smoke, and do not rely on Earth-gravity material
@@ -114,7 +115,7 @@ logos or branding are used.
 
 **Tools.** Python 3.12, pandas, NumPy, SciPy, scikit-learn (Gaussian processes, logistic regression, gradient
 boosting), Cantera, pdfplumber, Streamlit, Plotly, WebGL (flame animation), Google Gemini API (assistant), Playwright
-(screenshots, slide PDF), pytest and ruff (185 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
+(screenshots, slide PDF), pytest and ruff (186 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
 Apache-2.0; NASA data CC0 / public domain. One command rebuilds data, models, insights and tests from the raw NASA
 files.
 
@@ -200,7 +201,7 @@ the Space Apps Project Submission Guide).
 | High-Level Project Summary | 180 | 1016 |
 | Link to Project Demo | 24 | 234 |
 | Link to Final Project | 7 | 115 |
-| Detailed Project Description | 1203 | 7064 |
+| Detailed Project Description | 1229 | 7220 |
 | NASA Data | 295 | 1891 |
 | Space Agency Partner & Other Data | 85 | 627 |
 | Use of Artificial Intelligence | 190 | 1177 |

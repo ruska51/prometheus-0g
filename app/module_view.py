@@ -67,7 +67,7 @@ function fire(age,win){ const a=age/win; if(a>=2) return [[24,16,14],0];
   return [[24,16,14],0];
 }
 function noise(x,y,t){ return 0.5+0.5*Math.sin(x*0.9+t*7.3)*Math.sin(y*1.3-t*5.1); }
-let T=0, speed=1, playing=true, last=null; const TEND=D.t_end*1.05, DUR=20; // seconds of animation at 1x
+let T=0, speed=1, playing=false, last=null; const TEND=D.t_end*1.05, DUR=20; // seconds of animation at 1x
 function draw(){
   panels.forEach(p=>{
     const {ctx,gctx,cv,e}=p, w=cv.width, h=cv.height;
@@ -102,6 +102,10 @@ document.getElementById('play').onclick=()=>{ if(T>=TEND){T=0;} playing=!playing
 document.getElementById('seek').oninput=(ev)=>{ T=TEND*ev.target.value/1000; playing=false; document.getElementById('play').textContent=L.play; draw(); };
 document.querySelectorAll('button.s').forEach(b=>b.onclick=()=>{ speed=+b.dataset.s; document.querySelectorAll('button.s').forEach(q=>q.classList.toggle('on',q===b)); });
 draw(); requestAnimationFrame(loop);
+// start when the animation scrolls into view (it would otherwise be over before anyone sees it)
+document.getElementById('play').textContent=L.play;
+try{ new IntersectionObserver((es)=>{ es.forEach(en=>{ if(en.isIntersecting && T===0 && !playing){ playing=true; document.getElementById('play').textContent=L.pause; } }); }, {threshold:0.4}).observe(document.getElementById('panels')); }
+catch(err){ playing=true; }
 </script></body></html>"""
 
 CODE = {".": 0, "M": 1, "F": 2, "A": 3, "H": 4}

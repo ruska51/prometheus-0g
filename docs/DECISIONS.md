@@ -529,4 +529,7 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Consequences (step 1): when Gemini fails or no key is set, the assistant quotes the most relevant sentences of our
   result blocks and NASA report excerpts (deterministic, numbered sources, sentences with numbers preferred) with a
   note that no AI was used; off-topic questions get the coverage note. The page works without a key.
+  Steps 2-4 (one page, "Module fire"): module-wall editor and fire-spread sketch on measured NASA rates (Saffire,
+  LUCI; PHYSICS.md section 10b), five verbatim NASA findings on solids at lunar gravity, 7-item checklist with the
+  evidence for each item. Applicable as a sketch only: rates exist for thin fabric and acrylic in air, not for 30 % O2.
 - Sources: https://www.spaceappschallenge.org/resources/project-submission-guide/ (read 2026-11-15)

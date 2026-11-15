@@ -137,6 +137,17 @@ What is left (size, He, CO2 trends) is what the per-fuel calibration $c_f$ and t
 - Extinction (only proxies); cool flames (heptane, TP-FLEX notes); disruption; drift convection.
 - No textbook worked examples could be used for tests (Turns, Law, Glassman, PAKhT texts not accessible to Claude); tests check NIST and NASA source values, limits and monotonicity.
 
+## 10b. Module fire sketch (ADR-049)
+
+Earliest flame arrival over a wall grid (10 cm cells, 8 neighbours) by Dijkstra's algorithm: a step into a fabric or
+acrylic cell takes distance / v, with v the measured spread rate along the flow ("fast": upward in gravity, downstream
+with ventilation) or in any other direction ("slow"). Rates (mm/s, fast / slow): microgravity 20 cm/s flow, SIBAL
+fabric 1.8 / 1.3, thick PMMA 0 (flames anchored) - NTRS 20170008805 (Saffire); lunar gravity, fabric 1.1 / 0.9, PMMA
+1.5 / 0.6 - NTRS 20250010653 (LUCI); 1 g, fabric 2.8 / 1.5, PMMA 4.0 / 0 - same report. Not modelled: radiative
+preheating, oxygen depletion, smoke, suppression, jumps across gaps, 3-D geometry. Rates were measured in air
+(21-22 % O2): spread in Moon-base air (30 % O2) is expected to be faster, so times are upper bounds. Code:
+src/fif/physics/module_fire.py; tests check every rate against the report text (tests/test_module_fire.py).
+
 ## 11. References
 
 - Law, C. K.; Williams, F. A. Combustion and Flame 19 (1972) 393-405, DOI 10.1016/0010-2180(72)90009-0 - Eqs. (1), (4), (9); pp. 394-395, 396, 399, 403, 404.

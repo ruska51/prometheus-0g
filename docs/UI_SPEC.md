@@ -27,6 +27,14 @@ Evidence badges everywhere: `NASA data` / `model` / `physics theory` / `NASA lit
 - 10-second message: "A Moon-base atmosphere burns about a third faster than ISS air - and the tool tells you how far it is from tested conditions."
 - "See it burn" window (ADR-035): two synchronized canvas panels - left = the selected atmosphere in microgravity, right = a selectable comparison (ISS air, Earth sea-level air at 1 g, Moon base, spacesuit, or the user's settings at 1 g). Real-time playback (1x / 2x / 4x, pause, replay). Shown values come from `fif.insights.flame_sim`: droplet diameter by the d^2-law, burn time, flame-out with unburned fraction (inside tested conditions only), flame temperature, soot colour (blackbody at T_f), theoretical flame size on a common relative scale with the NASA caveat; 1 g flame shape, flicker and sparks are labelled illustrative.
 
+### 3b. Module fire (ADR-049)
+- Goal: show how layout and gravity change the timeline of a cabin fire, with measured NASA spread rates.
+- Components: wall editor (40 x 20 cells of 10 cm; presets crew quarters / lab racks / stowage; click = ignition point,
+  box-select = paint fabric / acrylic / metal / open / hatch); time to reach the hatch for lunar gravity, microgravity
+  with 20 cm/s ventilation and Earth; Plotly animation with time slider; area-vs-time curves; rates and limits
+  expander; five quoted NASA findings on solids at lunar gravity; 7-item checklist with evidence labels.
+- 10-second message: "On the Moon the flame may be slower, but it lasts longer and burns materials that go out on Earth."
+
 ### 4. Risk map
 - Goal: visual overview of the O2 x pressure space.
 - Components: heatmap of hybrid burning rate relative to ISS air over O2 0.12-0.40 x pressure 0.3-1.1 atm (fuel selector); tested FLEX points overlaid; cabin atmospheres (ISS, Moon base, spacesuit) as labelled markers; region outside tested conditions greyed/hatched.

@@ -43,3 +43,4 @@ images or video.
 | 2026-11-14 | post-12 | Claude Code (Anthropic, Claude Opus) | Headline rename, slide-deck rewrite + Russian talk text, slide PDF, S4 wording, submission texts rewrite | Ruslan Sharafutdinov (ADR-046; texts to be proofread by Ruslan) |
 | 2026-11-15 | post-12 | Claude Code (Anthropic, Claude Opus) | Assistant streaming, timeout and warm-up | Ruslan Sharafutdinov (ADR-047) |
 | 2026-11-15 | post-12 | Claude Code (Anthropic, Claude Opus) | Keep-awake script and workflow, README top link | Ruslan Sharafutdinov (ADR-048) |
+| 2026-11-15 | post-12 | Claude Code (Anthropic, Claude Opus) | Assistant no-AI fallback; module-fire page and spread sketch; checklist texts | Ruslan Sharafutdinov (ADR-049) |

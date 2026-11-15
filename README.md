@@ -49,6 +49,10 @@ ranked recommendations - for cabin-materials engineers, crew-safety planners and
   and the nearest real NASA tests.
 - **See it burn:** an animation of the same droplet in two atmospheres (for example microgravity vs the lunar surface);
   droplet shrinkage, burn time, extinction and flame temperature come from the model.
+- **Fire in a Moon-base module:** draw a module wall (fabric, acrylic, metal, hatch), set the ignition point and
+  watch the flame spread at the rates NASA measured for those materials in microgravity (Saffire), at lunar gravity
+  (LUCI sounding rocket) and on Earth; time until the flame reaches the hatch in all three, what NASA has found about
+  solids at lunar gravity (quoted), and a 7-item fire-safety checklist with the evidence for each item.
 - **20 ranked insights** for prevention, detection and suppression, plus lessons from Apollo 1, Apollo 13 and Mir and
   benefits on Earth (NASA spinoffs).
 - **All 24 PSI combustion investigations** ranked by relevance to crew fire safety, with a comparison matrix of what
@@ -58,6 +62,8 @@ ranked recommendations - for cabin-materials engineers, crew-safety planners and
 - **Honest validation page** and a data explorer with every raw NASA row downloadable.
 
 ![See it burn: Moon base in microgravity vs on the lunar surface (heptane droplet)](docs/figures/ui/flame_window_moon_heptane.png)
+
+![Fire in a Moon-base module: the same wall at lunar gravity, 13.7 min after ignition](docs/figures/ui/module_fire.png)
 
 ## Key insights (Moon-base set)
 
@@ -185,12 +191,13 @@ docs/               PHYSICS, MODEL_CARD, VALIDATION, INSIGHTS, DECISIONS (ADR lo
 ## Limitations and future work
 
 - Quantitative models cover two fuels (methanol, n-heptane) from one experiment at ISS ambient temperature; solids are
-  covered only through CO measurements and NASA literature (the PSI tables hold no flame-spread rates).
+  covered through CO measurements, NASA literature and the module sketch, which uses flame-spread rates measured on thin
+  fabric and acrylic samples in air (the PSI tables hold no flame-spread rates); it is not a fire simulation.
 - PSI has no partial-gravity data: lunar numbers are physics bounds, and the Moon-base atmosphere is labelled
   extrapolation (just below the tested pressure for 30 % O2).
 - The flame animation's size uses quasi-steady theory (it overestimates measured flames) and its shape is illustrative.
 - The AI assistant can attach a real number to a wrong label; the cited excerpts are shown under each answer.
-- Next: solid-material flame spread from BASS-II / Saffire reports, Mars gravity, the FM2 lunar results when published.
+- Next: spread rates in Moon-base air (30 % O2), Mars gravity, the FM2 lunar results when published.
 
 ## Use of AI
 

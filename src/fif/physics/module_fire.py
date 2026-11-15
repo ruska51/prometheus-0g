@@ -1,0 +1,231 @@
+"""Fire spread over the wall of a Moon-base module, from measured NASA flame-spread rates (ADR-049, step 2).
+
+What it is: a wall of a module (racks, stowage bags, panels) drawn as a grid of 10 cm cells. Each flammable cell takes
+fire from a burning neighbour after (distance / spread rate), with the rate measured by NASA for that material in that
+gravity; the earliest arrival time of the flame in every cell is found with Dijkstra's shortest-path algorithm.
+
+What it is not: a CFD fire model. It ignores heating of neighbouring materials, oxygen depletion, smoke, suppression,
+the 3-D shape of a real module and flames jumping across gaps (only touching cells, including diagonal ones, ignite).
+The rates were measured on thin fabric and acrylic samples in air (21-22 % O2); in Moon-base air (30 % O2) a flame is
+expected to spread faster (not measured), so the times shown are upper bounds. Display label: "model (sketch on
+measured NASA rates)".
+
+Rates (mm/s), "fast" = along the flow (upward in gravity, downstream with ventilation), "slow" = every other direction:
+
+* Microgravity, ventilation 20 cm/s - NTRS 20170008805 (Saffire, large-scale spacecraft flammability tests): SIBAL
+  cotton/fiberglass fabric, 40.6 cm wide sample, "average concurrent-flow flame spread rate is 1.8 mm/s. The
+  opposed-flow flame average spread rate 1.3 mm/s". Thick PMMA (Saffire-2): "The flames remain anchored at the base of
+  the sample" -> no spread (0).
+* Lunar gravity - NTRS 20250010653 (LUCI rotating sounding rocket): SIBAL "Partial-G (mm/s)": flame base 0.9, flame
+  tip 1.1; PMMA flame tip 0.15 cm/s = 1.5 mm/s; PMMA flame base "increases linearly from 0 to ~.6 mm/s" -> 0.6.
+* Earth 1 g - same report, 1-G column: SIBAL flame base 1.5, flame tip 2.8 mm/s; PMMA flame tip 0.40 cm/s = 4.0 mm/s,
+  "Flame base location is ~constant" -> 0.
+
+Units: cells of CELL_MM, times in s, rates in mm/s.
+"""
+
+from __future__ import annotations
+
+import heapq
+import math
+from dataclasses import dataclass
+
+import numpy as np
+
+CELL_MM = 100.0  # one grid cell = 10 cm
+FLAMMABLE = ("F", "A")  # fabric (SIBAL-type cotton/fiberglass), acrylic (PMMA)
+CODES = {
+    "F": "Fabric (cotton/fiberglass, e.g. stowage bags, clothing)",
+    "A": "Acrylic (PMMA) panel",
+    "M": "Metal / non-flammable",
+    ".": "Open space",
+    "H": "Hatch (escape route)",
+}
+
+
+@dataclass(frozen=True)
+class Environment:
+    key: str
+    label: str
+    fast_axis: tuple[int, int]  # (dx, dy) of the flow: up in gravity, downstream with ventilation
+    rates: dict[str, tuple[float, float]]  # material -> (fast, slow) mm/s
+    source: str
+    note: str
+
+
+ENVIRONMENTS = {
+    "iss": Environment(
+        "iss",
+        "Microgravity, ventilation 20 cm/s (ISS)",
+        (1, 0),  # ventilation blows along the wall, left to right
+        {"F": (1.8, 1.3), "A": (0.0, 0.0)},
+        "NTRS 20170008805 (Saffire-1 and -2, microgravity, 20 cm/s air flow)",
+        "Acrylic: flames stayed anchored at the base of thick PMMA (no spread).",
+    ),
+    "moon": Environment(
+        "moon",
+        "Lunar gravity (1/6 g)",
+        (0, 1),  # buoyant flow: upward
+        {"F": (1.1, 0.9), "A": (1.5, 0.6)},
+        "NTRS 20250010653 (LUCI, rotating sounding rocket at lunar gravity)",
+        "Acrylic base spread grew from 0 to about 0.6 mm/s; 0.6 is used.",
+    ),
+    "earth": Environment(
+        "earth",
+        "Earth gravity (1 g)",
+        (0, 1),
+        {"F": (2.8, 1.5), "A": (4.0, 0.0)},
+        "NTRS 20250010653 (LUCI 1-g reference burns)",
+        "Acrylic: the flame base stayed in place, only the tip spread upward.",
+    ),
+}
+
+# Layouts: one string per row, top row first ("up" = towards row 0). 40 x 20 cells = a 4 m x 2 m wall section.
+PRESETS = {
+    "crew": [
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+        "M..FFFFFF....AAAAAA....FFFFFFFFF......HM",
+        "M..FFFFFF....AAAAAA....FFFFFFFFF......HM",
+        "M..FFFFFF....AAAAAA....FFFFFFFFF......HM",
+        "M..MMMMMM....AAAAAA....FFFFFFFFF......HM",
+        "M..FFFFFF....AAAAAA....FFFFFFFFF......HM",
+        "M..FFFFFF....MMMMMM....FFFFFFFFF......HM",
+        "M..FFFFFF..............FFFFFFFFF......HM",
+        "M..MMMMMM..............FFFFFFFFF......HM",
+        "M..FFFFFFFFFFFFFFFF....FFFFFFFFF......HM",
+        "M..FFFFFFFFFFFFFFFF....FFFFFFFFFFFFFFFHM",
+        "M..FFFFFFFFFFFFFFFF....FFFFFFFFFFFFFFFHM",
+        "M..MMMMMMMMMMMMMMMM....FFFFFFFFFFFFFFFHM",
+        "M..FFFFF..FFFFF........FFFFFFFFFFFFFFFHM",
+        "M..FFFFF..FFFFF........FFFFFFFFFFFFFFFHM",
+        "M..FFFFF..FFFFF........MMMMMMMMMMMMM..HM",
+        "M.....................................HM",
+        "M.....................................HM",
+        "M.....................................HM",
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+    ],
+    "lab": [
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+        "MAAAAAAAAAAMFFFFFFFFFFMAAAAAAAAAMFFFFF.H",
+        "MAAAAAAAAAAMFFFFFFFFFFMAAAAAAAAAMFFFFF.H",
+        "MAAAAAAAAAAMFFFFFFFFFFMAAAAAAAAAMFFFFF.H",
+        "MAAAAAAAAAAMFFFFFFFFFFMAAAAAAAAAMFFFFF.H",
+        "MMMMMMMMMMMMFFFFFFFFFFMMMMMMMMMMMFFFFF.H",
+        "MFFFFFFFFFFMFFFFFFFFFFMFFFFFFFFFMFFFFF.H",
+        "MFFFFFFFFFFMMMMMMMMMMMMFFFFFFFFFMFFFFF.H",
+        "MFFFFFFFFFFMFFFFFFFFFFMFFFFFFFFFMMMMMM.H",
+        "MFFFFFFFFFFMFFFFFFFFFFMFFFFFFFFFM.....FH",
+        "MMMMMMMMMMMMFFFFFFFFFFMMMMMMMMMMM.....FH",
+        "MAAAAAAAAAAMFFFFFFFFFFMAAAAAAAAAM.....FH",
+        "MAAAAAAAAAAMMMMMMMMMMMMAAAAAAAAAM.....FH",
+        "MAAAAAAAAAAMFFFFFFFFFFMAAAAAAAAAM.....FH",
+        "MAAAAAAAAAAMFFFFFFFFFFMAAAAAAAAAM.....FH",
+        "MMMMMMMMMMMMFFFFFFFFFFMMMMMMMMMMM.....FH",
+        "M...........FFFFFFFFFFFFFFFFFFFFFFFFFFFH",
+        "M...........FFFFFFFFFFFFFFFFFFFFFFFFFFFH",
+        "M...........FFFFFFFFFFFFFFFFFFFFFFFFFFFH",
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+    ],
+    "stowage": [
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+        "MFFFFFFF.FFFFFFF.FFFFFFF.FFFFFFF.FFFFF.H",
+        "MFFFFFFF.FFFFFFF.FFFFFFF.FFFFFFF.FFFFF.H",
+        "MFFFFFFF.FFFFFFF.FFFFFFF.FFFFFFF.FFFFF.H",
+        "MFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFH",
+        "MFFFFFFF.FFFFFFF.FFFFFFF.FFFFFFF.FFFFF.H",
+        "MFFFFFFF.FFFFFFF.FFFFFFF.FFFFFFF.FFFFF.H",
+        "MFFFFFFF.FFFFFFF.FFFFFFF.FFFFFFF.FFFFF.H",
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.H",
+        "MFFFFFFF.FFFFFFF.FFFFFFF.FFFFFFF.FFFFF.H",
+        "MFFFFFFF.FFFFFFF.FFFFFFF.FFFFFFF.FFFFF.H",
+        "MFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFH",
+        "MFFFFFFF.FFFFFFF.FFFFFFF.FFFFFFF.FFFFF.H",
+        "MFFFFFFF.FFFFFFF.FFFFFFF.FFFFFFF.FFFFF.H",
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM.H",
+        "M......................................H",
+        "M......................................H",
+        "M......................................H",
+        "M......................................H",
+        "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+    ],
+}
+
+IGNITION = {"crew": (14, 24), "lab": (16, 14), "stowage": (12, 3)}  # default ignition cell (row, col)
+
+
+def grid(rows: list[str]) -> np.ndarray:
+    """Layout strings -> 2-D array of single-character codes (row 0 = top)."""
+    width = max(len(r) for r in rows)
+    return np.array([list(r.ljust(width, ".")) for r in rows])
+
+
+def _rate(env: Environment, material: str, dx: int, dy: int) -> float:
+    """Spread rate (mm/s) into a cell of ``material`` along the step (dx, dy); dy < 0 is a step up (row index falls)."""
+    if material not in env.rates:
+        return 0.0
+    fast, slow = env.rates[material]
+    fx, fy = env.fast_axis
+    along = dx * fx + (-dy) * fy  # positive = with the flow (up is -dy in row coordinates)
+    return fast if along > 0 else slow
+
+
+def arrival_times(layout: np.ndarray, ignition: tuple[int, int], env: Environment) -> np.ndarray:
+    """Earliest time (s) at which the flame reaches each cell; inf where it never does. ``ignition`` = (row, col) of a
+    flammable cell. Steps go to the 8 neighbours (diagonal step = sqrt(2) cells)."""
+    h, w = layout.shape
+    t = np.full((h, w), math.inf)
+    r0, c0 = ignition
+    if layout[r0, c0] not in FLAMMABLE:
+        return t
+    t[r0, c0] = 0.0
+    heap = [(0.0, r0, c0)]
+    steps = [(dr, dc) for dr in (-1, 0, 1) for dc in (-1, 0, 1) if dr or dc]
+    while heap:
+        tc, r, c = heapq.heappop(heap)
+        if tc > t[r, c]:
+            continue
+        for dr, dc in steps:
+            rr, cc = r + dr, c + dc
+            if not (0 <= rr < h and 0 <= cc < w) or layout[rr, cc] not in FLAMMABLE:
+                continue
+            v = _rate(env, layout[rr, cc], dc, dr)
+            if v <= 0:
+                continue
+            tn = tc + CELL_MM * math.hypot(dr, dc) / v
+            if tn < t[rr, cc]:
+                t[rr, cc] = tn
+                heapq.heappush(heap, (tn, rr, cc))
+    return t
+
+
+def hatch_time(layout: np.ndarray, times: np.ndarray) -> float:
+    """Time (s) when the flame first reaches a cell touching the hatch (8-neighbourhood); inf if never."""
+    h, w = layout.shape
+    best = math.inf
+    for r, c in zip(*np.where(layout == "H"), strict=True):
+        for dr in (-1, 0, 1):
+            for dc in (-1, 0, 1):
+                rr, cc = r + dr, c + dc
+                if 0 <= rr < h and 0 <= cc < w:
+                    best = min(best, times[rr, cc])
+    return best
+
+
+def summary(layout: np.ndarray, times: np.ndarray) -> dict:
+    """Burnable area, area the flame reaches, time to reach it all, time to reach the hatch (cell area 0.01 m2)."""
+    cell_m2 = (CELL_MM / 1000) ** 2
+    flammable = np.isin(layout, FLAMMABLE)
+    reached = np.isfinite(times)
+    return {
+        "flammable_m2": float(flammable.sum() * cell_m2),
+        "reached_m2": float(reached.sum() * cell_m2),
+        "time_all_s": float(times[reached].max()) if reached.any() else 0.0,
+        "hatch_s": hatch_time(layout, times),
+    }
+
+
+def burned_area_curve(times: np.ndarray, t_grid: np.ndarray) -> np.ndarray:
+    """Area (m2) the flame has reached at each time of ``t_grid``."""
+    cell_m2 = (CELL_MM / 1000) ** 2
+    reached = np.sort(times[np.isfinite(times)])
+    return np.searchsorted(reached, t_grid, side="right") * cell_m2

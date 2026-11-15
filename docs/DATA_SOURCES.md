@@ -29,6 +29,7 @@ Format: ID | full reference | URL / DOI | what we took | license / terms | acces
 | CH-atm | Challenge page "Flame in Freefall" (pasted by Ruslan, docs/challenge/CHALLENGE.md): Moon base O2 "30% or greater" at "10.2 psi or less"; spacesuit "100% oxygen to only 4.3 psi"; sea level 14.7 psi | docs/challenge/CHALLENGE.md | Cabin-atmosphere comparison (INSIGHTS.md) | NASA Space Apps challenge text | 2026-11-14 |
 | TP-cabin-air | NASA/TP-2015-216046 Table I: FLEX tests "in cabin air", 0.21 O2, 0.005 CO2, 0.79 N2 at 1.0 atm | https://ntrs.nasa.gov/citations/20150023456 | ISS cabin-air reference atmosphere | NASA technical report | 2026-11-14 |
 | TM-BASS-II | "Burning and Suppression of Solids-II (BASS-II) Summary Report", NASA Technical Memorandum (NTRS 20210011385) | https://ntrs.nasa.gov/citations/20210011385 | Candidate source of flame-spread / extinction-velocity tables (stretch) | NASA technical report | 2026-11-14 |
+| SPREAD-rates | NTRS 20170008805 (Saffire large-scale spacecraft flammability tests) and NTRS 20250010653 (LUCI lunar-gravity sounding rocket); quotes from NTRS 20210020516, 20240008623, 20260000646 | https://ntrs.nasa.gov/citations/20170008805 ; https://ntrs.nasa.gov/citations/20250010653 | Flame-spread rates of SIBAL fabric and PMMA in microgravity (20 cm/s), lunar gravity and 1 g for the module-fire sketch; findings on solids at lunar gravity (ADR-049) | NASA technical reports (public use) | 2026-11-15 |
 
 ## 2. Candidate datasets (PSI Combustion Science, 24 investigations)
 

@@ -51,6 +51,7 @@ pages = [
     st.Page("views/insights.py", title=t("Insights"), icon=":material/insights:"),
     st.Page("views/assistant.py", title=t("Ask the data"), icon=":material/forum:"),
     st.Page("views/scenario.py", title=t("Moon-base scenario"), icon=":material/science:"),
+    st.Page("views/module.py", title=t("Module fire"), icon=":material/local_fire_department:"),
     st.Page("views/risk_map.py", title=t("Risk map"), icon=":material/map:"),
     st.Page("views/investigations.py", title=t("Investigations"), icon=":material/table_view:"),
     st.Page("views/data_explorer.py", title=t("Data explorer"), icon=":material/dataset:"),

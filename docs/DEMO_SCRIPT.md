@@ -15,7 +15,7 @@ https://github.com/ruska51/prometheus-0g/blob/main/docs/demo/prometheus-0g_slide
 | 3 | Faster, hotter, and less likely to go out by itself | +32 % burning rate, 14.1 s vs 18.5 s burn-out, self-extinction 46 % (n 13) vs 86 % (n 58), 2462 K (+238 K), evidence badges | The headline answer, each number labelled with its evidence |
 | 4 | Physics first, machine learning for the rest | Pipeline data -> physics -> model -> validation -> insights -> app; 276 tests verified (3288 cells, 0 differences); no leakage; what is new | How the numbers were made |
 | 5 | We tested the model on air it had never seen | Leave-a-class-out errors (physics / ML / hybrid) for He, CO2, ~0.7 atm, O2 >= 30 %; failures | Physics makes it 1.2-1.9x more accurate on unseen air |
-| 6 | All of it lives in one public dashboard | Moon-base scenario screenshot; five features; "summarize, rank, interpret" | What the user gets |
+| 6 | All of it lives in one public dashboard | Module-fire screenshot (crew-quarters wall at lunar gravity, time to the hatch in three gravities); five features; "summarize, rank, interpret" | What the user gets |
 | 7 | What a Moon base should do about it | Three actions; who it is for; NASA spinoffs; QR code to the live app | Impact and a call to try it |
 
 The talk at the Uralsk event is about 2-2.5 minutes in Russian (the local event's language); the speaker text is in the

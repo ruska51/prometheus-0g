@@ -15,14 +15,15 @@ Prometheus-0g
 
 ## High-Level Project Summary
 
-Before NASA builds a Moon base, it has to know what a fire would do in the air planned for it: 30 % oxygen at
-10.2 psi, richer than the ISS cabin, at one sixth of Earth's gravity. NASA has burned hundreds of fuel droplets on the
-ISS, but the results are scattered across 24 investigations in its Physical Sciences Informatics repository. We checked
-all 276 FLEX droplet tests against NASA's own report (not one difference) and built a model that starts from the
-physics of a burning droplet and lets machine learning correct only what theory misses; on atmospheres it never saw,
-it is 1.2-1.9 times more accurate than machine learning alone. The answer: in Moon-base air a fire burns about a third
+Before NASA builds a Moon base, it has to know what a fire would do in the air planned for it: 30 % oxygen at 10.2
+psi, richer than the ISS cabin, at one sixth of Earth's gravity. NASA has burned hundreds of fuel droplets on the ISS,
+but the results are scattered across 24 investigations in its Physical Sciences Informatics repository. We checked all
+276 FLEX droplet tests against NASA's own report (not one difference) and built a model that starts from the physics
+of a burning droplet and lets machine learning correct only what theory misses; on atmospheres it never saw, it is
+1.2-1.9 times more accurate than machine learning alone. The answer: in Moon-base air a fire burns about a third
 faster, runs hotter and goes out on its own less often. Our public dashboard shows the numbers, animates the flame,
-ranks 20 findings and 24 investigations, and has an AI assistant that answers only from NASA data.
+lets you sketch a Moon-base module and watch a fire spread at the rates NASA measured at lunar gravity, ranks 20
+findings and 24 investigations, and has an AI assistant that answers only from NASA data.
 
 ---
 
@@ -45,17 +46,17 @@ Source code, data and documentation: https://github.com/ruska51/prometheus-0g
 
 ## Detailed Project Description
 
-**What it does.** Prometheus-0g is a public web dashboard that summarizes, ranks and interprets NASA's
-microgravity combustion experiments and turns them into fire-safety advice for crewed habitats, above all the planned
-Moon base. Its home page opens with the answer: "Fire on the Moon: faster, hotter, and less likely to go out by
-itself." Take a 3 mm fuel droplet, the size NASA burned in its FLEX experiment. In Moon-base air it burns 32 % faster
-than in ISS air (our model; 95 % band -2 % to +77 %, marked as extrapolation), it is gone in 14.1 s instead of 18.5 s,
-and the flame is 238 K hotter. Most important, in NASA's own tests at 30 % oxygen or more the flame went out by itself
-in 46 % of cases, compared with 86 % at 21 % or less.
+**What it does.** Prometheus-0g is a public web dashboard that summarizes, ranks and interprets NASA's microgravity
+combustion experiments and turns them into fire-safety advice for crewed habitats, above all the planned Moon base.
+Its home page opens with the answer: "Fire on the Moon: faster, hotter, and less likely to go out by itself." Take a 3
+mm fuel droplet, the size NASA burned in its FLEX experiment. In Moon-base air it burns 32 % faster than in ISS air
+(our model; 95 % band -2 % to +77 %, marked as extrapolation), it is gone in 14.1 s instead of 18.5 s, and the flame
+is 238 K hotter. Most important, in NASA's own tests at 30 % oxygen or more the flame went out by itself in 46 % of
+cases, compared with 86 % at 21 % or less.
 
 **How it works.** We started with the data. The PSI tables of FLEX (droplets), ACME CFI-G (gas flames), BASS-II
-(burning solids) and SAME-R (smoke) are parsed and cleaned; anything odd is flagged, never quietly fixed, and every raw
-file is registered with a checksum. We checked all 276 FLEX tests against NASA/TP-2015-216046 cell by cell: 3288
+(burning solids) and SAME-R (smoke) are parsed and cleaned; anything odd is flagged, never quietly fixed, and every
+raw file is registered with a checksum. We checked all 276 FLEX tests against NASA/TP-2015-216046 cell by cell: 3288
 cells, no differences, and two tests missing from PSI were recovered from the report. Next comes physics: the classic
 quasi-steady theory of a burning droplet with the Law & Williams (1972) property rules, the flame temperature from
 chemical equilibrium with dissociation (Cantera with NASA thermodynamic data), and a buoyancy correction for Earth and
@@ -71,11 +72,17 @@ firefighters on Earth, complete the picture.
 
 **What users get.** You can build your own Moon-base atmosphere (any oxygen, pressure, diluent and droplet size) and
 see the burning rate, how reliable the prediction is and which real NASA tests are closest. You can watch the same
-droplet burn side by side in two atmospheres, with the animation driven by the model. There is a risk map of oxygen
-against pressure, a ranked and searchable catalog with a comparison matrix of all 24 PSI combustion investigations, and
-a data explorer where every raw NASA row can be downloaded. And you can simply ask: "Ask the data" is an AI assistant
-that answers with numbers from our results and 12 public NASA reports, shows the source of every statement, and says
-plainly when the data do not cover a question. The app opens in English and switches to Russian.
+droplet burn side by side in two atmospheres, with the animation driven by the model. On the Module fire page you draw
+a wall of a Moon-base module - fabric stowage bags, acrylic panels, metal racks, the hatch - pick where a fire starts
+and watch it spread at the flame-spread rates NASA measured for those materials in microgravity (Saffire), at lunar
+gravity (the LUCI sounding rocket) and on Earth; the page shows when the flame reaches the hatch in each case, what
+NASA has found about solid materials at lunar gravity (quoted from the reports) and a seven-point fire-safety
+checklist with the evidence for each point. It is a sketch on measured rates, not a fire simulation, and says so.
+There is a risk map of oxygen against pressure, a ranked and searchable catalog with a comparison matrix of all 24 PSI
+combustion investigations, and a data explorer where every raw NASA row can be downloaded. And you can simply ask:
+"Ask the data" is an AI assistant that answers with numbers from our results and 12 public NASA reports, shows the
+source of every statement, and says plainly when the data do not cover a question. The app opens in English and
+switches to Russian.
 
 **Benefits and impact.** Habitat and rover designers get measured, sourced reasons to plan for fires that are less
 likely to go out on their own: suppress at once, sense CO alongside smoke, and do not rely on Earth-gravity material
@@ -84,25 +91,26 @@ Researchers get a verified, reproducible FLEX dataset and an honest map of where
 interactive way to see how flames behave without gravity.
 
 **How it is creative.** Many dashboards summarize NASA's data; ours also predicts beyond it, and measures how well.
-The backbone is the classic theory of a burning droplet, and machine learning only learns the correction, so the
-model stays sensible in atmospheres nobody has tested yet. We found no paper or public tool that trains a
-physics-informed model on NASA's FLEX data and tests it on atmospheres it never saw. We also turned the data into the
-question a habitat designer actually asks - what would a fire do on a Moon base? - and answer it with numbers and with
-a flame you can watch burning in both atmospheres side by side, driven by the model.
+The backbone is the classic theory of a burning droplet, and machine learning only learns the correction, so the model
+stays sensible in atmospheres nobody has tested yet. We found no paper or public tool that trains a physics-informed
+model on NASA's FLEX data and tests it on atmospheres it never saw. We also turned the data into the question a
+habitat designer actually asks - what would a fire do on a Moon base? - and answer it with numbers and with a flame
+you can watch burning in both atmospheres side by side, driven by the model.
 
-**What we considered.** Scientific honesty first: the model uses only what is known before ignition, repeats of
-the same test regime never sit in both the training and the test set, every finding carries its type of evidence and
-its number of tests, predictions outside the tested range are marked as extrapolation, and the model's failures are
-shown in the app. Trust in the AI part: the assistant may use only our verified results and NASA reports, every
-statement links to its source, and numbers that cannot be found in the sources are flagged. Access: a free public web
-app that works on a phone, in English and Russian, with every raw NASA row downloadable; a limit of 10 assistant
-questions per visitor keeps the free API quota shared fairly. Reproducibility and rights: one command rebuilds
-everything from the raw NASA files; NASA data are public domain, our code is Apache-2.0, and no NASA logos or branding
-are used.
+**What we considered.** Scientific honesty first: the model uses only what is known before ignition, repeats of the
+same test regime never sit in both the training and the test set, every finding carries its type of evidence and its
+number of tests, predictions outside the tested range are marked as extrapolation, and the model's failures are shown
+in the app. Trust in the AI part: the assistant may use only our verified results and NASA reports, every statement
+links to its source, and numbers that cannot be found in the sources are flagged; if the free AI quota runs out, the
+assistant still answers by quoting the most relevant verified facts directly, without AI, instead of showing an error.
+Access: a free public web app that works on a phone, in English and Russian, with every raw NASA row downloadable; a
+limit of 10 assistant questions per visitor keeps the free API quota shared fairly. Reproducibility and rights: one
+command rebuilds everything from the raw NASA files; NASA data are public domain, our code is Apache-2.0, and no NASA
+logos or branding are used.
 
 **Tools.** Python 3.12, pandas, NumPy, SciPy, scikit-learn (Gaussian processes, logistic regression, gradient
 boosting), Cantera, pdfplumber, Streamlit, Plotly, WebGL (flame animation), Google Gemini API (assistant), Playwright
-(screenshots, slide PDF), pytest and ruff (165 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
+(screenshots, slide PDF), pytest and ruff (177 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
 Apache-2.0; NASA data CC0 / public domain. One command rebuilds data, models, insights and tests from the raw NASA
 files.
 
@@ -185,10 +193,10 @@ the Space Apps Project Submission Guide).
 | Field | Words | Characters |
 |---|---|---|
 | Project Name | 1 | 13 |
-| High-Level Project Summary | 161 | 912 |
+| High-Level Project Summary | 180 | 1016 |
 | Link to Project Demo | 24 | 234 |
 | Link to Final Project | 7 | 115 |
-| Detailed Project Description | 981 | 5777 |
+| Detailed Project Description | 1113 | 6538 |
 | NASA Data | 295 | 1891 |
 | Space Agency Partner & Other Data | 85 | 627 |
 | Use of Artificial Intelligence | 190 | 1177 |

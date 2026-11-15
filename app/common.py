@@ -27,7 +27,26 @@ EVIDENCE_COLORS = {
 }
 STATUS_COLORS = {"in range": "#15803D", "extrapolation": "#B45309", "unreliable": "#B91C1C"}
 STAGE_LABEL = {"prevention": "Prevention", "detection": "Detection", "suppression": "Suppression"}
-PLOT_TEMPLATE = "plotly_dark"
+PLOT_TEMPLATE = "prometheus"  # plotly_dark on a transparent background, so charts sit on the glass cards (ADR-056)
+
+
+def _register_template() -> None:
+    import plotly.graph_objects as go
+    import plotly.io as pio
+
+    if PLOT_TEMPLATE in pio.templates:
+        return
+    tpl = go.layout.Template(pio.templates["plotly_dark"])
+    tpl.layout.paper_bgcolor = "rgba(0,0,0,0)"
+    tpl.layout.plot_bgcolor = "rgba(10,15,30,0.35)"
+    tpl.layout.font = {"family": "Inter, sans-serif", "color": "#d8deea"}
+    tpl.layout.colorway = ["#FF7A1A", "#7FA6FF", "#38E8FF", "#C9D4FF", "#FFB627", "#2FD27A", "#E86BB5"]
+    tpl.layout.xaxis.gridcolor = tpl.layout.yaxis.gridcolor = "rgba(140,170,255,0.10)"
+    tpl.layout.xaxis.zerolinecolor = tpl.layout.yaxis.zerolinecolor = "rgba(140,170,255,0.18)"
+    pio.templates[PLOT_TEMPLATE] = tpl
+
+
+_register_template()
 RESULT_SCHEMA = 2  # 2: Russian fields reasons_ru / notes_ru (ADR-041)
 
 

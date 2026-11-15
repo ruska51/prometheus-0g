@@ -32,7 +32,7 @@ def _refresh_code() -> None:
     names = [
         n
         for n in list(sys.modules)
-        if n == "fif" or n.startswith("fif.") or n in ("i18n", "common", "flame_view", "module_view", "glossary")
+        if n == "fif" or n.startswith("fif.") or n in ("i18n", "common", "flame_view", "module_view", "glossary", "theme")
     ]
     for n in reversed(names):  # sys.modules keeps import order: reversed = dependencies before their importers
         try:
@@ -49,6 +49,10 @@ from i18n import language_selector, t  # noqa: E402
 
 st.set_page_config(page_title=t("Prometheus-0g - Fire on the Moon"), page_icon=":fire:", layout="wide")
 language_selector()
+
+from theme import inject as inject_theme  # noqa: E402
+
+inject_theme()
 
 from glossary import sidebar_glossary  # noqa: E402
 

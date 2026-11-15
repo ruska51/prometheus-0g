@@ -19,9 +19,11 @@ from common import (
 )
 from flame_view import render as render_flame
 from i18n import flame_labels, t, tr_insight
+from theme import kicker
 
 from fif.insights.flame_sim import ATMOSPHERES
 
+kicker(t("NASA Space Apps 2026 · Flame in Freefall · Team The Catalyst"))
 st.title(t("Prometheus-0g - Fire on the Moon"))
 st.markdown(
     "**"

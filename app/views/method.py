@@ -2,6 +2,7 @@
 
 import streamlit as st
 from common import next_step
+from glossary import glossary_section
 from i18n import lang, t
 
 EN = """
@@ -88,5 +89,7 @@ NASA не подразумевается.
 
 st.title(t("Method & sources"))
 st.markdown(RU if lang() == "ru" else EN)
+
+glossary_section()
 
 next_step("views/method.py")

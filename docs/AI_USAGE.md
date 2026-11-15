@@ -45,3 +45,4 @@ images or video.
 | 2026-11-15 | post-12 | Claude Code (Anthropic, Claude Opus) | Keep-awake script and workflow, README top link | Ruslan Sharafutdinov (ADR-048) |
 | 2026-11-15 | post-12 | Claude Code (Anthropic, Claude Opus) | Assistant no-AI fallback; module-fire page and spread sketch; checklist texts | Ruslan Sharafutdinov (ADR-049) |
 | 2026-11-15 | post-12 | Claude Code (Anthropic, Claude Opus) | Navigation groups, tour links, module tabs, plain-language tables | Ruslan Sharafutdinov (ADR-054) |
+| 2026-11-15 | post-12 | Claude Code (Anthropic, Claude Opus) | Shareable links, module report, glossary texts (EN/RU) | Ruslan Sharafutdinov (ADR-055) |

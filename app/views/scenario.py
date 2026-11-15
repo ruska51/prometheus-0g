@@ -1,7 +1,7 @@
 """Moon-base scenario: conditions in, physics + hybrid prediction with band, reliability, ISS/Earth comparison (UI_SPEC page 3)."""
 
 import streamlit as st
-from common import evidence_badge, flame_sim, next_step, scenario, source_note, status_badge
+from common import evidence_badge, flame_sim, next_step, qp_get, scenario, share_link, source_note, status_badge
 from flame_view import render as render_flame
 from i18n import flame_labels, lang, t
 
@@ -17,18 +17,57 @@ st.markdown(
     )
 )
 
+OPTS = list(PRESETS) + ["Custom"]
+
+
+def one_of(options):
+    def cast(v):
+        if v not in options:
+            raise ValueError(v)
+        return v
+
+    return cast
+
+
+def clip(lo, hi):
+    return lambda v: min(max(float(v), lo), hi)
+
+
+ss = st.session_state
+if "sc_preset" not in ss:  # first visit in this session: settings from the page address, if any (ADR-055)
+    ss["sc_preset"] = qp_get("preset", one_of(OPTS), OPTS[1])
+    first = PRESETS.get(ss["sc_preset"], PRESETS["Moon base / rover (planned)"])
+    ss["sc_fuel"] = qp_get("fuel", one_of(["Methanol", "Heptane"]), "Methanol")
+    ss["sc_o2"] = qp_get("o2", clip(0.10, 1.00), float(first["x_o2"]))
+    ss["sc_psi"] = qp_get("psi", clip(3.0, 45.0), float(round(first["p_atm"] * 14.696, 1)))
+    ss["sc_dil"] = qp_get("dil", one_of(["none", "CO2", "He"]), "none")
+    ss["sc_xdil"] = qp_get("xdil", clip(0.0, 0.7), 0.0)
+    ss["sc_d0"] = qp_get("d0", clip(1.0, 5.0), 3.0)
+
 c_in, c_out = st.columns([1, 2])
 with c_in:
-    preset = st.selectbox(t("Atmosphere preset"), list(PRESETS) + ["Custom"], index=1, format_func=t)
+    preset = st.selectbox(t("Atmosphere preset"), OPTS, format_func=t, key="sc_preset")
     base = PRESETS.get(preset, PRESETS["Moon base / rover (planned)"])
     if preset in PRESETS:
         st.caption(t("Preset source:") + " " + t(base["src"]))
-    fuel = st.radio(t("Fuel"), ["Methanol", "Heptane"], horizontal=True, format_func=t)
-    x_o2 = st.slider(t("Oxygen mole fraction"), 0.10, 1.00, float(base["x_o2"]), 0.01, disabled=preset in PRESETS)
-    p_psi = st.slider(t("Pressure, psi"), 3.0, 45.0, float(round(base["p_atm"] * 14.696, 1)), 0.1, disabled=preset in PRESETS)
-    dil = st.radio(t("Extra diluent (replaces N2)"), ["none", "CO2", "He"], horizontal=True, format_func=t)
-    x_dil = st.slider(t("Diluent mole fraction"), 0.0, 0.7, 0.0, 0.05, disabled=dil == "none")
-    d0 = st.slider(t("Initial droplet diameter, mm"), 1.0, 5.0, 3.0, 0.1)
+        ss["sc_o2"], ss["sc_psi"] = float(base["x_o2"]), float(round(base["p_atm"] * 14.696, 1))
+    fuel = st.radio(t("Fuel"), ["Methanol", "Heptane"], horizontal=True, format_func=t, key="sc_fuel")
+    x_o2 = st.slider(t("Oxygen mole fraction"), 0.10, 1.00, step=0.01, disabled=preset in PRESETS, key="sc_o2")
+    p_psi = st.slider(t("Pressure, psi"), 3.0, 45.0, step=0.1, disabled=preset in PRESETS, key="sc_psi")
+    dil = st.radio(t("Extra diluent (replaces N2)"), ["none", "CO2", "He"], horizontal=True, format_func=t, key="sc_dil")
+    x_dil = st.slider(t("Diluent mole fraction"), 0.0, 0.7, step=0.05, disabled=dil == "none", key="sc_xdil")
+    d0 = st.slider(t("Initial droplet diameter, mm"), 1.0, 5.0, step=0.1, key="sc_d0")
+    share_link(
+        {
+            "preset": preset,
+            "fuel": fuel,
+            "o2": f"{x_o2:.2f}",
+            "psi": f"{p_psi:.1f}",
+            "dil": dil,
+            "xdil": f"{x_dil:.2f}",
+            "d0": f"{d0:.1f}",
+        }
+    )
     p_atm = p_psi / 14.696
     x_co2 = x_dil if dil == "CO2" else 0.0
     x_he = x_dil if dil == "He" else 0.0

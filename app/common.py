@@ -156,3 +156,30 @@ def next_step(page: str) -> None:
     if i + 1 < len(TOUR):
         p, name = TOUR[i + 1]
         right.page_link(p, label=_t("Next step: {page}").format(page=_t(name)), icon=":material/arrow_forward:")
+
+
+# Shareable settings (ADR-055): a page keeps its inputs in the address bar, so a link reopens the same scenario.
+def qp_get(name: str, cast, default):
+    """A setting from the page address, or the default when it is missing or unreadable."""
+    v = st.query_params.get(name)
+    if v is None:
+        return default
+    try:
+        return cast(v)
+    except (ValueError, TypeError):
+        return default
+
+
+def share_link(params: dict[str, str]) -> None:
+    """Write the settings into the address bar and offer the link in a popover with a copy button."""
+    from urllib.parse import urlencode
+
+    st.query_params.update(params)
+    full = {k: st.query_params[k] for k in st.query_params}
+    try:
+        base = str(st.context.url).split("?")[0]
+    except Exception:  # no browser context (tests)
+        base = ""
+    with st.popover(_t("Share these settings"), icon=":material/link:"):
+        st.caption(_t("This link opens the page with exactly these settings (copy button on the right):"))
+        st.code(base + "?" + urlencode(full), language=None, wrap_lines=True)

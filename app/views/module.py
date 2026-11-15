@@ -5,12 +5,13 @@ from __future__ import annotations
 
 import json
 import math
+from datetime import UTC
 from pathlib import Path
 
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
-from common import next_step, source_note
+from common import next_step, qp_get, share_link, source_note
 from i18n import t, tr_insight
 from module_view import render as render_fire
 from plotly.subplots import make_subplots
@@ -121,7 +122,7 @@ st.markdown(
     t(
         "Draw a wall of a module, choose where a fire starts and watch it spread. Every material spreads fire at the "
         "rate NASA measured for it in that gravity (Saffire on the ISS, LUCI at lunar gravity, the same samples on "
-        "Earth). This is a sketch on measured rates, not a fire simulation: see the limits below."
+        "Earth). This is a sketch on measured rates, not a fire simulation: its limits are in the Safer design tab."
     )
 )
 st.caption(
@@ -130,9 +131,52 @@ st.caption(
     )
 )
 
+
 # ---- module designer -------------------------------------------------------------------------------------------
+def encode_wall(layout: np.ndarray) -> str:
+    """Run-length code of the wall for the page address: 'F12.3M40' = 12 fabric, 3 open, 40 metal cells (row by row)."""
+    flat, out, i = "".join("".join(r) for r in layout), [], 0
+    while i < len(flat):
+        j = i
+        while j < len(flat) and flat[j] == flat[i]:
+            j += 1
+        out.append(f"{flat[i]}{j - i}")
+        i = j
+    return "".join(out)
+
+
+def decode_wall(code: str, shape: tuple[int, int]) -> np.ndarray:
+    import re
+
+    parts = re.findall(r"([FAM.H])(\d+)", code)
+    if "".join(f"{c}{n}" for c, n in parts) != code:
+        raise ValueError("bad wall code")
+    flat = "".join(c * int(n) for c, n in parts)
+    if len(flat) != shape[0] * shape[1]:
+        raise ValueError("wrong wall size")
+    return np.array(list(flat)).reshape(shape)
+
+
+ss = st.session_state
+WALLS = list(mf.PRESETS)
+if "mod_wall" not in ss:  # settings from the page address on the first visit (ADR-055)
+    keep = ss.get("module", {}).get("preset", WALLS[0])
+    wall = qp_get("wall", lambda v: v if v in WALLS else int("x"), keep)
+    ss["mod_wall"] = wall
+    ss["mod_vent"] = qp_get("vent", lambda v: int(v) if int(v) in (1, -1) else int("x"), 1)
+    ss["mod_atm"] = qp_get("atm", lambda v: v if v in ("air", "moon", "sea", "custom") else int("x"), "air")
+    ss["mod_o2"] = qp_get("o2", lambda v: min(max(int(v), 17), 40), 30)
+    ss["mod_psi"] = qp_get("psi", lambda v: min(max(round(float(v), 1), 5.0), 15.0), 10.2)
+    if "L" in st.query_params or "ign" in st.query_params:
+        shape = mf.grid(mf.PRESETS[wall]).shape
+        lay = qp_get("L", lambda v: decode_wall(v, shape), mf.grid(mf.PRESETS[wall]))
+        ign0 = qp_get("ign", lambda v: tuple(int(x) for x in v.split("-")), mf.IGNITION[wall])
+        if not (len(ign0) == 2 and 0 <= ign0[0] < shape[0] and 0 <= ign0[1] < shape[1] and lay[ign0] in mf.FLAMMABLE):
+            ign0 = mf.IGNITION[wall]  # an unreadable or non-flammable point falls back to the wall's default
+        ss["module"] = {"preset": wall, "layout": lay.tolist(), "ignition": tuple(ign0), "selection": None}
+
 c1, c2 = st.columns([1.1, 1.9])
-preset = c1.selectbox(t("Module wall"), list(mf.PRESETS), format_func=lambda k: PRESET_LABEL[k]())
+preset = c1.selectbox(t("Module wall"), WALLS, format_func=lambda k: PRESET_LABEL[k](), key="mod_wall")
 mode = c2.radio(
     t("Click on the wall to..."),
     ["ignite", "paint"],
@@ -154,6 +198,7 @@ vent = c1.radio(
     t("Ventilation in microgravity (ISS case)"),
     [1, -1],
     format_func=lambda d: t("blows towards the hatch") if d == 1 else t("blows away from the hatch"),
+    key="mod_vent",
 )
 if c1.button(t("Reset this wall")):
     state.update(layout=mf.grid(mf.PRESETS[preset]).tolist(), ignition=mf.IGNITION[preset], selection=None)
@@ -237,10 +282,10 @@ ATM_LABEL = {
     "custom": lambda: t("Your own atmosphere"),
 }
 a1, a2, a3 = st.columns([1.6, 1, 1])
-atm = a1.selectbox(t("Cabin atmosphere"), list(ATM_LABEL), format_func=lambda k: ATM_LABEL[k]())
+atm = a1.selectbox(t("Cabin atmosphere"), list(ATM_LABEL), format_func=lambda k: ATM_LABEL[k](), key="mod_atm")
 if atm == "custom":
-    x_o2 = a2.slider(t("Oxygen, %"), 17, 40, 30) / 100
-    p_atm = a3.slider(t("Pressure, psi"), 5.0, 15.0, 10.2, step=0.1) / 14.696
+    x_o2 = a2.slider(t("Oxygen, %"), 17, 40, key="mod_o2") / 100
+    p_atm = a3.slider(t("Pressure, psi"), 5.0, 15.0, step=0.1, key="mod_psi") / 14.696
 else:
     x_o2, p_atm = ATM[atm]
 fac = round(mf.atmosphere_factor(x_o2, p_atm), 4)
@@ -263,6 +308,22 @@ else:
 # ---- the same fire in three gravities ---------------------------------------------------------------------------
 ign = tuple(state["ignition"])
 key = tuple("".join(r) for r in layout)
+shared = {"wall": preset, "vent": str(vent), "atm": atm, "ign": f"{ign[0]}-{ign[1]}"}
+if atm == "custom":
+    shared |= {"o2": str(round(x_o2 * 100)), "psi": f"{p_atm * 14.696:.1f}"}
+else:
+    for k in ("o2", "psi"):
+        if k in st.query_params:
+            del st.query_params[k]
+if not np.array_equal(layout, mf.grid(mf.PRESETS[preset])):
+    shared["L"] = encode_wall(layout)
+elif "L" in st.query_params:
+    del st.query_params["L"]
+sh1, sh2, _ = st.columns([1.2, 1.5, 1.5])
+with sh1:
+    share_link(shared)
+report_slot = sh2.empty()  # filled at the end of the page, when all results are known
+vol = 30  # module volume, m3; the Module air tab has the slider
 times = {k: _arrival(key, ign, k, vent, fac) for k in ENV_ORDER}
 summ = {k: mf.summary(layout, times[k]) for k in ENV_ORDER}
 
@@ -721,6 +782,79 @@ with tab_moon:
         tag = f" · {t('insight')} {ref}" if ref else ""
         st.markdown(f"**{i}. {action}** `{t(ev)}`{tag}  \n{why}")
 
+
+# ---- downloadable report (ADR-055) ------------------------------------------------------------------------------
+def module_report() -> str:
+    """Plain-text (Markdown) summary of this wall: inputs, results in three gravities, module air, firebreak, sources."""
+    from datetime import datetime
+    from urllib.parse import urlencode
+
+    rows = [
+        "# Module fire report - Prometheus-0g",
+        "",
+        f"Generated {datetime.now(UTC):%Y-%m-%d %H:%M} UTC by https://prometheus-0g.streamlit.app/ (Module fire page).",
+        "Evidence: model - a sketch on NASA-measured flame-spread rates, not a fire simulation.",
+        "",
+        "## Inputs",
+        f"- Wall: {PRESET_LABEL[preset]()} (4 m x 2 m, 10 cm cells){' - edited by the user' if 'L' in shared else ''}",
+        f"- Ignition cell (row, column): {ign[0]}, {ign[1]}",
+        f"- Ventilation in microgravity: {'towards' if vent == 1 else 'away from'} the hatch, 20 cm/s",
+        f"- Cabin atmosphere: {x_o2 * 100:.0f} % O2 at {p_atm * 14.696:.1f} psi; spread rates x{fac:.2f} "
+        "(NASA flame-spread theory, NTRS 20210011385 Eq. 2.2; 1.00 = measured rates)",
+        f"- Free gas volume for the air model: {vol} m3",
+        "",
+        "## Results",
+        "| Gravity | Flame at the hatch | Material reached, m2 | All of it burning after |",
+        "|---|---|---|---|",
+    ]
+    for k in ENV_ORDER:
+        sm = summ[k]
+        rows.append(
+            f"| {env_label(k)} | {minutes(sm['hatch_s'])} | {sm['reached_m2']:.2f} of {sm['flammable_m2']:.2f} | "
+            f"{minutes(sm['time_all_s'])} |"
+        )
+    if t_end > 0:
+        tz = np.linspace(0, t_end, 160)
+        rows += [
+            "",
+            "## Module air (well-mixed zone model)",
+            "| Gravity | Heat, MJ | Peak fire power, kW | O2 at the end, % | CO2 at the end, % |",
+            "|---|---|---|---|---|",
+        ]
+        for k in ENV_ORDER:
+            z = mf.zone_history(layout, times[k], tz, float(vol), x_o2, p_atm)
+            rows.append(
+                f"| {env_label(k)} | {z['heat_MJ'][-1]:.1f} | {max(z['hrr_kW'].max(), 0):.1f} | {z['x_o2'][-1] * 100:.1f} | "
+                f"{z['x_co2'][-1] * 100:.2f} |"
+            )
+        fbm = _firebreak(key, ign, "moon", vent, fac)
+        rows += ["", "## Firebreak (lunar gravity)"]
+        if fbm is None:
+            rows.append("- No single 50 cm metal strip changes when the flame reaches the hatch from this ignition point.")
+        else:
+            cells = ", ".join(f"({r}, {c})" for r, c in fbm.cells)
+            after = "never" if not math.isfinite(fbm.hatch_s) else minutes(fbm.hatch_s)
+            rows.append(f"- Metal strip on cells {cells}: flame at the hatch {minutes(summ['moon']['hatch_s'])} -> {after}.")
+    rows += [
+        "",
+        "## Sources and limits",
+        "- Flame-spread rates: Saffire (NTRS 20170008805), LUCI sounding rocket (NTRS 20250010653).",
+        "- Oxygen use of SIBAL fabric: NTRS 20210020516; heat per gram of O2: NASA BASS-II report (NTRS 20210011385).",
+        "- Not included: heating of nearby materials, the fire's effect on its own oxygen supply, smoke and toxic gases,",
+        "  suppression, flames jumping across gaps, the 3-D shape of a module.",
+        "",
+        "Link to reopen this wall: " + "https://prometheus-0g.streamlit.app/module?" + urlencode(shared),
+    ]
+    return "\n".join(rows) + "\n"
+
+
+report_slot.download_button(
+    t("Download a report of this module"),
+    module_report(),
+    "module_fire_report.md",
+    "text/markdown",
+    icon=":material/download:",
+)
 
 source_note(
     t(

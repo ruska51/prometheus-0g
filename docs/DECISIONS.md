@@ -614,3 +614,17 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   (wall, ventilation, atmosphere) above them; validation tables with plain model names and readable quality flags;
   risk map 700 px with a "How to read this map" box; scenario metric units moved into the labels so values are not cut.
   Stale limits text on the module page updated (oxygen use and atmosphere scaling are now modelled).
+
+## ADR-055: Shareable links, module report download, glossary
+- Date/time: 2026-11-15 20:16-20:26
+- Stage: post-12
+- Context: Ruslan chose three additions (see ADR-054 question): a link to one's own scenario, a downloadable module report,
+  a glossary of terms.
+- Decision (Ruslan): all three.
+- Consequences: Moon-base scenario and Module fire keep their inputs in the page address (scenario: preset, fuel, O2,
+  pressure, diluent, droplet size; module: wall, edited cells as a run-length code, ignition point, ventilation,
+  atmosphere); a "Share these settings" popover shows the link with a copy button; unreadable values fall back to the
+  defaults and numbers are clipped to the slider ranges. Module fire has "Download a report of this module" (Markdown:
+  inputs, hatch times in three gravities, module air, lunar-gravity firebreak, sources and limits, link to reopen).
+  Glossary of 20 terms in English and Russian (app/glossary.py): searchable popover in the sidebar on every page and a
+  section on Method & sources; definitions restate the pages and docs/PHYSICS.md, no new numbers.

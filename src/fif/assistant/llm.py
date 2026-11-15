@@ -18,7 +18,8 @@ from .knowledge import CORE_FACTS, Block, search
 
 DEFAULT_MODEL = "auto"
 MAX_QUESTION_CHARS = 600
-MAX_OUTPUT_TOKENS = 4096  # room for model-internal thinking; the prompt limits answers to 180 words
+MAX_OUTPUT_TOKENS = 4096  # room for model-internal thinking; the prompt limits answers to 120 words
+REQUEST_TIMEOUT_MS = 20_000  # per request; then the next candidate model is tried
 EXCLUDE = ("image", "tts", "audio", "live", "embedding", "robotics", "computer", "learnlm", "gemma", "veo", "imagen")
 CITE = re.compile(r"\[([^\[\]]{3,400})\]")  # one bracket may hold several ids: [R:1#0, R:1#1]
 CITE_ID = re.compile(r"^(?:D|R):\S+$")
@@ -93,11 +94,13 @@ def _reason(e: Exception) -> str:
     return f"{type(e).__name__} {code or ''} {msg[:160]}".strip()
 
 
-def gemini_generate(key: str, model: str = DEFAULT_MODEL) -> Callable[[str, str], str]:
+def gemini_generate(key: str, model: str = DEFAULT_MODEL) -> Callable[..., str]:
+    """``gen(system, prompt, on_text=None) -> text``. The answer is streamed; ``on_text(text_so_far)`` is called as it
+    grows. Each request has a timeout (the SDK default is none), so a stalled model falls through to the next one."""
     from google import genai
     from google.genai import types
 
-    client = genai.Client(api_key=key)
+    client = genai.Client(api_key=key, http_options=types.HttpOptions(timeout=REQUEST_TIMEOUT_MS))
     if model == "auto":
         listed = [m for m in client.models.list() if m.name]
         names = [m.name.removeprefix("models/") for m in listed]
@@ -108,24 +111,37 @@ def gemini_generate(key: str, model: str = DEFAULT_MODEL) -> Callable[[str, str]
     if not candidates:
         raise AllModelsFailed([("list", "no models returned for this key")])
 
-    def gen(system: str, prompt: str) -> str:
+    def stream(name: str, prompt: str, config, on_text) -> str:
+        text = ""
+        for chunk in client.models.generate_content_stream(model=name, contents=prompt, config=config):
+            piece = chunk.text or ""
+            if piece:
+                text += piece
+                if on_text:
+                    on_text(text)
+        return text
+
+    def gen(system: str, prompt: str, on_text: Callable[[str], None] | None = None) -> str:
         failed = []
         for name in list(dict.fromkeys([gen.model, *candidates]))[:6]:
             try:
                 base = dict(system_instruction=system, temperature=0.1, max_output_tokens=MAX_OUTPUT_TOKENS)
-                try:  # minimal internal reasoning: answers are look-ups in the given context, latency matters
-                    r = client.models.generate_content(
-                        model=name,
-                        contents=prompt,
-                        config=types.GenerateContentConfig(
-                            **base, thinking_config=types.ThinkingConfig(thinking_level="MINIMAL")
-                        ),
-                    )
-                except Exception as e:  # model without thinking levels: plain request
-                    if (getattr(e, "code", None) or 0) != 400:
-                        raise
-                    r = client.models.generate_content(model=name, contents=prompt, config=types.GenerateContentConfig(**base))
-                text = r.text or ""
+                # minimal internal reasoning: answers are look-ups in the given context, latency matters. Gemini 3
+                # takes a thinking level, Gemini 2.5 a token budget (0 = off); a model that rejects both gets a plain
+                # request.
+                thinking = [
+                    types.ThinkingConfig(thinking_level="MINIMAL"),
+                    types.ThinkingConfig(thinking_budget=0),
+                    None,
+                ]
+                for i, th in enumerate(thinking):
+                    cfg = types.GenerateContentConfig(**base, **({"thinking_config": th} if th else {}))
+                    try:
+                        text = stream(name, prompt, cfg, on_text)
+                        break
+                    except Exception as e:
+                        if (getattr(e, "code", None) or 0) != 400 or i == len(thinking) - 1:
+                            raise
                 if not text.strip():
                     failed.append((name, "empty response"))
                     continue
@@ -140,11 +156,16 @@ def gemini_generate(key: str, model: str = DEFAULT_MODEL) -> Callable[[str, str]
     return gen
 
 
-def ask(question: str, generate: Callable[[str, str], str], k: int = 12) -> dict:
-    """Retrieve, generate, check citations. ``generate(system, prompt) -> text`` is injectable for tests."""
+def ask(question: str, generate: Callable[..., str], k: int = 12, on_text: Callable[[str], None] | None = None) -> dict:
+    """Retrieve, generate, check citations. ``generate(system, prompt[, on_text]) -> text`` is injectable for tests.
+    With ``on_text`` the growing answer is passed on already rendered for display (citations as superscripts)."""
     blocks = search(question, k=k)
-    text = generate(SYSTEM, build_prompt(question, blocks)).strip()
     known = {b.id: b for b in [CORE_FACTS, *blocks]}
+    prompt = build_prompt(question, blocks)
+    if on_text is None:
+        text = generate(SYSTEM, prompt).strip()
+    else:
+        text = generate(SYSTEM, prompt, lambda s: on_text(render_partial(s, set(known)))).strip()
     ids = cited_ids(text)
     display, order = render_citations(text, set(known))
     sources = [known[i] for i in order]  # numbered 1, 2, ... as in the display text
@@ -184,6 +205,15 @@ def render_citations(text: str, known: set[str]) -> tuple[str, list[str]]:
     out = re.sub(r"[ \t]+([⁰¹²³⁴⁵⁶⁷⁸⁹])", r"\1", out)  # "fact [D:x]." -> "fact¹."
     out = re.sub(r"[ \t]+([.,;:!?)])", r"\1", out)
     return out, order
+
+
+def render_partial(text: str, known: set[str]) -> str:
+    """Display form of an answer that is still being streamed: an unfinished citation bracket at the end is held back
+    (so raw block ids never flash on screen), the rest is rendered like the final answer."""
+    cut = text.rfind("[")
+    if cut > text.rfind("]"):
+        text = text[:cut]
+    return render_citations(text, known)[0].rstrip()
 
 
 NUM = re.compile(r"(?<![\w.])[-+]?\d+(?:[.,]\d+)?")

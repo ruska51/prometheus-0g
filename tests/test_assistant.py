@@ -152,3 +152,62 @@ def test_ask_returns_display_text_and_numbered_sources():
     r = ask("Will it burn on the Moon?", lambda system, prompt: "Yes, +32 % [D:moon-answer-methanol].")
     assert r["display"] == "Yes, +32 %¹." and [s.id for s in r["sources"]] == ["D:moon-answer-methanol"]
     assert r["unsupported_numbers"] == []
+
+
+def test_streamed_answer_never_shows_raw_block_ids():
+    from fif.assistant.llm import render_partial
+
+    full = "Faster [D:moon-answer-methanol]. Hotter [D:core]."
+    assert render_partial("Faster [D:moon-ans", {"D:moon-answer-methanol"}) == "Faster"
+    shown = []
+
+    def fake(system, prompt, on_text=None):
+        for i in range(1, len(full) + 1):
+            on_text(full[:i])
+        return full
+
+    r = ask("Will it burn on the Moon?", fake, on_text=shown.append)
+    assert len(shown) == len(full)
+    assert not any("D:" in s or "[" in s for s in shown)
+    assert shown[-1] == r["display"] == "Faster¹. Hotter²."
+
+
+def test_gemini_generate_streams_with_timeout_and_falls_back_to_thinking_budget(monkeypatch):
+    from google import genai
+
+    from fif.assistant import llm
+
+    calls = []
+
+    class Err(Exception):
+        code = 400
+
+    class Chunk:
+        def __init__(self, text):
+            self.text = text
+
+    class Models:
+        def generate_content_stream(self, model, contents, config):
+            th = config.thinking_config
+            calls.append((model, th.thinking_level if th else None, th.thinking_budget if th else None))
+            if th is not None and th.thinking_level is not None:
+                raise Err("thinking_level not supported")  # a Gemini 2.5-style model
+            return iter([Chunk("Yes "), Chunk(None), Chunk("[D:core].")])
+
+    class Client:
+        def __init__(self, api_key, http_options):
+            assert http_options.timeout == llm.REQUEST_TIMEOUT_MS
+            self.models = Models()
+
+    monkeypatch.setattr(genai, "Client", Client)
+    gen = llm.gemini_generate("not-a-real-key", "gemini-x-flash")
+    seen = []
+    assert gen("sys", "prompt", seen.append) == "Yes [D:core]."
+    assert seen == ["Yes ", "Yes [D:core]."]
+    assert calls == [("gemini-x-flash", llm_level("MINIMAL"), None), ("gemini-x-flash", None, 0)]
+
+
+def llm_level(name):
+    from google.genai import types
+
+    return types.ThinkingConfig(thinking_level=name).thinking_level

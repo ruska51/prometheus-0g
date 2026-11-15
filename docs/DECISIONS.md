@@ -459,3 +459,23 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   S4 title EN "At 30 % O2 droplet flames put themselves out less often", RU "При 30 % O2 пламя капли реже гаснет само"
   (ranking unchanged). Summary, detailed description and AI field rewritten in plainer prose, same numbers.
 - Sources: docs/insights.json (S4), fif.insights.moon, docs/DEMO_SCRIPT.md
+
+## ADR-047: Assistant answers stream; per-request timeout; warm-up
+- Date/time: 2026-11-15 09:15-09:30
+- Stage: post-12 (talk day)
+- Context: Ruslan saw the assistant spinner for a long time and asked that it answer fast and correctly, as requested
+  the day before (ADR-045). Measured on the live app before the change: 6.6 s and 6.0 s per answer (gemini-3.6-flash,
+  correct numbers), the whole answer appearing only at the end. google-genai 3.3.0 has no request timeout and no
+  retries by default, so a stalled request could hang without limit; a Gemini 2.5 model rejects the thinking level and
+  then ran with unlimited internal thinking; the first question after a restart also built the search index (about 2 s)
+  and listed the models.
+- Options: A) stream the answer + 20 s timeout per model + warm-up on page open B) switch to a "lite" model (faster,
+  weaker answers) C) leave as is.
+- Claude's recommendation: A - the words start to appear after the first chunk instead of after the whole answer;
+  answer quality and sources unchanged.
+- Decision (Ruslan): "answer fast and correctly" - Claude chose A as the technical means; to be confirmed by Ruslan.
+- Consequences: the page shows the question and the growing answer at once; citation brackets are rendered as
+  superscript numbers while streaming and an unfinished bracket is held back, so raw block ids never appear. Each
+  request has a 20 s timeout, then the next candidate model is tried. Thinking: level MINIMAL (Gemini 3), else budget 0
+  (Gemini 2.5), else a plain request. The model list and search index are prepared when the page opens.
+- Sources: src/fif/assistant/llm.py, app/views/assistant.py, tests/test_assistant.py

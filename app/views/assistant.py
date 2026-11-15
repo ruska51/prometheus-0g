@@ -7,6 +7,7 @@ import streamlit as st
 from common import source_note
 from i18n import t
 
+from fif.assistant.knowledge import search
 from fif.assistant.llm import (
     DEFAULT_MODEL,
     MAX_QUESTION_CHARS,
@@ -61,6 +62,12 @@ def _generator(k: str, m: str):
     return gemini_generate(k, m)
 
 
+@st.cache_resource(show_spinner=False)
+def _warm_index() -> bool:
+    search("moon", k=1)  # builds the data and report blocks once per server process
+    return True
+
+
 chat = st.session_state.setdefault("chat", [])
 for turn in chat:
     with st.chat_message("user"):
@@ -102,10 +109,14 @@ st.caption(
     )
 )
 if q:
-    with st.spinner(t("Searching the data and NASA reports...")):
+    with st.chat_message("user"):
+        st.write(q)
+    with st.chat_message("assistant"):
+        live = st.empty()
+        live.caption(t("Searching the data and NASA reports..."))
         try:
             gen = _generator(key, model)
-            r = ask(q, gen)
+            r = ask(q, gen, on_text=live.markdown)
             st.session_state["model_used"] = getattr(gen, "model", model)
             chat.append(
                 {
@@ -124,10 +135,18 @@ if q:
                 "key": t("The Gemini API key was rejected - the assistant is temporarily unavailable."),
                 "model": t("The configured Gemini model is not available - the assistant is temporarily unavailable."),
             }.get(reason, t("The assistant could not answer right now - please try again later."))
+            live.empty()
             st.error(msg)
             st.caption(t("Technical detail:") + " " + _reason(e))
             st.stop()
     st.rerun()
+elif left > 0 and not chat:
+    # warm-up while the visitor reads the page: model list and retrieval index, so the first answer starts at once
+    try:
+        _generator(key, model)
+        _warm_index()
+    except Exception:  # an API problem is reported when a question is asked
+        pass
 source_note(
     t(
         "dashboard results (docs/insights.json, docs/validation_results.json, scenario model, PSI catalog) and public-use "

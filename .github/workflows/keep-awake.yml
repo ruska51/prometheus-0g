@@ -1,0 +1,37 @@
+# Keep the public Streamlit app awake (ADR-048): Community Cloud puts an app to sleep after 12 h without traffic.
+# A headless browser opens the Overview page every 4 hours (at minute 17, away from the busy start of the hour) and
+# wakes the app if needed. It never opens the assistant page, so it does not use the Gemini quota.
+# Note (GitHub docs): in a public repository, scheduled workflows are disabled after 60 days without repository
+# activity; re-enable in the Actions tab ("Enable workflow").
+name: keep-awake
+
+on:
+  schedule:
+    - cron: "17 */4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  visit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Playwright and Chromium
+        run: |
+          pip install playwright==1.48.0
+          python -m playwright install --with-deps chromium
+      - name: Visit the app
+        run: python scripts/keep_awake.py https://prometheus-0g.streamlit.app/
+      - name: Screenshot on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: keep-awake-failure
+          path: keep_awake_failure.png
+          if-no-files-found: ignore

@@ -1,5 +1,11 @@
 # Prometheus-0g - Fire on the Moon
 
+## ▶ Live app: [prometheus-0g.streamlit.app](https://prometheus-0g.streamlit.app/)
+
+Open it in any browser, also on a phone (Russian: [?lang=ru](https://prometheus-0g.streamlit.app/?lang=ru)). If the page
+says *"This app has gone to sleep"*, click **"Yes, get this app back up!"** and wait a moment - free hosting sleeps
+after 12 hours without visitors; a scheduled check ([keep-awake](.github/workflows/keep-awake.yml)) visits it every 4 hours.
+
 **Physics-first, AI-assisted fire-safety insights from NASA microgravity combustion experiments.**
 NASA Space Apps Challenge 2026 - challenge *Flame in Freefall: AI-Powered Fire Safety Insights from Microgravity
 Combustion Data*. Team **The Catalyst** (Ruslan Sharafutdinov), Uralsk, Kazakhstan.
@@ -191,7 +197,7 @@ docs/               PHYSICS, MODEL_CARD, VALIDATION, INSIGHTS, DECISIONS (ADR lo
 The analysis, code and texts were produced with Claude Code (Anthropic) under the direction of the team member, who
 made every scientific and design decision (logged in [docs/DECISIONS.md](docs/DECISIONS.md)). Inside the product the
 only AI component is the optional "Ask the data" assistant (Google Gemini), restricted to our results and NASA reports,
-with checked citations. All other numbers come from deterministic code. No AI-generated images or video; the demo slides
+with checked citations. All other numbers come from deterministic code. No AI-generated images; the demo slides
 use screenshots of the app. Details: [docs/AI_USAGE.md](docs/AI_USAGE.md).
 
 ## Sources

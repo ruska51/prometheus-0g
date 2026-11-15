@@ -491,3 +491,26 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   "NASA's" and answered an off-topic Russian question in English. Prompt rules added for substance names, model
   ownership and answer language. Claude stopped live testing to save the quota for the talk.
 - Sources: src/fif/assistant/llm.py, app/views/assistant.py, tests/test_assistant.py
+
+## ADR-048: Live-app link at the top of README; keep-awake check
+- Date/time: 2026-11-15 11:24-11:38
+- Stage: post-12
+- Context: Streamlit Community Cloud keeps apps deployed with no stated time limit, but "All apps without traffic for
+  12 hours go to sleep"; any visitor can wake one with "Yes, get this app back up!" (docs.streamlit.io, manage your
+  app). Judges may open the app days or weeks later. Ruslan also asked to remove the video link from the README.
+- Options: A) scheduled visit by a headless browser (GitHub Actions, free for public repositories) + prominent link and
+  wake-up hint in README B) README hint only C) nothing.
+- Claude's recommendation: A.
+- Decision (Ruslan): "put the link right at the start [of the GitHub README], and add the auto-ping"; "remove the video
+  link from README".
+- Consequences: README starts with "Live app" and the wake-up hint; the phrase "No AI-generated images or video" became
+  "No AI-generated images" (the video link itself was already removed by ADR-046; it remains only in the old tag
+  stage-12). scripts/keep_awake.py opens the Overview page, clicks the wake-up button if shown and checks the headline
+  (never the assistant page, so no Gemini quota); tested on the live app (up in 26 s) and on a local sleeping-page mock
+  (button clicked, up in 10 s). .github/workflows/keep-awake.yml runs it at minute 17 every 4 hours and on demand.
+  Limits (GitHub docs): scheduled runs can be delayed or dropped at high load; in a public repository they are
+  disabled after 60 days without repository activity (re-enable in the Actions tab). No automatic commits are made to
+  keep it alive, so the repository stays as submitted.
+- Sources: https://docs.streamlit.io/deploy/streamlit-community-cloud/manage-your-app ;
+  https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows ;
+  https://docs.github.com/en/billing/concepts/product-billing/github-actions

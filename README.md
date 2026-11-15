@@ -63,7 +63,7 @@ ranked recommendations - for cabin-materials engineers, crew-safety planners and
 
 ![See it burn: Moon base in microgravity vs on the lunar surface (heptane droplet)](docs/figures/ui/flame_window_moon_heptane.png)
 
-![Fire in a Moon-base module: crew-quarters wall at lunar gravity, 15.9 min after ignition; time to reach the hatch in three gravities](docs/figures/ui/module_fire.png)
+![Fire in a Moon-base module: the same crew-quarters wall and the same spark at lunar gravity, in microgravity and on Earth (flame front white-yellow to red, embers, char; hatch green)](docs/figures/ui/module_fire.png)
 
 ## Key insights (Moon-base set)
 

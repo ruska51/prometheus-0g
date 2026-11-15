@@ -461,3 +461,48 @@ def zone_history(layout: np.ndarray, times: np.ndarray, t_grid: np.ndarray, volu
     heat_before = np.interp(t_grid - window, t_grid, heat_J, left=0.0)
     hrr_kW = (heat_J - heat_before) / window / 1000
     return {"area_m2": area, "heat_MJ": heat_J / 1e6, "hrr_kW": hrr_kW, "x_o2": x_o2_t, "x_co2": x_co2_t, "dT_K": dT}
+
+
+# ---- check of the oxygen balance against NASA data (ADR-053) ----------------------------------------------------
+# The zone model turns oxygen used into CO2 formed by stoichiometry (cellulose 1 mol CO2 per mol O2; PMMA,
+# C5H8O2 + 6 O2 -> 5 CO2 + 4 H2O, 5/6). BASS-II (PSI-25 Experimental Table) measured O2, CO2 and CO before and after
+# each burn in the Microgravity Science Glovebox; almost all of its samples are PMMA. Tests with an O2 drop too small to
+# read (the table gives O2 to 0.1 %) or with O2 rising are left out and counted.
+PMMA_CO2_PER_O2 = 5 / 6
+CELLULOSE_CO2_PER_O2 = 1.0
+
+
+def bass2_co2_per_o2(min_drop_pct: float = 0.3) -> dict:
+    """Measured CO2 formed per O2 used in BASS-II. Returns the per-test table, the median ratio, the least-squares slope
+    through the origin, the same with CO added (carbon in CO), and how many rows were used / left out."""
+    import pandas as pd
+
+    from fif.data.catalog import REPO_ROOT
+
+    b = pd.read_csv(REPO_ROOT / "data" / "raw" / "psi_tables" / "PSI-25_Experimental table_BASS-II.csv", encoding="cp1252")
+    b.columns = [str(x).strip().lstrip("﻿").lstrip("ï»¿") for x in b.columns]
+
+    def num(c: str) -> pd.Series:
+        return pd.to_numeric(b[c], errors="coerce")
+
+    d = pd.DataFrame(
+        {
+            "material": b["Fuel Sample Material"].astype(str).str.strip(),
+            "o2_used_pct": num("Calibrated  initial O2 % by vol") - num("Calibrated final O2 % by vol"),
+            "co2_formed_pct": num("Final CO2 % by vol") - num("Initial CO2 % by vol"),
+            "co_formed_pct": (num("Final CO (ppm)") - num("Initial CO (ppm)")) / 1e4,
+        }
+    )
+    ok = d["o2_used_pct"].notna() & d["co2_formed_pct"].notna() & (d["o2_used_pct"] >= min_drop_pct) & (d["o2_used_pct"] < 5)
+    u = d[ok].copy()
+    u["ratio"] = u["co2_formed_pct"] / u["o2_used_pct"]
+    x, y = u["o2_used_pct"].to_numpy(), u["co2_formed_pct"].to_numpy()
+    yc = y + u["co_formed_pct"].fillna(0).to_numpy()
+    return {
+        "table": u,
+        "n_used": int(ok.sum()),
+        "n_left_out": int((~ok).sum()),
+        "median": float(u["ratio"].median()),
+        "slope": float((x * y).sum() / (x * x).sum()),
+        "slope_with_co": float((x * yc).sum() / (x * x).sum()),
+    }

@@ -87,6 +87,11 @@ def _grid(key: tuple[str, ...]) -> np.ndarray:
     return np.array([list(r) for r in key])
 
 
+@st.cache_data(show_spinner=False)
+def _bass2() -> dict:
+    return mf.bass2_co2_per_o2()
+
+
 @st.cache_data(show_spinner=False, max_entries=64)
 def _arrival(key: tuple[str, ...], ign: tuple[int, int], env: str, vent: int, fac: float = 1.0) -> np.ndarray:
     return mf.arrival_times(_grid(key), ign, env_obj(env, vent, fac))
@@ -377,6 +382,99 @@ if t_end > 0:
             b=f"{mf.O2_G_PER_M2_FABRIC * mf.KJ_PER_G_O2 / 1000:.2f}",
         )
     )
+
+    # ---- science check against NASA data and the equations (ADR-053) --------------------------------------------
+    st.subheader(t("Science check: does the oxygen balance hold?"))
+    chk = _bass2()
+    tb = chk["table"]
+    sc = go.Figure()
+    sc.add_trace(
+        go.Scatter(
+            x=tb["o2_used_pct"],
+            y=tb["co2_formed_pct"] + tb["co_formed_pct"].fillna(0),
+            mode="markers",
+            name=t("BASS-II burns: CO2 + CO formed"),
+            marker={"size": 9, "color": "#ffb627", "line": {"width": 1, "color": "#0d1322"}},
+            text=tb["material"],
+            hovertemplate="%{text}<br>O2 %{x:.1f} -> CO2+CO %{y:.2f}<extra></extra>",
+        )
+    )
+    xs = np.array([0, float(tb["o2_used_pct"].max()) * 1.05])
+    sc.add_trace(
+        go.Scatter(
+            x=xs,
+            y=xs * mf.PMMA_CO2_PER_O2,
+            mode="lines",
+            name=t("PMMA stoichiometry, 5/6"),
+            line={"color": "#38e8ff", "width": 3},
+        )
+    )
+    sc.add_trace(
+        go.Scatter(
+            x=xs,
+            y=xs * mf.CELLULOSE_CO2_PER_O2,
+            mode="lines",
+            name=t("cellulose (fabric), 1"),
+            line={"color": "#c9a66b", "width": 2, "dash": "dash"},
+        )
+    )
+    dark_layout(sc, 380, axes=True)
+    sc.update_layout(
+        xaxis_title=t("oxygen used, % of the glovebox air"),
+        yaxis_title=t("CO2 + CO formed, %"),
+        legend={"orientation": "h", "y": -0.3, "font": {"color": "#cfd6e4"}},
+    )
+    st.plotly_chart(sc, use_container_width=True)
+    st.markdown(
+        t(
+            "The zone model above turns the oxygen a fire uses into CO2 by chemistry: 1 CO2 per O2 for cellulose (fabric), "
+            "5/6 for PMMA. NASA's BASS-II measured O2, CO2 and CO before and after {n} solid burns in the ISS glovebox (almost "
+            "all PMMA). Fitted CO2 per O2: **{s:.3f}**; with the carbon in CO: **{sc:.3f}** - the PMMA chemistry predicts "
+            "**{p:.3f}**. The balance the model rests on is confirmed by NASA measurements. ({left} of 129 rows left out: O2 "
+            "drop below 0.3 points, unreadable, or O2 rising.) Evidence: NASA data.",
+            n=chk["n_used"],
+            s=chk["slope"],
+            sc=chk["slope_with_co"],
+            p=mf.PMMA_CO2_PER_O2,
+            left=chk["n_left_out"],
+        )
+    )
+    with st.expander(t("The equations behind this page")):
+        st.markdown(
+            t(
+                "**1. Flame spread over the wall** (each 10 cm step at the rate NASA measured for that material, gravity and direction; earliest arrival by Dijkstra's shortest-path algorithm):"
+            )
+        )
+        st.latex(
+            r"t(c) = \min_{\text{paths } s \to c} \sum_{\text{steps}} \frac{\Delta \ell}{V_{\text{material, gravity, direction}}}"
+        )
+        st.markdown(
+            t(
+                "**2. Another cabin atmosphere** (NASA/TM-20210011385, Eq. 2.2, thin solids, thermal regime; T_v = 673 K from the same report; T_f from chemical equilibrium):"
+            )
+        )
+        st.latex(
+            r"V_f = \frac{F\,\lambda_g\,(T_f - T_v)}{\rho_s c_s \tau\,(T_v - T_\infty)} \;\Rightarrow\; \frac{V}{V_{\text{air}}} = \frac{T_f - T_v}{T_{f,\text{air}} - T_v}"
+        )
+        st.markdown(
+            t(
+                "**3. Module air** (well-mixed zone; oxygen use of SIBAL fabric from NTRS 20210020516, 13.1 kJ per g O2 from the BASS-II report):"
+            )
+        )
+        st.latex(
+            r"m_{O_2}(t) = m^{\prime\prime}_{O_2}\,A_f(t),\quad Q(t) = 13.1\,\tfrac{\text{kJ}}{\text{g}}\;m_{O_2}(t),\quad \dot Q(t) = \frac{Q(t) - Q(t-60\,\text{s})}{60\,\text{s}}"
+        )
+        st.latex(
+            r"x_{O_2}(t) = x_{O_2,0} - \frac{m_{O_2}(t)/M_{O_2}}{n},\quad x_{CO_2}(t) = \nu\,\frac{m_{O_2}(t)/M_{O_2}}{n},\quad n = \frac{pV}{RT}"
+        )
+        st.markdown(
+            t(
+                "**4. Firebreak for a fire anywhere** (time from every cell to the hatch by Dijkstra run backwards from the hatch; the strip that most shrinks the area that can reach it):"
+            )
+        )
+        st.latex(
+            r"\tau(c) = \min_{\text{paths } c \to \text{hatch}} \sum \frac{\Delta \ell}{V},\qquad A_{\text{danger}} = \sum_{c:\,\tau(c) < \infty} A_{\text{cell}}"
+        )
 else:
     st.info(t("Nothing burns yet: paint some fabric or acrylic, then click on it to set the ignition point."))
 

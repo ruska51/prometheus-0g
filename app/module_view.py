@@ -16,7 +16,7 @@ body{margin:0;background:#0d1322;font-family:Inter,system-ui,sans-serif;color:#e
 .p{position:relative;border-radius:12px;overflow:hidden;background:#0a0f1c}
 .p.big{grid-column:1 / span 2}
 @media (max-width:600px){#panels{grid-template-columns:1fr}.p.big{grid-column:auto}}
-.p canvas{display:block;width:100%;height:auto}
+.p canvas{display:block;width:100%;height:auto;image-rendering:auto}
 .t{position:absolute;left:12px;top:8px;font-size:13px;font-weight:600;text-shadow:0 1px 3px #000}
 .h{position:absolute;right:12px;top:8px;font-size:12px;padding:2px 8px;border-radius:9px;background:#2fd27a;color:#06210f;font-weight:700}
 .h.no{background:#5c6678;color:#e8ecf4}
@@ -31,7 +31,7 @@ input[type=range]{flex:1;accent-color:#f0843f}
 <script>
 const D=__DATA__, L=__LABELS__;
 const MAT={0:[26,34,53],1:[92,102,120],2:[201,166,107],3:[95,179,217],4:[47,210,122]};
-const W=D.w, H=D.h, SC=7; // canvas pixels per cell
+const W=D.w, H=D.h, SC=12; // canvas pixels per cell
 const panels=[];
 D.envs.forEach((e,i)=>{
   const div=document.createElement('div'); div.className='p'+(i===0?' big':'');
@@ -51,12 +51,14 @@ function at(arr,x,y){ // bilinear interpolation over the burning neighbours only
   let s=0,ws=0; for(let i=0;i<4;i++){ if(v[i]<D.never){ s+=v[i]*wt[i]; ws+=wt[i]; } }
   return ws>0? s/ws : own;
 }
-function base(m,x,y){ // soft edges between materials: blend the four neighbouring cell colours
-  const fx=Math.min(Math.max(x-0.5,0),W-1), fy=Math.min(Math.max(y-0.5,0),H-1);
-  const x0=Math.floor(fx), y0=Math.floor(fy), x1=Math.min(x0+1,W-1), y1=Math.min(y0+1,H-1);
-  let tx=fx-x0, ty=fy-y0; tx=tx*tx*(3-2*tx); ty=ty*ty*(3-2*ty);
-  const q=(i)=>MAT[m[i]], A=q(y0*W+x0),B=q(y0*W+x1),C=q(y1*W+x0),E=q(y1*W+x1);
-  return [0,1,2].map(k=>(A[k]*(1-tx)+B[k]*tx)*(1-ty)+(C[k]*(1-tx)+E[k]*tx)*ty);
+function base(m,x,y){ // crisp materials with a light texture: fabric weave, brushed metal, glossy acrylic
+  const cx=Math.min(Math.floor(x),W-1), cy=Math.min(Math.floor(y),H-1), code=m[cy*W+cx], c=MAT[code];
+  let f=1;
+  if(code===2) f=0.93+0.07*((Math.floor(x*SC/3)+Math.floor(y*SC/3))%2);            // weave
+  else if(code===1) f=0.92+0.08*Math.sin(y*SC*0.9);                                 // brushed metal
+  else if(code===3) f=1.0+0.12*Math.max(0,1-Math.abs(((x+y)%3)-1.5));              // gloss streak
+  else if(code===0) f=1.0;
+  return c.map(v=>Math.min(255,v*f));
 }
 const STOPS=[[0,[255,250,220]],[0.15,[255,214,90]],[0.45,[255,140,30]],[0.8,[235,70,25]],[1.3,[150,32,18]],[2.0,[40,24,20]]];
 function fire(age,win){ const a=age/win; if(a>=2) return [[24,16,14],0];
@@ -71,7 +73,7 @@ function draw(){
     const {ctx,gctx,cv,e}=p, w=cv.width, h=cv.height;
     if(!p.img) p.img=ctx.createImageData(w,h);
     const im=p.img.data, g=gctx.createImageData(w,h), gd=g.data, win=D.win;
-    const step=2; // compute every 2 px, fill a 2x2 block
+    const step=1;
     for(let py=0;py<h;py+=step){ for(let px=0;px<w;px+=step){
       const x=px/SC, y=py/SC; let c=base(D.mat,x,y), glowA=0;
       const ta=at(e.t,x,y);
@@ -84,8 +86,7 @@ function draw(){
     }}
     ctx.putImageData(p.img,0,0);
     gctx.putImageData(g,0,0);
-    ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.filter='blur(10px)'; ctx.globalAlpha=0.9; ctx.drawImage(p.glow,0,0);
-    ctx.filter='blur(3px)'; ctx.globalAlpha=0.5; ctx.drawImage(p.glow,0,0); ctx.restore();
+    ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.filter='blur(6px)'; ctx.globalAlpha=0.55; ctx.drawImage(p.glow,0,0); ctx.restore();
     const reached=e.hatch!==null && T>=e.hatch;
     p.hb.textContent = e.hatch===null ? L.never : (reached ? L.reached : L.hatch.replace('{m}', (e.hatch/60).toFixed(e.hatch>=600?0:1)));
     p.hb.className = 'h' + (e.hatch===null ? ' no' : '');

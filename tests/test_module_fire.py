@@ -175,3 +175,12 @@ def test_fire_power_is_the_one_minute_average_of_the_heat_release():
     i = 120  # t = 600 s
     assert z["hrr_kW"][i] == pytest.approx((z["heat_MJ"][i] - np.interp(540, tg, z["heat_MJ"])) * 1e3 / 60)
     assert z["hrr_kW"].min() >= 0
+
+
+def test_bass2_measurements_confirm_the_oxygen_to_co2_stoichiometry():
+    r = mf.bass2_co2_per_o2()
+    assert r["n_used"] >= 50 and r["n_used"] + r["n_left_out"] == 129
+    # BASS-II burned almost only PMMA: measured CO2 per O2 must sit near 5/6, well away from cellulose's 1.0
+    assert abs(r["slope"] - mf.PMMA_CO2_PER_O2) < 0.05
+    assert abs(r["median"] - mf.PMMA_CO2_PER_O2) < 0.06
+    assert r["slope"] < r["slope_with_co"] < 1.0  # carbon in CO closes part of the gap

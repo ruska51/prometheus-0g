@@ -585,3 +585,16 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   heatmap animation is replaced by app/module_view.py: canvas drawing with the arrival times interpolated between the
   10 cm cells (only over cells the flame reaches), soft material edges, glow and flicker (illustrative); Moon panel large,
   ISS and Earth below.
+
+## ADR-053: Module page - crisp drawing; science check of the oxygen balance with BASS-II data; equations
+- Date/time: 2026-11-15 19:40-19:48
+- Stage: post-12
+- Context: Ruslan: the module fire looks too blurred; "more science".
+- Consequences: materials drawn crisp (nearest cell, light texture), only the flame front interpolated, weaker glow.
+  New check with NASA data: BASS-II (PSI-25 table) O2, CO2, CO before/after 129 burns; 66 with an O2 drop of at least
+  0.3 points (63 left out and counted): CO2 formed per O2 used, slope through the origin 0.810 (median 0.80), 0.833 with
+  the carbon in CO - PMMA stoichiometry predicts 5/6 = 0.833 (almost all BASS-II samples are PMMA). This confirms the
+  oxygen-balance chemistry the zone model uses (cellulose 1.0 for fabric; no cellulose burns in BASS-II). Equations of
+  the page shown with their sources.
+- Decision (Ruslan): "more science"; the analysis choice (0.3-point threshold, slope through the origin) is Claude's
+  and is shown on the page.

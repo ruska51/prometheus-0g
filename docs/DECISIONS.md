@@ -734,3 +734,16 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Consequences: Streamlit light theme (paper #FBFAF7, ink #1C1E22, rules #DAD6CE, accent #D2571F, IBM Plex), light chart
   template, wall drawing on white paper (blueprint.render_rgb(light=True)) in the editor and maps, base side view in
   paper colours, dark logo ink; the fire animations stay dark windows like photographs in a report.
+
+## ADR-063: Editorial layout - top menu, serif headings, figures without boxes
+- Date/time: 2026-11-15 22:10-22:20
+- Stage: post-12
+- Context: Ruslan: the site still does not look human - it looks like a Streamlit template; colours and fonts; the text
+  is laid out "like an AI page".
+- Decision (Ruslan): "change it".
+- Consequences: navigation moved from the sidebar to a menu across the top (st.navigation position "top"; sidebar
+  collapsed, its nav hidden); language (EN / RU) and the glossary in the top-right corner; Streamlit toolbar reduced to
+  viewer mode, its decoration bar hidden. Type: Newsreader serif for headings and the big figures, IBM Plex Sans for
+  text, no monospaced labels; text in a reading column (74 characters); metrics as large figures over a thin rule, no
+  boxes; evidence badges as quiet labels with a coloured dot instead of filled pills; the AI pilot as one dark round
+  button. Paper #F7F5F0, ink #16181C, accent #C8501D.

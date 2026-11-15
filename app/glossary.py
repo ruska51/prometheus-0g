@@ -158,8 +158,8 @@ def entries() -> list[tuple[str, str]]:
 
 
 def sidebar_glossary() -> None:
-    """A searchable glossary in a sidebar popover, on every page."""
-    with st.sidebar.popover(t("Glossary"), icon=":material/menu_book:", use_container_width=True):
+    """A searchable glossary in a popover in the top-right corner of every page."""
+    with st.container(key="gloss_bar"), st.popover(t("Glossary")):
         q = st.text_input(t("Find a term"), key="glossary_q", placeholder="K, PSI, ...").strip().lower()
         for term, d in entries():
             if not q or q in term.lower() or q in d.lower():

@@ -51,9 +51,10 @@ RESULT_SCHEMA = 2  # 2: Russian fields reasons_ru / notes_ru (ADR-041)
 
 
 def badge(text: str, color: str) -> str:
-    return (
-        f"<span style='background:{color};color:white;padding:2px 8px;border-radius:10px;"
-        f"font-size:0.78rem;font-weight:600;white-space:nowrap'>{text}</span>"
+    return (  # a quiet label with a coloured dot, not a filled pill (ADR-063)
+        f"<span style='display:inline-flex;align-items:center;gap:5px;font-size:0.8rem;color:#4a4f57;"
+        f"white-space:nowrap;margin-right:8px'><span style='width:7px;height:7px;border-radius:50%;"
+        f"background:{color};display:inline-block'></span>{text}</span>"
     )
 
 

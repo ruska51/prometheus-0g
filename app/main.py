@@ -49,7 +49,9 @@ _refresh_code()
 
 from i18n import language_selector, t  # noqa: E402
 
-st.set_page_config(page_title=t("Prometheus-0g - Fire on the Moon"), page_icon=":fire:", layout="wide")
+st.set_page_config(
+    page_title=t("Prometheus-0g - Fire on the Moon"), page_icon=":fire:", layout="wide", initial_sidebar_state="collapsed"
+)
 language_selector()
 
 from theme import inject as inject_theme  # noqa: E402
@@ -75,7 +77,7 @@ pages = {  # three groups: start here, explore the Moon base, check the evidence
         st.Page("views/method.py", title=t("Method & sources"), icon=":material/menu_book:"),
     ],
 }
-nav = st.navigation(pages)
+nav = st.navigation(pages, position="top")  # menu across the top, no sidebar (ADR-063)
 
 from glossary import sidebar_glossary  # noqa: E402
 from pilot_ui import floating_pilot  # noqa: E402

@@ -8,10 +8,14 @@ textColor = "#1C1E22"
 linkColor = "#1F5FA8"
 borderColor = "#DAD6CE"
 font = "IBM Plex Sans:https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap, sans-serif"
-headingFont = "IBM Plex Sans:https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500;600&display=swap, sans-serif"
+headingFont = "Newsreader:https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&display=swap, serif"
 baseRadius = "0.35rem"
 codeFont = "IBM Plex Mono:https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap, monospace"
 chartCategoricalColors = ["#D2571F", "#1F5FA8", "#2A9D8F", "#6B7280", "#E9A23B", "#2F855A", "#B83280"]
+
+[client]
+toolbarMode = "viewer"
+showSidebarNavigation = false
 
 [server]
 headless = true

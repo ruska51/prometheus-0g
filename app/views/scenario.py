@@ -1,7 +1,7 @@
 """Moon-base scenario: conditions in, physics + hybrid prediction with band, reliability, ISS/Earth comparison (UI_SPEC page 3)."""
 
 import streamlit as st
-from common import evidence_badge, flame_sim, next_step, qp_get, scenario, share_link, source_note, status_badge
+from common import evidence_badge, external_params, flame_sim, next_step, qp_get, scenario, share_link, source_note, status_badge
 from flame_view import render as render_flame
 from i18n import flame_labels, lang, t
 
@@ -34,7 +34,9 @@ def clip(lo, hi):
 
 
 ss = st.session_state
-if "sc_preset" not in ss:  # first visit in this session: settings from the page address, if any (ADR-055)
+if "sc_preset" not in ss or external_params(
+    "scenario"
+):  # first visit, or a link in this session: settings from the page address, if any (ADR-055)
     ss["sc_preset"] = qp_get("preset", one_of(OPTS), OPTS[1])
     first = PRESETS.get(ss["sc_preset"], PRESETS["Moon base / rover (planned)"])
     ss["sc_fuel"] = qp_get("fuel", one_of(["Methanol", "Heptane"]), "Methanol")
@@ -66,7 +68,8 @@ with c_in:
             "dil": dil,
             "xdil": f"{x_dil:.2f}",
             "d0": f"{d0:.1f}",
-        }
+        },
+        "scenario",
     )
     p_atm = p_psi / 14.696
     x_co2 = x_dil if dil == "CO2" else 0.0

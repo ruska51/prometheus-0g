@@ -15,6 +15,7 @@ PAGES = [
     "assistant",
     "scenario",
     "module",
+    "base",
     "risk_map",
     "investigations",
     "data_explorer",

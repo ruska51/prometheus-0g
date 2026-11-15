@@ -12,7 +12,7 @@ import blueprint as bp
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
-from common import next_step, qp_get, share_link, source_note
+from common import external_params, next_step, qp_get, share_link, source_note
 from i18n import t, tr_insight
 from module_view import render as render_fire
 from plotly.subplots import make_subplots
@@ -155,6 +155,29 @@ def _to_hatch(key: tuple[str, ...], env: str, vent: int, fac: float = 1.0) -> np
     return mf.time_to_hatch(_grid(key), env_obj(env, vent, fac))
 
 
+@st.cache_data(show_spinner=t("Placing detectors..."), max_entries=32)
+def _detectors(key: tuple[str, ...], env: str, vent: int, fac: float, n: int, radius: float) -> dict:
+    return mf.place_detectors(_grid(key), env_obj(env, vent, fac), n, radius)
+
+
+@st.cache_data(show_spinner=False, max_entries=32)
+def _suppression(key: tuple[str, ...], env: str, vent: int, fac: float, n: int, reach: float) -> dict:
+    return mf.place_suppression(_grid(key), env_obj(env, vent, fac), n, reach)
+
+
+def ring(fig: go.Figure, r: int, c: int, radius: float, color: str, dash: str) -> None:
+    fig.add_shape(
+        type="circle",
+        x0=c - radius,
+        x1=c + radius,
+        y0=r - radius,
+        y1=r + radius,
+        line={"color": color, "width": 1.6, "dash": dash},
+        fillcolor=color.replace("1)", "0.08)"),
+        layer="above",
+    )
+
+
 @st.cache_data(show_spinner=t("Trying every 50 cm strip..."), max_entries=32)
 def _firebreak(key: tuple[str, ...], ign: tuple[int, int], env: str, vent: int, fac: float = 1.0):
     return mf.best_firebreak(_grid(key), ign, env_obj(env, vent, fac))
@@ -211,7 +234,7 @@ def decode_wall(code: str, shape: tuple[int, int]) -> np.ndarray:
 
 ss = st.session_state
 WALLS = list(mf.PRESETS)
-if "mod_wall" not in ss:  # settings from the page address on the first visit (ADR-055)
+if "mod_wall" not in ss or external_params("module"):  # first visit or a link (ADR-055)
     keep = ss.get("module", {}).get("preset", WALLS[0])
     wall = qp_get("wall", lambda v: v if v in WALLS else int("x"), keep)
     ss["mod_wall"] = wall
@@ -375,7 +398,7 @@ elif "L" in st.query_params:
     del st.query_params["L"]
 sh1, sh2, _ = st.columns([1.2, 1.5, 1.5])
 with sh1:
-    share_link(shared)
+    share_link(shared, "module")
 report_slot = sh2.empty()  # filled at the end of the page, when all results are known
 vol = 30  # module volume, m3; the Module air tab has the slider
 times = {k: _arrival(key, ign, k, vent, fac) for k in ENV_ORDER}
@@ -383,8 +406,14 @@ summ = {k: mf.summary(layout, times[k]) for k in ENV_ORDER}
 
 t_end = max(summ[k]["time_all_s"] for k in ENV_ORDER)
 
-tab_spread, tab_air, tab_design, tab_moon = st.tabs(
-    [t("🔥 Fire spread"), t("🫁 Module air"), t("🛡️ Safer design"), t("🌙 Lunar gravity & checklist")]
+tab_spread, tab_air, tab_design, tab_detect, tab_moon = st.tabs(
+    [
+        t("🔥 Fire spread"),
+        t("🫁 Module air"),
+        t("🛡️ Safer design"),
+        t("🚨 Detection & suppression"),
+        t("🌙 Lunar gravity & checklist"),
+    ]
 )
 with tab_spread:
     st.subheader(t("How the fire spreads"))
@@ -467,8 +496,21 @@ with tab_air:
             )
         )
         z1, z2 = st.columns([1, 2])
-        vol = z1.slider(t("Free gas volume of your module, m3"), 5, 120, 30, step=5)
-        z1.caption(t("A design choice - no module volume is given in our sources."))
+        z1.markdown("**" + t("Module size") + "**")
+        mlen = z1.slider(t("Length, m"), 2.0, 15.0, 5.0, 0.5, key="mod_len")
+        mdia = z1.slider(t("Inner diameter, m"), 2.0, 8.0, 3.5, 0.1, key="mod_dia")
+        mout = z1.slider(t("Space taken by racks and equipment, %"), 0, 80, 40, 5, key="mod_out")
+        geo = mf.module_geometry(mlen, mdia, mout / 100)
+        vol = round(geo["free_volume_m3"], 1)
+        z1.caption(
+            t(
+                "Free gas volume {v} m3; interior wall {a} m2 = about {n} walls of 4 m x 2 m like the one above. Size and "
+                "racks are design inputs - no module dimensions are given in our sources.",
+                v=f"{vol:.0f}",
+                a=f"{geo['wall_m2']:.0f}",
+                n=f"{geo['sections']:.0f}",
+            )
+        )
         tz = np.linspace(0, t_end, 160)
         zones = {k: mf.zone_history(layout, times[k], tz, float(vol), x_o2, p_atm) for k in ENV_ORDER}
         zk = zones["moon"]
@@ -736,6 +778,133 @@ with tab_design:
                 "change the timeline, not how long a real fire would take."
             )
         )
+
+with tab_detect:
+    st.subheader(t("Where to put detectors and suppression"))
+    st.caption(
+        t(
+            "A design aid on the same NASA-measured spread rates. A detector counts a fire as seen when the flame reaches "
+            "material within its coverage radius - a conservative stand-in: real smoke and gas detectors can react "
+            "earlier. Detectors are placed one by one where they cut the average detection time most, over fires that "
+            "start anywhere on the wall. Suppression points (portable extinguisher or fire port) cover first the material "
+            "from which a fire reaches the hatch soonest - the crew's way out. Radius and reach are design inputs, not "
+            "NASA numbers. Evidence: model."
+        )
+    )
+    q1, q2, q3 = st.columns(3)
+    genv = q1.radio(t("Gravity"), ENV_ORDER, format_func=env_label, key="det_env")
+    n_det = q2.slider(t("Detectors"), 1, 8, 3, key="det_n")
+    rad_cm = q2.slider(t("Detector coverage radius, cm"), 20, 150, 50, step=10, key="det_r")
+    n_sup = q3.slider(t("Suppression points"), 0, 4, 1, key="sup_n")
+    reach_cm = q3.slider(t("Suppression reach, cm"), 50, 300, 100, step=10, key="sup_r")
+    det = _detectors(key, genv, vent, fac, n_det, rad_cm / 10)
+    sup = _suppression(key, genv, vent, fac, n_sup, reach_cm / 10)
+    k1, k2, k3, k4 = st.columns(4)
+    k1.metric(
+        t("Mean time to detect"),
+        minutes(det["mean_s"]),
+        help=t("Average over fires starting on any flammable cell that a detector sees."),
+    )
+    k2.metric(t("Slowest detection"), minutes(det["worst_s"]))
+    k3.metric(t("Fires seen within 1 min"), f"{det['share_1min'] * 100:.0f} %")
+    k4.metric(
+        t("Hatch-critical material covered"),
+        f"{sup['covered_share'] * 100:.0f} %" if n_sup else "-",
+        help=t("Share of the material from which a fire reaches the hatch, weighted by how soon it gets there."),
+    )
+    if det["share_detected"] < 1:
+        st.warning(
+            t(
+                "{p} % of the material is never seen: a fire there never reaches a coverage zone. Add a detector or widen the radius.",
+                p=f"{(1 - det['share_detected']) * 100:.0f}",
+            )
+        )
+    dm = np.where(np.isfinite(det["time"]), det["time"] / 60, np.nan)
+    dfig = go.Figure()
+    top = float(np.nanmax(dm)) if np.isfinite(dm).any() else 1.0
+    step = next(v for v in (0.5, 1, 2, 5, 10, 15, 20, 30, 60) if top / v <= 9)
+    dfig.add_trace(
+        go.Contour(
+            z=dm,
+            contours={
+                "start": 0,
+                "end": top,
+                "size": step,
+                "showlabels": True,
+                "labelfont": {"color": "#eafcff", "size": 11, "family": "Space Grotesk, sans-serif"},
+            },
+            colorscale=[[0, "#0b3d4f"], [0.35, "#1aa6c9"], [0.7, "#ffb627"], [1, "#ff4d2e"]],
+            opacity=0.6,
+            line={"width": 1.2, "color": "rgba(220,250,255,0.8)"},
+            colorbar={
+                "title": {"text": t("min"), "font": {"color": "#cfd6e4"}},
+                "tickfont": {"color": "#cfd6e4"},
+                "thickness": 12,
+            },
+            hovertemplate=t("seen after {m} min").replace("{m}", "%{z:.1f}") + "<extra></extra>",
+        )
+    )
+    for r, c in det["cells"]:
+        ring(dfig, r, c, rad_cm / 10, "rgba(56,232,255,1)", "solid")
+    for r, c in sup["cells"]:
+        ring(dfig, r, c, reach_cm / 10, "rgba(255,90,90,1)", "dash")
+    if det["cells"]:
+        dr, dc = zip(*det["cells"], strict=True)
+        dfig.add_trace(
+            go.Scatter(
+                x=list(dc),
+                y=list(dr),
+                mode="markers+text",
+                text=[f"D{i + 1}" for i in range(len(dr))],
+                textposition="top center",
+                textfont={"color": "#38e8ff", "size": 12},
+                marker={"symbol": "circle", "size": 13, "color": "#38e8ff", "line": {"width": 2, "color": "#04151c"}},
+                hoverinfo="skip",
+            )
+        )
+    if sup["cells"]:
+        sr, sc_ = zip(*sup["cells"], strict=True)
+        dfig.add_trace(
+            go.Scatter(
+                x=list(sc_),
+                y=list(sr),
+                mode="markers+text",
+                text=[f"S{i + 1}" for i in range(len(sr))],
+                textposition="bottom center",
+                textfont={"color": "#ff8080", "size": 12},
+                marker={"symbol": "diamond", "size": 15, "color": "#ff4d4d", "line": {"width": 2, "color": "#2a0606"}},
+                hoverinfo="skip",
+            )
+        )
+    sheet(dfig, layout, 460)
+    dfig.update_layout(
+        title={
+            "text": t("How soon a fire starting here is seen (minutes); D = detector, S = suppression point"),
+            "font": {"color": "#e8ecf4", "size": 14},
+            "x": 0.01,
+        }
+    )
+    st.plotly_chart(dfig, use_container_width=True)
+    pos = ", ".join(f"D{i + 1} ({c / 10:.1f} m, {r / 10:.1f} m)" for i, (r, c) in enumerate(det["cells"]))
+    pos += "".join(f", S{i + 1} ({c / 10:.1f} m, {r / 10:.1f} m)" for i, (r, c) in enumerate(sup["cells"]))
+    st.caption(t("Positions from the left and top edge of the wall:") + " " + pos)
+
+    st.markdown("**" + t("Gas sensor in the module air") + "**")
+    g1, g2 = st.columns([1, 2])
+    rise_pct = g1.slider(t("CO2 alarm: rise above the start, %-points"), 0.02, 0.5, 0.1, step=0.02, key="gas_rise")
+    g1.caption(t("A design input; the well-mixed air model gives the CO2 rise from the burnt fabric (Module air tab)."))
+    if t_end > 0:
+        tz2 = np.linspace(0, t_end, 400)
+        rows_ = []
+        for k in ENV_ORDER:
+            zk2 = mf.zone_history(layout, times[k], tz2, float(vol), x_o2, p_atm)
+            ga = mf.gas_alarm_time(tz2, zk2["x_co2"], rise_pct / 100)
+            rows_.append((env_label(k), minutes(ga)))
+        gcols = g2.columns(3)
+        for col, (lab, val) in zip(gcols, rows_, strict=True):
+            col.metric(lab, val, help=t("Time after ignition when the CO2 alarm would sound, this fire, {v} m3 of air.", v=vol))
+    else:
+        g2.info(t("Nothing burns yet: paint some fabric or acrylic, then click on it to set the ignition point."))
 
 with tab_moon:
     # ---- solids at lunar gravity -------------------------------------------------------------------------------------

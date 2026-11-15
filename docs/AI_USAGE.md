@@ -46,3 +46,4 @@ images or video.
 | 2026-11-15 | post-12 | Claude Code (Anthropic, Claude Opus) | Assistant no-AI fallback; module-fire page and spread sketch; checklist texts | Ruslan Sharafutdinov (ADR-049) |
 | 2026-11-15 | post-12 | Claude Code (Anthropic, Claude Opus) | Navigation groups, tour links, module tabs, plain-language tables | Ruslan Sharafutdinov (ADR-054) |
 | 2026-11-15 | post-12 | Claude Code (Anthropic, Claude Opus) | Shareable links, module report, glossary texts (EN/RU) | Ruslan Sharafutdinov (ADR-055) |
+| 2026-11-15 | post-12 | Claude Code (Anthropic, Claude Opus) | Visual design layer, blueprint drawing, fire particles; detector/suppression placement, module geometry, base planner (code and texts) | Ruslan Sharafutdinov (ADR-056, ADR-057) |

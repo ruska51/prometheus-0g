@@ -628,3 +628,38 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   inputs, hatch times in three gravities, module air, lunar-gravity firebreak, sources and limits, link to reopen).
   Glossary of 20 terms in English and Russian (app/glossary.py): searchable popover in the sidebar on every page and a
   section on Method & sources; definitions restate the pages and docs/PHYSICS.md, no new numbers.
+
+## ADR-056: "Mission control" visual design; engineering-drawing wall; livelier fire
+- Date/time: 2026-11-15 20:42-20:51
+- Stage: post-12
+- Context: Ruslan: "make it so beautiful and modern that I am amazed - it still looks like a prototype"; the burning
+  should be "more epic"; the cells look "like pixels in a cheap simulation game - more serious and engineering-like".
+- Options: Mission control (dark space, glass, gradients) / light NASA minimalism / cinematic cover.
+- Claude's recommendation: Mission control.
+- Decision (Ruslan): "the coolest and most epic"; engineering look for the wall.
+- Consequences: app/theme.py (starfield and nebula background, glass cards, gradient titles, glowing tabs, buttons and
+  links, sidebar section headers), original logo (no NASA marks), transparent chart template. app/blueprint.py draws the
+  wall as an engineering sheet (flat fills, CAD hatching, region outlines, 10 cm / 50 cm / 1 m grid, axes in metres) for
+  the editor, the animation and the maps; the design map uses labelled isochrones. The animation adds flame tongues,
+  sparks and smoke whose drift follows gravity - Earth 1, Moon 0.4 (NASA: about 100 cm/s buoyant flow on Earth vs 40
+  cm/s on the Moon, NTRS 20210020516), microgravity only the 20 cm/s ventilation - labelled illustrative.
+
+## ADR-057: Module size, Moon-base planner, detector and suppression placement
+- Date/time: 2026-11-15 20:51-20:59
+- Stage: post-12
+- Context: Ruslan: add the module / base area and where detection and suppression are most effective.
+- Options: detection - A) coverage + time (detectors placed on the measured spread rates, suppression where fires reach
+  the hatch soonest, CO2 alarm time from the zone model), B) detectors only, C) gas alarm only; size - A) module
+  dimensions, B) longer wall grid, C) whole base of modules.
+- Claude's recommendation: detection A; size A (C judged too long for the time left).
+- Decision (Ruslan): detection A; size: module dimensions and the whole base ("we will make it all").
+- Consequences: fif.physics.module_fire gains time_to_cells (reverse Dijkstra to any target set), place_detectors
+  (greedy, minimises the mean detection time over fires starting on any flammable cell; a fire never reaching a
+  coverage zone is penalised), place_suppression (greedy coverage weighted by 1 / (1 + minutes to the hatch)),
+  gas_alarm_time, module_geometry (cylinder: free volume after racks, wall area, 4 m x 2 m sections). Module fire page:
+  module length, diameter and racks set the air volume; new tab "Detection & suppression" (map of detection time,
+  coverage rings, metrics, CO2 alarm time). New page "Base planner": editable table of modules, side view to scale
+  coloured by time to the hatch, per-module air and detectors needed for 90 % of fires within 1 min, "fix first" link.
+  Detection radius, suppression reach, alarm threshold and module sizes are design inputs, not NASA numbers; a detector
+  "seeing" the flame within its radius is a conservative proxy (labelled). Links into Scenario / Module from other pages
+  now reload their settings (common.external_params).

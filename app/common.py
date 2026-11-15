@@ -153,6 +153,7 @@ TOUR = [
     ("views/overview.py", "Overview"),
     ("views/scenario.py", "Moon-base scenario"),
     ("views/module.py", "Module fire"),
+    ("views/base.py", "Base planner"),
     ("views/risk_map.py", "Risk map"),
     ("views/insights.py", "Insights"),
     ("views/investigations.py", "Investigations"),
@@ -189,11 +190,19 @@ def qp_get(name: str, cast, default):
         return default
 
 
-def share_link(params: dict[str, str]) -> None:
+def external_params(page: str) -> bool:
+    """True when the address holds settings this page did not write itself: a shared link, a link from another page or
+    the AI pilot. Then the page reloads its inputs from the address."""
+    cur = {k: st.query_params[k] for k in st.query_params if k != "lang"}
+    return bool(cur) and cur != st.session_state.get(f"_written_{page}")
+
+
+def share_link(params: dict[str, str], page: str = "") -> None:
     """Write the settings into the address bar and offer the link in a popover with a copy button."""
     from urllib.parse import urlencode
 
     st.query_params.update(params)
+    st.session_state[f"_written_{page}"] = dict(params)
     full = {k: st.query_params[k] for k in st.query_params}
     try:
         base = str(st.context.url).split("?")[0]

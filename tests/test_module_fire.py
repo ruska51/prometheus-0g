@@ -184,3 +184,37 @@ def test_bass2_measurements_confirm_the_oxygen_to_co2_stoichiometry():
     assert abs(r["slope"] - mf.PMMA_CO2_PER_O2) < 0.05
     assert abs(r["median"] - mf.PMMA_CO2_PER_O2) < 0.06
     assert r["slope"] < r["slope_with_co"] < 1.0  # carbon in CO closes part of the gap
+
+
+def test_detectors_cut_detection_time_and_cover_more():
+    """ADR-057: more detectors never make the mean detection time worse; a detector on the ignition cell sees it at 0."""
+    lay = mf.grid(mf.PRESETS["crew"])
+    env = mf.ENVIRONMENTS["moon"]
+    one, three = mf.place_detectors(lay, env, 1), mf.place_detectors(lay, env, 3)
+    assert three["share_detected"] >= one["share_detected"]
+    assert three["mean_s"] <= one["mean_s"] or three["share_detected"] > one["share_detected"]
+    r, c = three["cells"][0]
+    zone = mf.disc(lay.shape, r, c, 5) & np.isin(lay, mf.FLAMMABLE)
+    assert np.all(three["time"][zone] == 0)
+
+
+def test_time_to_cells_matches_forward_arrival():
+    lay = mf.grid(mf.PRESETS["lab"])
+    env = mf.ENVIRONMENTS["earth"]
+    fwd0 = mf.arrival_times(lay, mf.IGNITION["lab"], env)
+    target = tuple(int(v) for v in np.argwhere(np.isfinite(fwd0) & (fwd0 > 0))[-1])  # a cell the fire does reach
+    seeds = np.zeros(lay.shape, dtype=bool)
+    seeds[target] = True
+    back = mf.time_to_cells(lay, env, seeds)
+    ign = mf.IGNITION["lab"]
+    fwd = mf.arrival_times(lay, ign, env)
+    assert back[ign] == pytest.approx(fwd[target])
+
+
+def test_suppression_covers_hatch_critical_material_and_geometry():
+    lay = mf.grid(mf.PRESETS["crew"])
+    s = mf.place_suppression(lay, mf.ENVIRONMENTS["moon"], 1, 10)
+    assert 0 < s["covered_share"] <= 1
+    g = mf.module_geometry(5.0, 3.5, 0.4)
+    assert g["free_volume_m3"] == pytest.approx(math.pi * 3.5**2 / 4 * 5 * 0.6)
+    assert g["sections"] == pytest.approx(math.pi * 3.5 * 5 / 8)

@@ -506,3 +506,140 @@ def bass2_co2_per_o2(min_drop_pct: float = 0.3) -> dict:
         "slope": float((x * y).sum() / (x * x).sum()),
         "slope_with_co": float((x * yc).sum() / (x * x).sum()),
     }
+
+
+# ---- detection and suppression placement (ADR-057): design aids on the measured spread rates ---------------------
+# No NASA data say where detectors should go. The sketch uses the same measured rates: a detector "sees" a fire when
+# the flame reaches material within its coverage radius (a conservative proxy - real smoke and gas detectors can react
+# earlier); the radius is a design input. Suppression points (portable extinguisher or fire port) are placed to reach
+# first the material from which a fire gets to the hatch soonest - the crew's way out. Evidence: model (design aid).
+def time_to_cells(layout: np.ndarray, env: Environment, seeds: np.ndarray) -> np.ndarray:
+    """For every cell: the time (s) a fire that starts there needs to reach any flammable cell of ``seeds`` (bool mask);
+    inf = never. Reverse Dijkstra with the same rates and steps as ``arrival_times``."""
+    h, w = layout.shape
+    t = np.full((h, w), math.inf)
+    heap = [(0.0, int(r), int(c)) for r, c in zip(*np.where(seeds & np.isin(layout, FLAMMABLE)), strict=True)]
+    for _, r, c in heap:
+        t[r, c] = 0.0
+    heapq.heapify(heap)
+    steps = [(dr, dc) for dr in (-1, 0, 1) for dc in (-1, 0, 1) if dr or dc]
+    while heap:
+        tv, r, c = heapq.heappop(heap)
+        if tv > t[r, c]:
+            continue
+        for dr, dc in steps:
+            ur, uc = r - dr, c - dc
+            if not (0 <= ur < h and 0 <= uc < w) or layout[ur, uc] not in FLAMMABLE:
+                continue
+            v = _rate(env, layout[r, c], dc, dr)
+            if v <= 0:
+                continue
+            tu = tv + CELL_MM * math.hypot(dr, dc) / v
+            if tu < t[ur, uc]:
+                t[ur, uc] = tu
+                heapq.heappush(heap, (tu, ur, uc))
+    return t
+
+
+def disc(shape: tuple[int, int], r: int, c: int, radius_cells: float) -> np.ndarray:
+    """Cells whose centres lie within ``radius_cells`` of cell (r, c)."""
+    rr, cc = np.indices(shape)
+    return (rr - r) ** 2 + (cc - c) ** 2 <= radius_cells**2 + 1e-9
+
+
+def candidates(layout: np.ndarray, step: int = 2) -> list[tuple[int, int]]:
+    """Mounting positions on a ``step``-cell lattice inside the wall frame (any material: detectors sit on racks too)."""
+    h, w = layout.shape
+    return [(r, c) for r in range(1, h - 1, step) for c in range(1, w - 1, step) if layout[r, c] != "H"]
+
+
+def place_detectors(layout: np.ndarray, env: Environment, n: int, radius_cells: float = 5, step: int = 2) -> dict:
+    """Greedy placement of ``n`` detectors that minimises the mean time to detect a fire starting on any flammable cell.
+    A fire never reaching any coverage zone counts as undetected (penalty: the longest finite time + 10 min).
+    Returns positions, the per-cell detection time (s, inf = never) and summary numbers."""
+    fl = np.isin(layout, FLAMMABLE)
+    if not fl.any() or n <= 0:
+        return {
+            "cells": [],
+            "time": np.full(layout.shape, math.inf),
+            "mean_s": math.inf,
+            "worst_s": math.inf,
+            "share_1min": 0.0,
+            "share_detected": 0.0,
+        }
+    cand = candidates(layout, step)
+    taus = np.array([time_to_cells(layout, env, disc(layout.shape, r, c, radius_cells))[fl] for r, c in cand])
+    finite = taus[np.isfinite(taus)]
+    penalty = (float(finite.max()) if finite.size else 0.0) + 600.0
+    capped = np.where(np.isfinite(taus), taus, penalty)
+    chosen: list[int] = []
+    best = np.full(fl.sum(), penalty)
+    for _ in range(min(n, len(cand))):
+        scores = np.minimum(capped, best).mean(axis=1)
+        if chosen:
+            scores[chosen] = np.inf
+        k = int(np.argmin(scores))
+        chosen.append(k)
+        best = np.minimum(best, capped[k])
+    det = np.full(layout.shape, math.inf)
+    raw = np.min(taus[chosen], axis=0)
+    det[fl] = raw
+    ok = np.isfinite(raw)
+    return {
+        "cells": [cand[k] for k in chosen],
+        "time": det,
+        "mean_s": float(raw[ok].mean()) if ok.any() else math.inf,
+        "worst_s": float(raw[ok].max()) if ok.any() else math.inf,
+        "share_1min": float((raw <= 60).mean()),
+        "share_detected": float(ok.mean()),
+    }
+
+
+def place_suppression(layout: np.ndarray, env: Environment, n: int, reach_cells: float = 10, step: int = 2) -> dict:
+    """Greedy placement of ``n`` suppression points (reach ``reach_cells``) covering first the material from which a fire
+    reaches the hatch soonest: weight of a cell = 1 / (1 + time to the hatch in minutes); cells that never reach the
+    hatch weigh 0. Returns positions and the covered share of that weight ("hatch-critical material")."""
+    th = time_to_hatch(layout, env)
+    wgt = np.where(np.isfinite(th), 1.0 / (1.0 + th / 60.0), 0.0)
+    total = float(wgt.sum())
+    if total == 0 or n <= 0:
+        return {"cells": [], "covered_share": 0.0, "weight": wgt}
+    cand = candidates(layout, step)
+    masks = np.array([disc(layout.shape, r, c, reach_cells).ravel() for r, c in cand])
+    covered = np.zeros(layout.size, dtype=bool)
+    chosen: list[int] = []
+    w = wgt.ravel()
+    for _ in range(min(n, len(cand))):
+        gain = (masks & ~covered) @ w
+        if chosen:
+            gain[chosen] = -1
+        k = int(np.argmax(gain))
+        if gain[k] <= 0:
+            break
+        chosen.append(k)
+        covered |= masks[k]
+    return {"cells": [cand[k] for k in chosen], "covered_share": float(w[covered].sum() / total), "weight": wgt}
+
+
+def gas_alarm_time(t_grid: np.ndarray, x_co2: np.ndarray, rise: float) -> float:
+    """First time (s) the well-mixed CO2 mole fraction has risen by ``rise`` (e.g. 0.001 = 0.1 %-points); inf if never."""
+    hit = np.nonzero(x_co2 >= rise)[0]
+    return float(t_grid[hit[0]]) if hit.size else math.inf
+
+
+# ---- module and base geometry (ADR-057): design inputs, no dimensions from our sources -------------------------
+WALL_SECTION_M2 = 4.0 * 2.0  # the drawn wall: 40 x 20 cells of 10 cm
+
+
+def module_geometry(length_m: float, diameter_m: float, outfitting: float) -> dict:
+    """Cylindrical module: total and free gas volume (m3; ``outfitting`` = share of the volume taken by racks and
+    equipment), interior lateral wall area (m2) and how many 4 m x 2 m wall sections it holds."""
+    vol = math.pi * diameter_m**2 / 4 * length_m
+    wall = math.pi * diameter_m * length_m
+    return {
+        "volume_m3": vol,
+        "free_volume_m3": vol * (1 - outfitting),
+        "wall_m2": wall,
+        "sections": wall / WALL_SECTION_M2,
+        "floor_m2": length_m * diameter_m,
+    }

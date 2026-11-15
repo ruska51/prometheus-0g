@@ -147,3 +147,21 @@ def test_atmosphere_scaling_follows_the_nasa_formula_and_its_constants():
     t1 = mf.arrival_times(g, ign, mf.iss_with_flow(1))[0, -1]
     t2 = mf.arrival_times(g, ign, mf.scaled(mf.iss_with_flow(1), moon))[0, -1]
     assert t2 == pytest.approx(t1 / moon)
+
+
+def test_zone_model_constants_are_quoted_and_balances_hold():
+    assert "0.24 g cellulose (about 18 cm2 SIBAL fabric)" in _text("20210020516")
+    assert "the amount of oxygen consumed by burning" in _text("20210020516") and "0.28 g" in _text("20210020516")
+    assert "the constant 13.1 kJ of heat released per gram of O2 consumed" in _text("20210011385")
+    saffire = _text("20170008805")
+    assert "Saffire 1: 1200 +/- 300 W" in saffire and "Total burn time is 420 s" in saffire and "(40.6 cm x 94 cm)" in saffire
+    assert mf.O2_G_PER_M2_FABRIC * 1e-4 * 18 == pytest.approx(0.28)
+    g = mf.grid(mf.PRESETS["crew"])
+    tt = mf.arrival_times(g, mf.IGNITION["crew"], mf.ENVIRONMENTS["moon"])
+    tg = np.linspace(0, 3000, 61)
+    z = mf.zone_history(g, tt, tg, volume_m3=20.0, x_o2=0.30, p_atm=0.694)
+    assert np.all(np.diff(z["x_o2"]) <= 0) and np.all(np.diff(z["x_co2"]) >= 0)
+    assert z["x_o2"][0] == pytest.approx(0.30, abs=1e-3) and z["x_o2"][-1] + z["x_co2"][-1] == pytest.approx(0.30)  # 1 CO2 per O2
+    assert z["heat_MJ"][-1] == pytest.approx(z["area_m2"][-1] * 0.28 / 18e-4 * 13.1 / 1000)
+    big = mf.zone_history(g, tt, tg, volume_m3=40.0, x_o2=0.30, p_atm=0.694)
+    assert big["dT_K"][-1] == pytest.approx(z["dT_K"][-1] / 2, rel=1e-6)  # twice the air, half the warming

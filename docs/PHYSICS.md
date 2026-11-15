@@ -156,6 +156,10 @@ Atmosphere (ADR-051, physics theory): all rates are multiplied by (T_f - T_v)/(T
 NASA/TM-20210011385 Eq. (2.2) for the same material and flow, with T_v = 673 K (same report) and T_f the stoichiometric
 equilibrium flame temperature of n-heptane vapour (entering at T_v) in the chosen O2/N2 mixture and pressure
 (fif.physics.flame). Not validated against spread measurements above 22 % O2 (none in our sources).
+Module air (ADR-052, well-mixed zone model): O2 used = 0.28 g per 18 cm2 of burnt SIBAL fabric (NTRS 20210020516);
+heat = 13.1 kJ per g O2 (NASA/TM-20210011385); CO2 formed = O2 used (cellulose, mol per mol); cabin gas n = pV/(RT) at
+298.15 K for the chosen free volume. Not modelled: wall heat loss (so no temperature is shown), smoke, CO, crew breathing,
+air revitalisation, acrylic burning.
 
 ## 11. References
 

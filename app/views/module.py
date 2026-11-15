@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 import streamlit as st
 from common import source_note
 from i18n import t, tr_insight
+from module_view import render as render_fire
 from plotly.subplots import make_subplots
 
 from fif.insights.moon import moon_answer
@@ -283,79 +284,25 @@ for col, k in zip(mcols, ENV_ORDER, strict=True):
 
 t_end = max(summ[k]["time_all_s"] for k in ENV_ORDER)
 if t_end > 0:
-    n_frames = 40
-    t_grid = np.linspace(0, t_end * 1.05, n_frames)
-    window = max(45.0, t_end / 14)  # display only: how long a cell glows before it turns to embers and char
-    base = np.vectorize(CODE_Z.get)(layout).astype(float)
-
-    def z_at(tk: np.ndarray, now: float) -> np.ndarray:
-        age = now - tk
-        z = base.copy()
-        for lo, hi, val in ((0, 0.3, 5), (0.3, 0.7, 6), (0.7, 1.2, 7), (1.2, 2.0, 8)):
-            z[(age >= lo * window) & (age < hi * window)] = val
-        z[age >= 2.0 * window] = 9
-        return z
-
-    race = make_subplots(
-        rows=3,
-        cols=1,
-        vertical_spacing=0.07,
-        subplot_titles=[f"{env_label(k)} - {t('hatch')}: {minutes(summ[k]['hatch_s'])}" for k in ENV_ORDER],
+    render_fire(
+        layout,
+        [{"label": env_label(k), "t": times[k], "hatch": summ[k]["hatch_s"]} for k in ENV_ORDER],
+        {
+            "play": "▶ " + t("Play"),
+            "pause": "❚❚ " + t("Pause"),
+            "replay": "↺ " + t("Replay"),
+            "clock": t("{m} min after ignition"),
+            "hatch": t("hatch: {m} min"),
+            "reached": t("flame at the hatch"),
+            "never": t("hatch not reached"),
+        },
+        height=760,
     )
-    for i, k in enumerate(ENV_ORDER, 1):
-        race.add_trace(heat(z_at(times[k], 0.0)), row=i, col=1)
-        race.update_xaxes(visible=False, range=[-0.5, w - 0.5], row=i, col=1)
-        race.update_yaxes(visible=False, autorange="reversed", scaleanchor=f"x{'' if i == 1 else i}", row=i, col=1)
-    race.frames = [
-        go.Frame(data=[heat(z_at(times[k], x)) for k in ENV_ORDER], traces=[0, 1, 2], name=f"{x / 60:.1f}") for x in t_grid
-    ]
-    race.update_annotations(font={"color": "#e8ecf4", "size": 13})
-    race.update_layout(
-        height=1080,
-        margin={"l": 10, "r": 10, "t": 40, "b": 10},
-        paper_bgcolor=BG,
-        plot_bgcolor=BG,
-        updatemenus=[
-            {
-                "type": "buttons",
-                "x": 0.0,
-                "y": -0.01,
-                "xanchor": "left",
-                "yanchor": "top",
-                "bgcolor": "#ff7a1a",
-                "font": {"color": "#0d1322"},
-                "buttons": [
-                    {
-                        "label": "▶ " + t("Play"),
-                        "method": "animate",
-                        "args": [None, {"frame": {"duration": 220, "redraw": True}, "fromcurrent": True}],
-                    },
-                    {"label": "❚❚", "method": "animate", "args": [[None], {"mode": "immediate", "frame": {"duration": 0}}]},
-                ],
-            }
-        ],
-        sliders=[
-            {
-                "x": 0.14,
-                "len": 0.86,
-                "y": -0.01,
-                "font": {"color": "#cfd6e4"},
-                "currentvalue": {"prefix": t("minutes after ignition: "), "font": {"color": "#ffb627"}},
-                "steps": [
-                    {
-                        "label": f.name,
-                        "method": "animate",
-                        "args": [[f.name], {"mode": "immediate", "frame": {"duration": 0, "redraw": True}}],
-                    }
-                    for f in race.frames
-                ],
-            }
-        ],
-    )
-    st.plotly_chart(race, use_container_width=True)
     st.caption(
         t(
-            "Same wall, same spark, three gravities. White-yellow: new flame; orange-red: burning; dark red: embers; black: burnt; green: hatch."
+            "Same wall, same spark, three gravities. White-yellow: new flame; orange-red: burning; dark red: embers; "
+            "black: burnt; green: hatch. The front is drawn smoothly between the 10 cm cells of the calculation; glow "
+            "and flicker are illustrative."
         )
     )
 
@@ -378,6 +325,58 @@ if t_end > 0:
         legend={"orientation": "h", "y": -0.3, "font": {"color": "#cfd6e4"}},
     )
     st.plotly_chart(curve, use_container_width=True)
+
+    # ---- the module air: well-mixed zone model (ADR-052) ------------------------------------------------------
+    st.subheader(t("What the fire does to the module air"))
+    st.caption(
+        t(
+            "A well-mixed zone model, the simplest of the compartment-fire models engineers use (fans mix the cabin air in "
+            "microgravity). Oxygen used by the burnt fabric: 0.28 g per 18 cm2 of SIBAL fabric (NTRS 20210020516); heat: "
+            "13.1 kJ per gram of oxygen (NASA BASS-II report); one CO2 per O2 for cellulose. Acrylic is not counted (no "
+            "burnt mass per area in our sources). Evidence: model."
+        )
+    )
+    z1, z2 = st.columns([1, 2])
+    vol = z1.slider(t("Free gas volume of your module, m3"), 5, 120, 30, step=5)
+    z1.caption(t("A design choice - no module volume is given in our sources."))
+    tz = np.linspace(0, t_end, 160)
+    zones = {k: mf.zone_history(layout, times[k], tz, float(vol), x_o2, p_atm) for k in ENV_ORDER}
+    zk = zones["moon"]
+    z2.metric(t("Heat released by the burnt fabric"), f"{zk['heat_MJ'][-1]:.1f} MJ")
+    m1, m2, m3 = z2.columns(3)
+    m1.metric(t("Peak fire power, lunar gravity"), f"{max(zk['hrr_kW'].max(), 0):.1f} kW")
+    m2.metric(t("Oxygen at the end"), f"{zk['x_o2'][-1] * 100:.1f} %", f"{(zk['x_o2'][-1] - x_o2) * 100:+.1f} {t('points')}")
+    m3.metric("CO2", f"{zk['x_co2'][-1] * 100:.2f} %")
+    air = make_subplots(rows=1, cols=2, subplot_titles=[t("Oxygen, %"), "CO2, %"])
+    for k in ENV_ORDER:
+        air.add_trace(
+            go.Scatter(
+                x=tz / 60, y=zones[k]["x_o2"] * 100, mode="lines", name=env_label(k), line={"width": 3, "color": ENV_COLOR[k]}
+            ),
+            row=1,
+            col=1,
+        )
+        air.add_trace(
+            go.Scatter(
+                x=tz / 60, y=zones[k]["x_co2"] * 100, mode="lines", showlegend=False, line={"width": 3, "color": ENV_COLOR[k]}
+            ),
+            row=1,
+            col=2,
+        )
+    dark_layout(air, 320, axes=True)
+    air.update_annotations(font={"color": "#e8ecf4", "size": 13})
+    air.update_xaxes(title_text=t("minutes after ignition"))
+    air.update_layout(legend={"orientation": "h", "y": -0.35, "font": {"color": "#cfd6e4"}})
+    st.plotly_chart(air, use_container_width=True)
+    st.caption(
+        t(
+            "Cross-check: Saffire-1 burned SIBAL fabric at 1200 W for 420 s over a 40.6 cm x 94 cm sample, {a} MJ per m2; "
+            "the oxygen-based value used here is {b} MJ per m2 (same order; the Saffire sample did not burn completely). "
+            "Not modelled: heat loss to walls, smoke, CO, the crew's own breathing, air revitalisation.",
+            a=f"{mf.SAFFIRE1_MJ_PER_M2:.2f}",
+            b=f"{mf.O2_G_PER_M2_FABRIC * mf.KJ_PER_G_O2 / 1000:.2f}",
+        )
+    )
 else:
     st.info(t("Nothing burns yet: paint some fabric or acrylic, then click on it to set the ignition point."))
 

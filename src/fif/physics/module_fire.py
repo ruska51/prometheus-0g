@@ -413,3 +413,48 @@ def scaled(env: Environment, factor: float) -> Environment:
     """The same environment with every measured rate multiplied by ``factor``."""
     rates = {m: (a * factor, b * factor) for m, (a, b) in env.rates.items()}
     return dataclasses.replace(env, rates=rates)
+
+
+# ---- well-mixed zone model of the module air (ADR-052) -----------------------------------------------------------
+# Like the single-zone ("well-mixed") option of compartment fire models: in microgravity the fans mix the cabin air, so
+# one uniform gas volume is a fair first picture. Only burnt FABRIC is counted:
+#   * oxygen use of SIBAL fabric: NTRS 20210020516, "0.28 g ... the amount of oxygen consumed by burning: 0.24 g
+#     cellulose (about 18 cm2 SIBAL fabric)" -> 0.28 g O2 per 18 cm2;
+#   * heat release: NASA/TM-20210011385 (BASS-II), "the constant 13.1 kJ of heat released per gram of O2 consumed".
+# Cross-check: Saffire-1 (NTRS 20170008805), 1200 W for 420 s over a 40.6 cm x 94 cm SIBAL sample = 1.32 MJ/m2, against
+# 2.04 MJ/m2 from the two numbers above (same order; the Saffire sample did not burn completely).
+# Cellulose C6H10O5 + 6 O2 -> 6 CO2 + 5 H2O: one mole of CO2 per mole of O2 used (water vapour is not tracked).
+# The air warms by the released heat at constant volume with no loss to walls or equipment: an upper bound.
+O2_G_PER_M2_FABRIC = 0.28 / 18e-4  # g O2 per m2 of SIBAL fabric burnt
+KJ_PER_G_O2 = 13.1
+SAFFIRE1_MJ_PER_M2 = 1200 * 420 / (0.406 * 0.94) / 1e6
+R_J_MOL_K = 8.314462618
+T0_K = 298.15
+
+
+def _cv_air_J_per_mol_K(x_o2: float) -> float:
+    import cantera as ct
+
+    gas = ct.Solution(
+        thermo="ideal-gas", species=[s for s in ct.Species.list_from_file("nasa_gas.yaml") if s.name in ("O2", "N2")]
+    )
+    gas.TPX = T0_K, ct.one_atm, {"O2": x_o2, "N2": 1 - x_o2}
+    return gas.cv_mole / 1000.0  # J/kmol/K -> J/mol/K
+
+
+def zone_history(layout: np.ndarray, times: np.ndarray, t_grid: np.ndarray, volume_m3: float, x_o2: float, p_atm: float) -> dict:
+    """Cabin air over time for a well-mixed module of ``volume_m3`` (free gas volume) at (x_o2, p_atm), from the fabric
+    area the flame has reached by each time of ``t_grid``. Returns arrays: burnt fabric m2, heat MJ, heat release rate
+    kW, O2 and CO2 mole fractions, temperature rise K (upper bound)."""
+    cell_m2 = (CELL_MM / 1000) ** 2
+    fab = np.sort(times[(layout == "F") & np.isfinite(times)])
+    area = np.searchsorted(fab, t_grid, side="right") * cell_m2
+    o2_g = area * O2_G_PER_M2_FABRIC
+    heat_J = o2_g * KJ_PER_G_O2 * 1000
+    n_gas = p_atm * 101325.0 * volume_m3 / (R_J_MOL_K * T0_K)  # mol of cabin gas
+    n_o2_used = o2_g / 31.998
+    x_o2_t = np.maximum(0.0, (x_o2 * n_gas - n_o2_used) / n_gas)
+    x_co2_t = n_o2_used / n_gas
+    dT = heat_J / (n_gas * _cv_air_J_per_mol_K(x_o2))
+    hrr_kW = np.gradient(heat_J, t_grid) / 1000 if len(t_grid) > 1 else np.zeros_like(t_grid)
+    return {"area_m2": area, "heat_MJ": heat_J / 1e6, "hrr_kW": hrr_kW, "x_o2": x_o2_t, "x_co2": x_co2_t, "dT_K": dT}

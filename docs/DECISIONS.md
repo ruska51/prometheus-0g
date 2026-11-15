@@ -566,3 +566,22 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   ratio is used. The home page animation gets a third panel: the same droplet in Earth sea-level air at 1 g
   (burning rate at 1 g = physics extrapolation, as on the scenario page).
 - Sources: https://ntrs.nasa.gov/citations/20210011385 ; https://ntrs.nasa.gov/citations/20240008623
+
+## ADR-052: Module page - well-mixed zone model of the cabin air; smooth fire animation
+- Date/time: 2026-11-15 19:27-19:34
+- Stage: post-12
+- Context: Ruslan: compute and show the fire in the module "the way it is really done", and not pixelated. Engineers use
+  CFD (e.g. NIST FDS; hours per run, not possible in the browser or before the deadline) or zone models (e.g. NIST
+  CFAST: mass and energy balances of the compartment gas).
+- Options: smooth animation; zone model of the module air; nothing.
+- Claude's recommendation: both; zone model in its well-mixed form (fans mix the air in microgravity).
+- Decision (Ruslan): both.
+- Consequences: fif.physics.module_fire.zone_history - from the fabric area the flame has reached, oxygen used
+  (0.28 g per 18 cm2 of SIBAL fabric, NTRS 20210020516), heat (13.1 kJ per g O2, NASA/TM-20210011385), one CO2 per O2
+  (cellulose), in a module of the chosen free volume (no volume in our sources: slider, default 30 m3) at the chosen
+  atmosphere; shown: heat MJ, peak fire power kW, O2 and CO2 over time in three gravities. Cross-check against Saffire-1
+  (1200 W for 420 s over 40.6 x 94 cm = 1.32 MJ/m2 vs 2.04 MJ/m2 from oxygen). Acrylic not counted (no burnt mass per
+  area); temperature rise not shown (without wall losses it is only an unrealistic upper bound). The three-gravity
+  heatmap animation is replaced by app/module_view.py: canvas drawing with the arrival times interpolated between the
+  10 cm cells (only over cells the flame reaches), soft material edges, glow and flicker (illustrative); Moon panel large,
+  ISS and Earth below.

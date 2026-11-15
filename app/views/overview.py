@@ -5,7 +5,6 @@ import math
 import pandas as pd
 import streamlit as st
 from common import (
-    ORANGE,
     ROOT,
     evidence_badge,
     flame_sim,
@@ -39,8 +38,10 @@ st.markdown(
 with st.container(border=True):
     head, pick = st.columns([3, 1])
     head.markdown(
-        f"<div style='font-size:1.05rem;color:#6B7280;margin-bottom:-0.4rem'>{t('A fire on a Moon base, compared with the ISS')}</div>"
-        f"<div style='font-size:2.0rem;font-weight:800;color:{ORANGE};line-height:1.25'>"
+        f"<div style='font-size:.8rem;color:#38e8ff;letter-spacing:.18em;text-transform:uppercase;margin-bottom:.2rem'>{t('A fire on a Moon base, compared with the ISS')}</div>"
+        "<div style='font-size:2.3rem;font-weight:800;line-height:1.15;font-family:Space Grotesk,sans-serif;"
+        "background:linear-gradient(92deg,#ffe6bf,#ffb627 35%,#ff5a1f 75%);-webkit-background-clip:text;"
+        "background-clip:text;color:transparent;filter:drop-shadow(0 2px 18px rgba(255,90,31,.35))'>"
         f"{t('Faster, hotter, and less likely to go out by itself.')}</div>",
         unsafe_allow_html=True,
     )

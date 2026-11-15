@@ -106,7 +106,7 @@ button[data-baseweb="tab"][aria-selected="true"],[data-testid="stTab"][aria-sele
 [data-testid="stSidebarNav"] a[aria-current="page"]{background:linear-gradient(90deg,rgba(255,122,26,.25),rgba(255,122,26,.04)) !important;
   box-shadow:inset 3px 0 0 var(--fire)}
 [data-testid="stNavSectionHeader"]{letter-spacing:.16em; text-transform:uppercase; font-size:.68rem !important; color:var(--ice) !important}
-[data-testid="stSidebarHeader"] img{filter:drop-shadow(0 0 12px rgba(255,122,26,.45))}
+[data-testid="stSidebarHeader"] img{filter:drop-shadow(0 0 10px rgba(127,166,255,.35)); height:2.6rem !important; max-height:none !important}
 
 /* ---------- tables, alerts, code, dividers ---------- */
 [data-testid="stDataFrame"],[data-testid="stTable"]{border-radius:14px; overflow:hidden; border:1px solid var(--line)}

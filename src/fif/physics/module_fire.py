@@ -574,6 +574,7 @@ def place_detectors(layout: np.ndarray, env: Environment, n: int, radius_cells: 
     capped = np.where(np.isfinite(taus), taus, penalty)
     chosen: list[int] = []
     best = np.full(fl.sum(), penalty)
+    share_by_n = []  # greedy is nested: the first k of n detectors are the k-detector answer
     for _ in range(min(n, len(cand))):
         scores = np.minimum(capped, best).mean(axis=1)
         if chosen:
@@ -581,6 +582,7 @@ def place_detectors(layout: np.ndarray, env: Environment, n: int, radius_cells: 
         k = int(np.argmin(scores))
         chosen.append(k)
         best = np.minimum(best, capped[k])
+        share_by_n.append(float((best <= 60).mean()))
     det = np.full(layout.shape, math.inf)
     raw = np.min(taus[chosen], axis=0)
     det[fl] = raw
@@ -592,7 +594,16 @@ def place_detectors(layout: np.ndarray, env: Environment, n: int, radius_cells: 
         "worst_s": float(raw[ok].max()) if ok.any() else math.inf,
         "share_1min": float((raw <= 60).mean()),
         "share_detected": float(ok.mean()),
+        "share_1min_by_n": share_by_n,
     }
+
+
+def detectors_needed(
+    layout: np.ndarray, env: Environment, share: float = 0.9, radius_cells: float = 5, n_max: int = 8
+) -> int | None:
+    """Smallest number of greedily placed detectors that see ``share`` of the fires within 1 min; None if ``n_max`` do not."""
+    res = place_detectors(layout, env, n_max, radius_cells)
+    return next((i + 1 for i, v in enumerate(res.get("share_1min_by_n", [])) if v >= share), None)
 
 
 def place_suppression(layout: np.ndarray, env: Environment, n: int, reach_cells: float = 10, step: int = 2) -> dict:

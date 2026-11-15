@@ -218,3 +218,10 @@ def test_suppression_covers_hatch_critical_material_and_geometry():
     g = mf.module_geometry(5.0, 3.5, 0.4)
     assert g["free_volume_m3"] == pytest.approx(math.pi * 3.5**2 / 4 * 5 * 0.6)
     assert g["sections"] == pytest.approx(math.pi * 3.5 * 5 / 8)
+
+
+def test_detectors_needed_matches_one_by_one():
+    lay, env = mf.grid(mf.PRESETS["crew"]), mf.ENVIRONMENTS["moon"]
+    n = mf.detectors_needed(lay, env, 0.9, 5, 8)
+    slow = next((k for k in range(1, 9) if mf.place_detectors(lay, env, k, 5)["share_1min"] >= 0.9), None)
+    assert n == slow

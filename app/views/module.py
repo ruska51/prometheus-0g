@@ -12,7 +12,7 @@ import blueprint as bp
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
-from common import external_params, next_step, qp_get, share_link, source_note
+from common import choice, external_params, next_step, qp_get, share_link, source_note
 from i18n import t, tr_insight
 from module_view import render as render_fire
 from plotly.subplots import make_subplots
@@ -132,6 +132,7 @@ def dark_layout(fig: go.Figure, height: int, axes: bool = False) -> None:
 def env_obj(env: str, vent: int, factor: float = 1.0) -> mf.Environment:
     """Measured rates for the gravity; in microgravity the ventilation direction decides which way is 'with the flow';
     ``factor`` scales all rates for another atmosphere (physics theory, ADR-051)."""
+    vent = vent if vent in (1, -1) else 1  # never trust a widget value here (see common.choice)
     base = mf.iss_with_flow(vent) if env == "iss" else mf.ENVIRONMENTS[env]
     return base if factor == 1.0 else mf.scaled(base, factor)
 
@@ -251,7 +252,7 @@ if "mod_wall" not in ss or external_params("module"):  # first visit or a link (
         ss["module"] = {"preset": wall, "layout": lay.tolist(), "ignition": tuple(ign0), "selection": None}
 
 c1, c2 = st.columns([1.1, 1.9])
-preset = c1.selectbox(t("Module wall"), WALLS, format_func=lambda k: PRESET_LABEL[k](), key="mod_wall")
+preset = choice(c1.selectbox, t("Module wall"), WALLS, "mod_wall", format_func=lambda k: PRESET_LABEL[k]())
 mode = c2.radio(
     t("Click on the wall to..."),
     ["ignite", "paint"],
@@ -269,11 +270,12 @@ paint = c2.radio(
 state = st.session_state.setdefault("module", {})
 if state.get("preset") != preset:
     state.update(preset=preset, layout=mf.grid(mf.PRESETS[preset]).tolist(), ignition=mf.IGNITION[preset], selection=None)
-vent = c1.radio(
+vent = choice(
+    c1.radio,
     t("Ventilation in microgravity (ISS case)"),
     [1, -1],
+    "mod_vent",
     format_func=lambda d: t("blows towards the hatch") if d == 1 else t("blows away from the hatch"),
-    key="mod_vent",
 )
 if c1.button(t("Reset this wall")):
     state.update(layout=mf.grid(mf.PRESETS[preset]).tolist(), ignition=mf.IGNITION[preset], selection=None)
@@ -356,7 +358,7 @@ ATM_LABEL = {
     "custom": lambda: t("Your own atmosphere"),
 }
 a1, a2, a3 = st.columns([1.6, 1, 1])
-atm = a1.selectbox(t("Cabin atmosphere"), list(ATM_LABEL), format_func=lambda k: ATM_LABEL[k](), key="mod_atm")
+atm = choice(a1.selectbox, t("Cabin atmosphere"), list(ATM_LABEL), "mod_atm", format_func=lambda k: ATM_LABEL[k]())
 if atm == "custom":
     # Streamlit forgets the state of a widget that was not shown on the last run: restore the defaults, not the minimum
     ss.setdefault("mod_o2", 30)
@@ -795,7 +797,7 @@ with tab_detect:
         )
     )
     q1, q2, q3 = st.columns(3)
-    genv = q1.radio(t("Gravity"), ENV_ORDER, format_func=env_label, key="det_env")
+    genv = choice(q1.radio, t("Gravity"), ENV_ORDER, "det_env", format_func=env_label)
     n_det = q2.slider(t("Detectors"), 1, 8, 3, key="det_n")
     rad_cm = q2.slider(t("Detector coverage radius, cm"), 20, 150, 50, step=10, key="det_r")
     n_sup = q3.slider(t("Suppression points"), 0, 4, 1, key="sup_n")

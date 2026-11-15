@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 import streamlit as st
-from common import next_step, source_note
+from common import choice, next_step, source_note
 from i18n import t
 from theme import kicker
 
@@ -60,8 +60,8 @@ if "base_modules" not in st.session_state:
     st.session_state["base_modules"] = DEFAULT.copy()
 
 c1, c2 = st.columns([1.6, 1])
-atm = c1.selectbox(t("Cabin atmosphere"), list(ATM), format_func=lambda k: ATM_LABEL[k](), key="base_atm")
-grav = c2.radio(t("Gravity"), list(GRAV), format_func=lambda k: GRAV[k](), horizontal=True, key="base_grav")
+atm = choice(c1.selectbox, t("Cabin atmosphere"), list(ATM), "base_atm", format_func=lambda k: ATM_LABEL[k]())
+grav = choice(c2.radio, t("Gravity"), list(GRAV), "base_grav", format_func=lambda k: GRAV[k](), horizontal=True)
 x_o2, p_atm = ATM[atm]
 fac = round(mf.atmosphere_factor(x_o2, p_atm), 4)
 
@@ -96,12 +96,7 @@ def assess(wall: str, grav: str, fac: float, free_m3: float, x_o2: float, p_atm:
         tz = np.linspace(0, sm["time_all_s"], 200)
         z = mf.zone_history(layout, times, tz, free_m3, x_o2, p_atm)
         out.update(o2_end=float(z["x_o2"][-1]), co2_end=float(z["x_co2"][-1]), peak_kW=float(max(z["hrr_kW"].max(), 0)))
-    out["detectors"] = None
-    if sm["flammable_m2"] > 0:
-        for n in range(1, 9):
-            if mf.place_detectors(layout, env, n, 5)["share_1min"] >= 0.9:
-                out["detectors"] = n
-                break
+    out["detectors"] = mf.detectors_needed(layout, env, 0.9, 5, 8) if sm["flammable_m2"] > 0 else None
     return out
 
 
@@ -219,7 +214,7 @@ else:
                 t("Peak fire power, kW"): round(r["peak_kW"], 1),
                 t("O2 at the end, %"): round(r["o2_end"] * 100, 1),
                 t("CO2 at the end, %"): round(r["co2_end"] * 100, 2),
-                t("Detectors for 90 % of fires seen in 1 min"): r["detectors"] if r["detectors"] else "-",
+                t("Detectors for 90 % of fires seen in 1 min"): str(r["detectors"] or "> 8") if r["flammable_m2"] > 0 else "-",
             }
             for r in rows
         ]

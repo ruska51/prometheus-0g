@@ -1,7 +1,18 @@
 """Moon-base scenario: conditions in, physics + hybrid prediction with band, reliability, ISS/Earth comparison (UI_SPEC page 3)."""
 
 import streamlit as st
-from common import evidence_badge, external_params, flame_sim, next_step, qp_get, scenario, share_link, source_note, status_badge
+from common import (
+    choice,
+    evidence_badge,
+    external_params,
+    flame_sim,
+    next_step,
+    qp_get,
+    scenario,
+    share_link,
+    source_note,
+    status_badge,
+)
 from flame_view import render as render_flame
 from i18n import flame_labels, lang, t
 
@@ -48,15 +59,15 @@ if "sc_preset" not in ss or external_params(
 
 c_in, c_out = st.columns([1, 2])
 with c_in:
-    preset = st.selectbox(t("Atmosphere preset"), OPTS, format_func=t, key="sc_preset")
+    preset = choice(st.selectbox, t("Atmosphere preset"), OPTS, "sc_preset", OPTS[1], format_func=t)
     base = PRESETS.get(preset, PRESETS["Moon base / rover (planned)"])
     if preset in PRESETS:
         st.caption(t("Preset source:") + " " + t(base["src"]))
         ss["sc_o2"], ss["sc_psi"] = float(base["x_o2"]), float(round(base["p_atm"] * 14.696, 1))
-    fuel = st.radio(t("Fuel"), ["Methanol", "Heptane"], horizontal=True, format_func=t, key="sc_fuel")
+    fuel = choice(st.radio, t("Fuel"), ["Methanol", "Heptane"], "sc_fuel", horizontal=True, format_func=t)
     x_o2 = st.slider(t("Oxygen mole fraction"), 0.10, 1.00, step=0.01, disabled=preset in PRESETS, key="sc_o2")
     p_psi = st.slider(t("Pressure, psi"), 3.0, 45.0, step=0.1, disabled=preset in PRESETS, key="sc_psi")
-    dil = st.radio(t("Extra diluent (replaces N2)"), ["none", "CO2", "He"], horizontal=True, format_func=t, key="sc_dil")
+    dil = choice(st.radio, t("Extra diluent (replaces N2)"), ["none", "CO2", "He"], "sc_dil", horizontal=True, format_func=t)
     x_dil = st.slider(t("Diluent mole fraction"), 0.0, 0.7, step=0.05, disabled=dil == "none", key="sc_xdil")
     d0 = st.slider(t("Initial droplet diameter, mm"), 1.0, 5.0, step=0.1, key="sc_d0")
     share_link(

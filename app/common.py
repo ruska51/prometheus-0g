@@ -211,3 +211,14 @@ def share_link(params: dict[str, str], page: str = "") -> None:
     with st.popover(_t("Share these settings"), icon=":material/link:"):
         st.caption(_t("This link opens the page with exactly these settings (copy button on the right):"))
         st.code(base + "?" + urlencode(full), language=None, wrap_lines=True)
+
+
+def choice(widget, label: str, options: list, key: str, default=None, **kw):
+    """A keyed radio / selectbox that always returns one of ``options``. When the language changes, the browser can send
+    back the old translated label instead of the option (seen live 2026-11-15: vent = "blows towards the hatch"); the
+    stored value is then reset to ``default`` before the widget is drawn, and any stray return value is replaced too."""
+    default = options[0] if default is None else default
+    if key in st.session_state and st.session_state[key] not in options:
+        st.session_state[key] = default
+    v = widget(label, options, key=key, **kw)
+    return v if v in options else default

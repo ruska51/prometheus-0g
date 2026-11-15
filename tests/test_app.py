@@ -131,3 +131,26 @@ def test_pilot_rejects_values_outside_the_app():
     assert out["params"] == {"o2": "0.30", "preset": "Custom"}
     q = validate({"page": "overview", "question": "Does helium slow burning?"})
     assert q["page"] == "assistant" and q["params"] == {"q": "Does helium slow burning?"}
+
+
+def test_stray_translated_label_in_a_choice_does_not_break_the_module():
+    """Seen live: after a language switch the browser sent the label "blows towards the hatch" as the ventilation value."""
+    at = _run("module")
+    at.session_state["mod_vent"] = "blows towards the hatch"
+    at.run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.session_state["mod_vent"] in (1, -1)  # a valid option again (the test harness maps the label itself)
+
+
+def test_choice_resets_values_outside_the_options(monkeypatch):
+    import common
+
+    calls = {}
+
+    def fake_widget(label, options, key, **kw):
+        calls["state"] = common.st.session_state[key]
+        return "blows towards the hatch"  # what the browser sent live
+
+    monkeypatch.setattr(common.st, "session_state", {"v": "blows towards the hatch"})
+    assert common.choice(fake_widget, "Ventilation", [1, -1], "v") == 1
+    assert calls["state"] == 1

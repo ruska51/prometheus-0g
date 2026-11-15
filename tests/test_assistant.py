@@ -260,3 +260,38 @@ def test_factor_written_as_x_number_counts_as_supported():
     assert "x1.46" in b.text
     assert unsupported_numbers("Коэффициент 1,46 [D:moon-answer-methanol], ×1.46, x1.46.", [b]) == []
     assert unsupported_numbers("На 48 % быстрее [D:moon-answer-methanol].", [b]) == ["48"]
+
+
+def test_withdrawn_model_is_paused_for_a_day(monkeypatch):
+    from google import genai
+
+    from fif.assistant import llm
+
+    class Gone(Exception):
+        code = 404
+
+    class Chunk:
+        text = "Ok [D:core]."
+
+    class Models:
+        def generate_content_stream(self, model, contents, config):
+            if model == "old-flash":
+                raise Gone("no longer available to new users")
+            return iter([Chunk()])
+
+    class Client:
+        def __init__(self, api_key, http_options):
+            self.models = Models()
+
+    monkeypatch.setattr(genai, "Client", Client)
+    monkeypatch.setattr(llm.time, "monotonic", lambda: 50.0)
+    gen = llm.gemini_generate("not-a-real-key", "old-flash")
+    gen.candidates[:] = ["old-flash", "new-flash"]
+    gen("s", "p")
+    assert gen.model == "new-flash" and gen.skip_until["old-flash"] == 50.0 + llm.GONE_SKIP_S
+
+
+def test_prompt_guards_names_ownership_and_language():
+    assert "methanol is not" in SYSTEM and "methane" in SYSTEM
+    assert "not\n   NASA's" in SYSTEM or "not NASA's" in SYSTEM
+    assert "language of the QUESTION" in SYSTEM

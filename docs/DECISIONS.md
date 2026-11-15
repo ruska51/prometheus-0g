@@ -485,4 +485,9 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   Live check with ?debug=1: gemini-3.8-flash and 3.7-flash return 429 (no free quota), 3.6-flash answers. Its Moon answer
   showed a false warning: the number check did not read factors written "x1.46" (fixed; test added), and the model had
   computed "48 %" itself (prompt now forbids new differences/ratios/percentages and LaTeX markup).
+  Second live check: the free quota of all full Flash models on this key was used up for the day (429; resets at
+  midnight Pacific time = 13:00 Uralsk), gemini-2.5-flash is withdrawn for new users (404, now paused for a day), so
+  gemini-3.5-flash-lite answered: fast (first words 1.2-1.4 s) but it wrote "methane" for methanol, called our model
+  "NASA's" and answered an off-topic Russian question in English. Prompt rules added for substance names, model
+  ownership and answer language. Claude stopped live testing to save the quota for the talk.
 - Sources: src/fif/assistant/llm.py, app/views/assistant.py, tests/test_assistant.py

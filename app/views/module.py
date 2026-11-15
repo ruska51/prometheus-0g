@@ -202,22 +202,23 @@ st.markdown(
         "Everything on one page: lay out the base, pick a module, draw its wall, light a fire and watch it spread at the "
         "rates NASA measured (Saffire on the ISS, LUCI at lunar gravity, the same samples on Earth), protect the hatch "
         "with a firebreak, detectors and extinguishers - and download one report. A sketch on measured rates, not a fire "
-        "simulation: its limits are in the Protect tab."
+        "simulation: its limits are in step 05."
     )
 )
-STEPS = ["Base", "Module wall", "Fire", "Protect", "Report"]
+STEPS = ["Base", "Module wall", "Fire", "Module air", "Protect", "Lunar gravity & checklist", "Report"]
 st.markdown(
-    "<div style='display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px'>"
-    + "".join(
-        f"<span style='display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;"
-        f"border:1px solid rgba(56,232,255,.35);background:rgba(56,232,255,.06);font-weight:600;font-size:.9rem'>"
-        f"<b style='display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;"
-        f"background:linear-gradient(135deg,#ffb627,#ff5a1f);color:#140a04;font-size:.8rem'>{i}</b>{t(name)}</span>"
-        for i, name in enumerate(STEPS, 1)
-    )
-    + "</div>",
+    "<nav class='toc'>"
+    + "".join(f"<a href='#step-{i}'><b>{i:02d}</b>{t(name)}</a>" for i, name in enumerate(STEPS, 1))
+    + "</nav>",
     unsafe_allow_html=True,
 )
+
+
+def step(n: int, where=st) -> None:
+    """Numbered step heading with an anchor for the table of contents."""
+    where.markdown(f"<div class='step' id='step-{n}'><b>{n:02d}</b><span>{t(STEPS[n - 1])}</span></div>", unsafe_allow_html=True)
+
+
 st.caption(
     t(
         "Evidence: model (sketch on NASA rates measured in air, 21-22 % O2). For another cabin atmosphere the rates are scaled with NASA's flame-spread theory (physics theory, not measured)."
@@ -270,7 +271,7 @@ if "mod_wall" not in ss or external_params("module"):  # first visit or a link (
 _linked = external_params("module")
 
 # ---- step 1: the base (ADR-059) -----------------------------------------------------------------------------------
-st.subheader(t("1 · Your base"))
+step(1)
 st.caption(
     t(
         "One cabin atmosphere for the whole base; each module has a type (sets its wall layout and racks) and a size "
@@ -335,7 +336,8 @@ if base_rows:
                 h=bv.mins(worst["hatch_s"]),
             )
         )
-    pick = choice(st.selectbox, t("2 · Module to design"), names, "base_pick", default=worst["name"])
+    step(2)
+    pick = choice(st.selectbox, t("Module to design"), names, "base_pick", default=worst["name"])
     sel = next(r for r in base_rows if r["name"] == pick)
     if ss.get("_last_pick") != pick:  # a new module: load its wall type (unless a link or the pilot just set one)
         if not _linked:
@@ -477,19 +479,9 @@ summ = {k: mf.summary(layout, times[k]) for k in ENV_ORDER}
 
 t_end = max(summ[k]["time_all_s"] for k in ENV_ORDER)
 
-st.subheader(t("3 · Fire, protection and report"))
-TAB_LABELS = [
-    t("🔥 Fire spread"),
-    t("🫁 Module air"),
-    t("🛡️ Protect"),
-    t("🌙 Lunar gravity & checklist"),
-    t("📄 Report"),
-]
-TAB_KEYS = ["spread", "air", "protect", "moon", "report"]
-_tab = {"design": "protect", "detect": "protect"}.get(st.query_params.get("tab"), st.query_params.get("tab"))
-tab_spread, tab_air, tab_protect, tab_moon, tab_report = st.tabs(
-    TAB_LABELS, default=TAB_LABELS[TAB_KEYS.index(_tab)] if _tab in TAB_KEYS else None
-)
+tab_spread, tab_air, tab_protect, tab_moon, tab_report = (st.container() for _ in range(5))
+for n, box in zip((3, 4, 5, 6, 7), (tab_spread, tab_air, tab_protect, tab_moon, tab_report), strict=True):
+    step(n, box)
 tab_design = tab_detect = tab_protect
 with tab_spread:
     st.subheader(t("How the fire spreads"))
@@ -497,7 +489,7 @@ with tab_spread:
         t(
             "Time until the flame reaches the hatch, for the same wall and the same ignition point. In these NASA tests "
             "fabric spread more slowly at lunar gravity than on Earth, but lunar-gravity flames lasted longer and some "
-            "materials burn there that go out on Earth (Lunar gravity tab) - and Moon-base air is richer in oxygen than the test air."
+            "materials burn there that go out on Earth (step 06) - and Moon-base air is richer in oxygen than the test air."
         )
     )
     mcols = st.columns(3)
@@ -955,7 +947,7 @@ with tab_detect:
     st.markdown("**" + t("Gas sensor in the module air") + "**")
     g1, g2 = st.columns([1, 2])
     rise_pct = g1.slider(t("CO2 alarm: rise above the start, %-points"), 0.02, 0.5, 0.1, step=0.02, key="gas_rise")
-    g1.caption(t("A design input; the well-mixed air model gives the CO2 rise from the burnt fabric (Module air tab)."))
+    g1.caption(t("A design input; the well-mixed air model gives the CO2 rise from the burnt fabric (step 04)."))
     if t_end > 0:
         tz2 = np.linspace(0, t_end, 400)
         rows_ = []
@@ -1061,7 +1053,7 @@ with tab_moon:
         (
             t("Keep continuous runs of fabric away from the hatch; break them with metal or gaps."),
             t(
-                "In the crew-quarters wall (Fire spread tab, test air) the flame reaches the hatch in {m} at lunar gravity; a metal strip or a gap stops it.",
+                "In the crew-quarters wall (step 03, test air) the flame reaches the hatch in {m} at lunar gravity; a metal strip or a gap stops it.",
                 m=minutes(crew_moon),
             ),
             "model",

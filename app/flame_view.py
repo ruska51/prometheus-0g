@@ -29,8 +29,8 @@ canvas{display:block;width:100%}
 .foot{padding:7px 12px 10px;color:#CBD5E1;font-size:12px;line-height:1.45}
 .foot b{color:#F8FAFC}
 .ctl{display:flex;gap:6px;align-items:center;margin:10px 0 2px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
-button{font:inherit;font-size:13px;border:1px solid #CBD5E1;background:#fff;color:#111827;border-radius:8px;padding:4px 10px;cursor:pointer}
-button.on{background:#1D4ED8;color:#fff;border-color:#1D4ED8}
+button{font:inherit;font-size:13px;border:1px solid #3a414e;background:#151820;color:#e7e5e0;border-radius:5px;padding:4px 10px;cursor:pointer}
+button.on{background:#e8743b;color:#1a0d05;border-color:#e8743b}
 @media (max-width:520px){.row{gap:6px}.head{font-size:11px;padding:6px 8px 3px}.foot{font-size:10.5px;padding:5px 8px 8px}.chip{font-size:9.5px;padding:1px 5px}}
 </style></head><body>
 <div class="row" id="row"></div>

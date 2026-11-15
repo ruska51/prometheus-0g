@@ -14,7 +14,7 @@ from blueprint import data_uri
 _HTML = r"""<!doctype html><html><head><meta charset="utf-8"><style>
 body{margin:0;background:transparent;font-family:Inter,system-ui,sans-serif;color:#e8ecf4}
 #panels{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.p{position:relative;border-radius:14px;overflow:hidden;background:#0a0f1c;justify-self:center;width:max-content;border:1px solid rgba(140,170,255,.18);transition:box-shadow .4s,border-color .4s}.p.hot{border-color:rgba(255,122,26,.65);box-shadow:0 0 28px rgba(255,90,31,.45),inset 0 0 30px rgba(255,90,31,.15)}.p.lost{border-color:#ff3b30;box-shadow:0 0 34px rgba(255,59,48,.7)}
+.p{position:relative;border-radius:6px;overflow:hidden;background:#0a0f1c;justify-self:center;width:max-content;border:1px solid rgba(140,170,255,.18);transition:box-shadow .4s,border-color .4s}.p.hot{border-color:#e8743b}.p.lost{border-color:#ff4d3a}
 .p.big{grid-column:1 / span 2}
 @media (max-width:600px){#panels{grid-template-columns:1fr}.p.big{grid-column:auto}}
 .p canvas{display:block;margin:0 auto}
@@ -22,10 +22,10 @@ body{margin:0;background:transparent;font-family:Inter,system-ui,sans-serif;colo
 .h{position:absolute;right:12px;top:8px;font-size:12px;padding:2px 8px;border-radius:9px;background:#2fd27a;color:#06210f;font-weight:700}
 .h.no{background:#5c6678;color:#e8ecf4}
 .bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:4px;font-size:13px}
-button{background:linear-gradient(135deg,#ffb627,#ff5a1f);border:0;color:#140a04;font-weight:800;border-radius:10px;padding:7px 14px;cursor:pointer;box-shadow:0 0 18px rgba(255,90,31,.45)}
-button.s{background:#151d33;color:#e8ecf4;border:1px solid #26304a;font-weight:500}button.s.on{border-color:#f0843f;color:#f0843f}
-input[type=range]{flex:1;accent-color:#f0843f}
-#clock{min-width:150px;color:#ffb627;font-weight:600}
+button{background:#e8743b;border:0;color:#1a0d05;font-weight:600;border-radius:5px;padding:6px 12px;cursor:pointer}
+button.s{background:#151820;color:#e7e5e0;border:1px solid #3a414e;font-weight:500}button.s.on{border-color:#e8743b;color:#e8743b}
+input[type=range]{flex:1;accent-color:#e8743b}
+#clock{min-width:150px;color:#e7e5e0;font:500 13px 'IBM Plex Mono',monospace}
 </style></head><body><div id="panels"></div>
 <div class="bar"><button id="play">__PAUSE__</button><span id="clock"></span><input id="seek" type="range" min="0" max="1000" value="0">
 <button class="s" data-s="0.5">0.5x</button><button class="s on" data-s="1">1x</button><button class="s" data-s="2">2x</button></div>

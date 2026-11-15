@@ -84,7 +84,7 @@ def floating_pilot() -> None:
     """The AI pilot as a glowing button in the bottom-right corner of every page (ADR-058, Ruslan: 'visible at once')."""
     used = st.session_state.setdefault("pilot_used", 0)
     with st.container(key="pilot_fab"):
-        with st.popover("🛰️ " + t("AI pilot"), use_container_width=False):
+        with st.popover(t("AI pilot") + " ›", use_container_width=False):
             st.markdown("**" + t("AI pilot") + "** · " + t("I open the right page and set it up for you."))
             last = st.session_state.get("pilot_say")
             if last:

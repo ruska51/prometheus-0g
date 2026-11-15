@@ -1,15 +1,16 @@
-# Style "Fire on the Moon" (ADR-050): same palette and fonts as the demo slides (replaces ADR-034 "Clean science").
+# Style "Engineering sheet" (ADR-060): calm dark surface, one safety-orange accent, IBM Plex type (replaces ADR-050).
 [theme]
 base = "dark"
-primaryColor = "#F0843F"
-backgroundColor = "#0D1322"
-secondaryBackgroundColor = "#151D33"
-textColor = "#EDE9E1"
-linkColor = "#7FA6FF"
-borderColor = "#26304A"
-font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap, sans-serif"
-headingFont = "Space Grotesk:https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap, sans-serif"
-baseRadius = "0.6rem"
+primaryColor = "#E8743B"
+backgroundColor = "#0F1115"
+secondaryBackgroundColor = "#151820"
+textColor = "#E7E5E0"
+linkColor = "#7CC4D8"
+borderColor = "#272C36"
+font = "IBM Plex Sans:https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap, sans-serif"
+headingFont = "IBM Plex Sans:https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500;600&display=swap, sans-serif"
+baseRadius = "0.35rem"
+codeFont = "IBM Plex Mono:https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap, monospace"
 chartCategoricalColors = ["#F0843F", "#7FA6FF", "#38E8FF", "#C9D4FF", "#FFB627", "#2FD27A", "#E86BB5"]
 
 [server]

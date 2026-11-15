@@ -38,10 +38,8 @@ st.markdown(
 with st.container(border=True):
     head, pick = st.columns([3, 1])
     head.markdown(
-        f"<div style='font-size:.8rem;color:#38e8ff;letter-spacing:.18em;text-transform:uppercase;margin-bottom:.2rem'>{t('A fire on a Moon base, compared with the ISS')}</div>"
-        "<div style='font-size:2.3rem;font-weight:800;line-height:1.15;font-family:Space Grotesk,sans-serif;"
-        "background:linear-gradient(92deg,#ffe6bf,#ffb627 35%,#ff5a1f 75%);-webkit-background-clip:text;"
-        "background-clip:text;color:transparent;filter:drop-shadow(0 2px 18px rgba(255,90,31,.35))'>"
+        f"<div style='font:500 .74rem IBM Plex Mono,monospace;color:#9097a3;letter-spacing:.12em;text-transform:uppercase'>{t('A fire on a Moon base, compared with the ISS')}</div>"
+        "<div style='font-size:2.0rem;font-weight:600;line-height:1.2;color:#e8743b;margin:.15rem 0 .2rem'>"
         f"{t('Faster, hotter, and less likely to go out by itself.')}</div>",
         unsafe_allow_html=True,
     )

@@ -697,3 +697,16 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   shares per type and the type-to-wall mapping are design inputs. The AI pilot is a glowing floating button in the
   bottom-right corner (raised above the Streamlit Cloud "Manage app" badge). New logo: an original drawing of Prometheus
   striding with a raised torch.
+
+## ADR-060: Designer as one numbered flow; "Engineering sheet" visual style
+- Date/time: 2026-11-15 21:40-21:49
+- Stage: post-12
+- Context: Ruslan: the tabs in step 3 also have to go - some people cannot see where to click; the page "looks like AI
+  slop" - make it serious, beautiful, engineering, human, possibly minimalist.
+- Decision (Ruslan): as asked.
+- Consequences: the Fire designer has no tabs: steps 01 Base, 02 Module wall, 03 Fire, 04 Module air, 05 Protect,
+  06 Lunar gravity & checklist, 07 Report run in one column, with a table of contents of anchor links at the top and
+  a numbered rule above each step. Visual layer replaced (ADR-056 "Mission control" withdrawn): flat dark surface
+  #0F1115, panels #151820, thin rules, one safety-orange accent #E8743B, IBM Plex Sans / Plex Mono (numbers and labels
+  in mono), no starfield, gradients, glow, pulse or emoji; the AI pilot is a plain orange button in the corner;
+  animation controls restyled to match. The fire itself and the engineering drawing are unchanged.

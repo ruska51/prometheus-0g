@@ -38,11 +38,11 @@ def _register_template() -> None:
         return
     tpl = go.layout.Template(pio.templates["plotly_dark"])
     tpl.layout.paper_bgcolor = "rgba(0,0,0,0)"
-    tpl.layout.plot_bgcolor = "rgba(10,15,30,0.35)"
-    tpl.layout.font = {"family": "Inter, sans-serif", "color": "#d8deea"}
-    tpl.layout.colorway = ["#FF7A1A", "#7FA6FF", "#38E8FF", "#C9D4FF", "#FFB627", "#2FD27A", "#E86BB5"]
-    tpl.layout.xaxis.gridcolor = tpl.layout.yaxis.gridcolor = "rgba(140,170,255,0.10)"
-    tpl.layout.xaxis.zerolinecolor = tpl.layout.yaxis.zerolinecolor = "rgba(140,170,255,0.18)"
+    tpl.layout.plot_bgcolor = "rgba(0,0,0,0)"
+    tpl.layout.font = {"family": "IBM Plex Sans, sans-serif", "color": "#cfd2d8"}
+    tpl.layout.colorway = ["#E8743B", "#7FA6FF", "#38E8FF", "#C9D4FF", "#FFB627", "#2FD27A", "#E86BB5"]
+    tpl.layout.xaxis.gridcolor = tpl.layout.yaxis.gridcolor = "rgba(255,255,255,0.06)"
+    tpl.layout.xaxis.zerolinecolor = tpl.layout.yaxis.zerolinecolor = "rgba(255,255,255,0.12)"
     pio.templates[PLOT_TEMPLATE] = tpl
 
 

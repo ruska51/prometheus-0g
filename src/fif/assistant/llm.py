@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import os
 import re
+import time
 from collections.abc import Callable
 
 from .knowledge import CORE_FACTS, Block, search
@@ -20,6 +21,8 @@ DEFAULT_MODEL = "auto"
 MAX_QUESTION_CHARS = 600
 MAX_OUTPUT_TOKENS = 4096  # room for model-internal thinking; the prompt limits answers to 120 words
 REQUEST_TIMEOUT_MS = 20_000  # per request; then the next candidate model is tried
+QUOTA_SKIP_S = 600  # a model out of quota is skipped for 10 min, then tried first again
+ERROR_SKIP_S = 120  # other failures (overloaded, timeout): 2 min
 EXCLUDE = ("image", "tts", "audio", "live", "embedding", "robotics", "computer", "learnlm", "gemma", "veo", "imagen")
 CITE = re.compile(r"\[([^\[\]]{3,400})\]")  # one bracket may hold several ids: [R:1#0, R:1#1]
 CITE_ID = re.compile(r"^(?:D|R):\S+$")
@@ -123,7 +126,12 @@ def gemini_generate(key: str, model: str = DEFAULT_MODEL) -> Callable[..., str]:
 
     def gen(system: str, prompt: str, on_text: Callable[[str], None] | None = None) -> str:
         failed = []
-        for name in list(dict.fromkeys([gen.model, *candidates]))[:6]:
+        gen.failed = failed  # last call's failures (shown with ?debug=1), key-free
+        now = time.monotonic()
+        # best-ranked model first on every call; a model that just failed is skipped for a while (shared by all
+        # visitors of this server process), so one quota error does not pin everybody to a weaker model for good
+        order = [n for n in candidates if gen.skip_until.get(n, 0) <= now] or list(candidates)
+        for name in order[:6]:
             try:
                 base = dict(system_instruction=system, temperature=0.1, max_output_tokens=MAX_OUTPUT_TOKENS)
                 # minimal internal reasoning: answers are look-ups in the given context, latency matters. Gemini 3
@@ -149,10 +157,14 @@ def gemini_generate(key: str, model: str = DEFAULT_MODEL) -> Callable[..., str]:
                 return text
             except Exception as e:  # unavailable, overloaded, quota, unsupported config: try the next candidate
                 failed.append((name, _reason(e)))
+                quota = "429" in failed[-1][1] or "RESOURCE_EXHAUSTED" in failed[-1][1]
+                gen.skip_until[name] = time.monotonic() + (QUOTA_SKIP_S if quota else ERROR_SKIP_S)
         raise AllModelsFailed(failed)
 
     gen.model = candidates[0]
     gen.candidates = candidates
+    gen.skip_until = {}
+    gen.failed = []
     return gen
 
 

@@ -108,6 +108,8 @@ st.caption(
         m=st.session_state.get("model_used", model),
     )
 )
+if st.query_params.get("debug") == "1" and "gen_failed" in st.session_state:  # diagnosis of model fall-through
+    st.caption("debug: " + ("; ".join(f"{m}: {r}" for m, r in st.session_state["gen_failed"]) or "no failures"))
 if q:
     with st.chat_message("user"):
         st.write(q)
@@ -118,6 +120,7 @@ if q:
             gen = _generator(key, model)
             r = ask(q, gen, on_text=live.markdown)
             st.session_state["model_used"] = getattr(gen, "model", model)
+            st.session_state["gen_failed"] = list(getattr(gen, "failed", []))
             chat.append(
                 {
                     "q": q,

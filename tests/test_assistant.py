@@ -211,3 +211,43 @@ def llm_level(name):
     from google.genai import types
 
     return types.ThinkingConfig(thinking_level=name).thinking_level
+
+
+def test_best_model_is_retried_after_its_quota_pause(monkeypatch):
+    from google import genai
+
+    from fif.assistant import llm
+
+    state = {"quota": True, "now": 1000.0}
+    tried = []
+
+    class Quota(Exception):
+        code = 429
+
+    class Chunk:
+        text = "Ok [D:core]."
+
+    class Models:
+        def generate_content_stream(self, model, contents, config):
+            tried.append(model)
+            if model == "best-flash" and state["quota"]:
+                raise Quota("429 RESOURCE_EXHAUSTED")
+            return iter([Chunk()])
+
+    class Client:
+        def __init__(self, api_key, http_options):
+            self.models = Models()
+
+    monkeypatch.setattr(genai, "Client", Client)
+    monkeypatch.setattr(llm.time, "monotonic", lambda: state["now"])
+    gen = llm.gemini_generate("not-a-real-key", "best-flash")
+    gen.candidates[:] = ["best-flash", "lite-flash"]
+    gen("s", "p")
+    assert tried == ["best-flash", "lite-flash"] and gen.model == "lite-flash" and "429" in gen.failed[0][1]
+    tried.clear()
+    gen("s", "p")  # inside the pause: the failed model is not asked again
+    assert tried == ["lite-flash"]
+    state.update(quota=False, now=1000.0 + llm.QUOTA_SKIP_S + 1)
+    tried.clear()
+    gen("s", "p")  # pause over, quota back: the best model answers again
+    assert tried == ["best-flash"] and gen.model == "best-flash"

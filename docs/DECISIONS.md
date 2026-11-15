@@ -478,4 +478,8 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   superscript numbers while streaming and an unfinished bracket is held back, so raw block ids never appear. Each
   request has a 20 s timeout, then the next candidate model is tried. Thinking: level MINIMAL (Gemini 3), else budget 0
   (Gemini 2.5), else a plain request. The model list and search index are prepared when the page opens.
+  After the first deploy the live app answered with gemini-3.5-flash-lite: the best model had failed once and the
+  generator (shared by all visitors) kept the last working model for good. Now every call starts from the best-ranked
+  model; a failed model is skipped for 10 min after a quota error, 2 min after other errors. ?debug=1 on the page shows
+  the last call's key-free failure reasons.
 - Sources: src/fif/assistant/llm.py, app/views/assistant.py, tests/test_assistant.py

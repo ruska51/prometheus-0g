@@ -114,6 +114,17 @@ button[data-baseweb="tab"][aria-selected="true"],[data-testid="stTab"][aria-sele
 hr{border-color:var(--line) !important}
 [data-testid="stCaptionContainer"]{color:var(--muted) !important}
 iframe{border-radius:16px}
+/* ---------- floating AI pilot button (bottom-right) ---------- */
+.st-key-pilot_fab{position:fixed !important; right:26px; bottom:24px; z-index:1000; width:auto !important}
+.st-key-pilot_fab [data-testid="stPopover"] > div > button, .st-key-pilot_fab button[kind="secondary"]:first-child{
+  border-radius:999px !important; padding:.75rem 1.3rem !important; font-weight:700 !important; font-size:1rem !important;
+  color:#06121a !important; border:0 !important;
+  background:linear-gradient(135deg,#38e8ff,#7fa6ff 55%,#ffb627) !important;
+  box-shadow:0 0 0 0 rgba(56,232,255,.6), 0 10px 30px rgba(56,232,255,.35) !important; animation:fab 2.4s infinite}
+@keyframes fab{0%{box-shadow:0 0 0 0 rgba(56,232,255,.55),0 10px 30px rgba(56,232,255,.35)}
+  70%{box-shadow:0 0 0 16px rgba(56,232,255,0),0 10px 30px rgba(56,232,255,.35)}100%{box-shadow:0 0 0 0 rgba(56,232,255,0),0 10px 30px rgba(56,232,255,.35)}}
+[data-testid="stPopoverBody"]{min-width:340px}
+@media (max-width:640px){.st-key-pilot_fab{right:12px; bottom:12px}}
 @media (max-width:640px){[data-testid="stMainBlockContainer"]{padding-top:1.2rem} h1{font-size:2rem !important}}
 </style>
 """

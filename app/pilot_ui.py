@@ -59,33 +59,16 @@ def _describe(action: dict) -> str:
     return t("Opening {page}", page=page) + (f" - {sets}." if sets else ".")
 
 
-def sidebar_pilot() -> None:
-    used = st.session_state.setdefault("pilot_used", 0)
-    with st.sidebar:
-        st.markdown(
-            "<div style='font:600 .72rem Space Grotesk,sans-serif;letter-spacing:.16em;color:#38e8ff;"
-            "text-transform:uppercase;margin:6px 0 2px'>🛰️ " + t("AI pilot") + "</div>",
-            unsafe_allow_html=True,
-        )
-        last = st.session_state.get("pilot_say")
-        if last:
-            st.markdown(
-                f"<div style='font-size:.85rem;background:rgba(56,232,255,.07);border:1px solid rgba(56,232,255,.3);"
-                f"border-radius:12px;padding:8px 10px;margin-bottom:6px'>{last}</div>",
-                unsafe_allow_html=True,
-            )
-        else:
-            st.caption(t("Tell me what to show: 'heptane on the Moon base', 'detectors in the lab at 34 % O2', 'plan a base'."))
-        cmd = st.chat_input(
-            t("Ask the pilot...") if used < LIMIT else t("Pilot limit for this session reached"),
-            key="pilot_cmd",
-            max_chars=300,
-            disabled=used >= LIMIT,
-        )
-    if not cmd:
-        return
-    st.session_state["pilot_used"] = used + 1
-    with st.sidebar, st.spinner(t("Pilot is setting things up...")):
+EXAMPLES = [
+    "Detectors in the lab module in Moon-base air",
+    "Heptane droplet on the Moon, 2 mm",
+    "Does helium slow burning?",
+]
+
+
+def _run(cmd: str) -> None:
+    st.session_state["pilot_used"] = st.session_state.get("pilot_used", 0) + 1
+    with st.spinner(t("Pilot is setting things up...")):
         action = pilot.plan(cmd, _generator())
     say = action["say"] if action.get("used_ai") and action["say"] else _describe(action)
     st.session_state["pilot_say"] = ("✨ " if action.get("used_ai") else "⚙️ ") + say
@@ -95,3 +78,30 @@ def sidebar_pilot() -> None:
             params["lang"] = "ru"
         st.switch_page(pilot.PAGES[action["page"]], query_params=params)
     st.rerun()
+
+
+def floating_pilot() -> None:
+    """The AI pilot as a glowing button in the bottom-right corner of every page (ADR-058, Ruslan: 'visible at once')."""
+    used = st.session_state.setdefault("pilot_used", 0)
+    with st.container(key="pilot_fab"):
+        with st.popover("🛰️ " + t("AI pilot"), use_container_width=False):
+            st.markdown("**" + t("AI pilot") + "** · " + t("I open the right page and set it up for you."))
+            last = st.session_state.get("pilot_say")
+            if last:
+                st.info(last)
+            with st.form("pilot_form", clear_on_submit=True, border=False):
+                cmd = st.text_input(
+                    t("What should I show?"),
+                    placeholder=t("e.g. detectors in the lab module in Moon-base air"),
+                    max_chars=300,
+                    disabled=used >= LIMIT,
+                    key="pilot_cmd",
+                )
+                go_ = st.form_submit_button(t("Go") + " →", type="primary", disabled=used >= LIMIT)
+            st.caption(t("Or try:"))
+            for i, ex in enumerate(EXAMPLES):
+                if st.button(t(ex), key=f"pilot_ex_{i}", use_container_width=True, disabled=used >= LIMIT):
+                    _run(t(ex))
+            st.caption(t("Requests left in this session: {n} of {total}.", n=max(LIMIT - used, 0), total=LIMIT))
+    if go_ and cmd and cmd.strip():
+        _run(cmd.strip())

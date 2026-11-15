@@ -79,8 +79,8 @@ pages = {  # three groups: start here, explore the Moon base, check the evidence
 nav = st.navigation(pages)
 
 from glossary import sidebar_glossary  # noqa: E402
-from pilot_ui import sidebar_pilot  # noqa: E402
+from pilot_ui import floating_pilot  # noqa: E402
 
-sidebar_pilot()  # AI pilot on every page (ADR-058); needs the pages registered for st.switch_page
+floating_pilot()  # AI pilot button in the corner of every page (ADR-058); needs the pages registered
 sidebar_glossary()
 nav.run()

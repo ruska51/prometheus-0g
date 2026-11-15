@@ -51,7 +51,7 @@ def test_scenario_moon_preset_shows_extrapolation():
 def test_assistant_without_key_answers_from_the_data(monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     at = _run("assistant")
-    chat = next(c for c in at.chat_input if c.key != "pilot_cmd")  # the sidebar also holds the AI pilot box
+    chat = at.chat_input[0]
     chat.set_value("How much faster does a droplet burn on a Moon base?").run()
     assert not at.exception, [e.value for e in at.exception]
     md = " ".join(m.value for m in at.markdown)
@@ -113,7 +113,8 @@ def test_pilot_opens_the_module_with_settings(monkeypatch):
     """ADR-058: without a key the rule parser decides; the pilot switches page and the page reads the settings."""
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     at = _run("overview")
-    at.chat_input(key="pilot_cmd").set_value("detectors in the lab module at 34 % oxygen").run()
+    at.text_input(key="pilot_cmd").set_value("detectors in the lab module at 34 % oxygen")
+    next(b for b in at.button if b.label.startswith("Go")).click().run()
     assert not at.exception, [e.value for e in at.exception]
     assert at.selectbox(key="mod_wall").value == "lab"
     assert at.selectbox(key="mod_atm").value == "custom" and at.slider(key="mod_o2").value == 34

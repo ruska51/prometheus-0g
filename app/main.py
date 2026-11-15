@@ -32,7 +32,9 @@ def _refresh_code() -> None:
     names = [
         n
         for n in list(sys.modules)
-        if n == "fif" or n.startswith("fif.") or n in ("i18n", "common", "flame_view", "module_view", "glossary", "theme")
+        if n == "fif"
+        or n.startswith("fif.")
+        or n in ("i18n", "common", "flame_view", "module_view", "glossary", "theme", "blueprint")
     ]
     for n in reversed(names):  # sys.modules keeps import order: reversed = dependencies before their importers
         try:

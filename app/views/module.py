@@ -8,6 +8,7 @@ import math
 from datetime import UTC
 from pathlib import Path
 
+import blueprint as bp
 import numpy as np
 import plotly.graph_objects as go
 import streamlit as st
@@ -64,6 +65,57 @@ def heat(z: np.ndarray) -> go.Heatmap:
     """Wall as a heatmap of cell codes (0-4 materials, 5-9 flame stages): scales with the screen, crisp on phones."""
     return go.Heatmap(
         z=z, colorscale=DISCRETE, zmin=-0.5, zmax=len(_PALETTE) - 0.5, showscale=False, xgap=1, ygap=1, hoverinfo="skip"
+    )
+
+
+def sheet(fig: go.Figure, layout_: np.ndarray, height: int) -> None:
+    """The wall as an engineering drawing: blueprint image, axes in metres, transparent background."""
+    hh, ww = layout_.shape
+    fig.add_trace(go.Image(source=bp.data_uri(layout_), x0=-0.5, dx=1 / bp.PX, y0=-0.5, dy=1 / bp.PX, hoverinfo="skip"), row=None)
+    fig.data = (fig.data[-1], *fig.data[:-1])  # drawing below everything else
+    tick = {
+        "color": "#8f9bb8",
+        "tickfont": {"size": 11, "family": "Space Grotesk, sans-serif"},
+        "showgrid": False,
+        "zeroline": False,
+        "ticks": "outside",
+        "ticklen": 5,
+        "tickcolor": "#3a4a72",
+        "showline": True,
+        "linecolor": "#3a4a72",
+    }
+    fig.update_xaxes(
+        **tick,
+        range=[-0.6, ww - 0.4],
+        tickvals=[-0.5 + 10 * k for k in range(ww // 10 + 1)],
+        ticktext=[f"{k} m" for k in range(ww // 10 + 1)],
+    )
+    fig.update_yaxes(
+        **tick,
+        range=[hh - 0.4, -0.6],
+        tickvals=[-0.5 + 10 * k for k in range(hh // 10 + 1)],
+        ticktext=[f"{k} m" for k in range(hh // 10 + 1)],
+        scaleanchor="x",
+    )
+    fig.update_layout(
+        height=height,
+        margin={"l": 44, "r": 10, "t": 36, "b": 30},
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        showlegend=False,
+    )
+
+
+def legend_html() -> str:
+    chips = "".join(
+        f"<span style='display:inline-flex;align-items:center;gap:6px;margin-right:16px'>"
+        f"<span style='width:14px;height:14px;border-radius:3px;background:rgb{bp.FILL[c]};"
+        f"border:1.5px solid rgb{bp.EDGE[c]}'></span>{MATERIAL_SHORT[c]()}</span>"
+        for c in ["F", "A", "M", "H"]
+    )
+    return (
+        f"<div style='font-size:.85rem;color:#c9d2e6;margin:-6px 0 6px 44px'>{chips}"
+        f"<span style='color:#ffd27a'>★ {t('Ignition')}</span></div>"
     )
 
 
@@ -211,19 +263,19 @@ if mode == "paint":
     )
 
 editor = go.Figure()
-for code in ["F", "A", "M", ".", "H"]:
-    m = layout == code
-    if m.any():
-        editor.add_trace(
-            go.Scatter(
-                x=cols[m],
-                y=rows[m],
-                mode="markers",
-                marker={"symbol": "square", "size": 16, "color": COLORS[code], "line": {"width": 1, "color": BG}},
-                name=MATERIAL_SHORT[code](),
-                hovertemplate=MATERIAL_LABEL[code]() + "<extra></extra>",
-            )
-        )
+editor.add_trace(  # invisible cell centres: they carry the clicks and box selections
+    go.Scatter(
+        x=cols.ravel(),
+        y=rows.ravel(),
+        mode="markers",
+        marker={"symbol": "square", "size": 14, "opacity": 0.01, "color": "#ffffff"},
+        text=[MATERIAL_LABEL[c]() for c in layout.ravel()],
+        hovertemplate="%{text}<br>x %{customdata[0]:.1f} m, y %{customdata[1]:.1f} m<extra></extra>",
+        customdata=np.stack([cols.ravel() / 10 + 0.05, rows.ravel() / 10 + 0.05], axis=1),
+        selected={"marker": {"opacity": 0.35, "color": "#38e8ff"}},
+        unselected={"marker": {"opacity": 0.01}},
+    )
+)
 r0, c0 = state["ignition"]
 editor.add_trace(
     go.Scatter(
@@ -235,13 +287,12 @@ editor.add_trace(
         hoverinfo="skip",
     )
 )
-dark_layout(editor, 400)
-editor.update_layout(
-    legend={"orientation": "h", "y": -0.02, "font": {"color": "#cfd6e4"}}, dragmode="select" if mode == "paint" else False
-)
+sheet(editor, layout, 420)
+editor.update_layout(dragmode="select" if mode == "paint" else False)
 event = st.plotly_chart(
     editor, key=f"wall-{preset}", on_select="rerun", selection_mode=("points", "box"), use_container_width=True
 )
+st.markdown(legend_html(), unsafe_allow_html=True)
 pts = [(int(round(p["y"])), int(round(p["x"]))) for p in (event.selection.points if event else [])]
 sig = (mode, paint, tuple(pts))
 if pts and state.get("selection") != sig:
@@ -360,7 +411,7 @@ with tab_spread:
     if t_end > 0:
         render_fire(
             layout,
-            [{"label": env_label(k), "t": times[k], "hatch": summ[k]["hatch_s"]} for k in ENV_ORDER],
+            [{"label": env_label(k), "kind": k, "t": times[k], "hatch": summ[k]["hatch_s"]} for k in ENV_ORDER],
             {
                 "play": "▶ " + t("Play"),
                 "pause": "❚❚ " + t("Pause"),
@@ -371,6 +422,7 @@ with tab_spread:
                 "never": t("hatch not reached"),
             },
             height=760,
+            vent=vent,
         )
         st.caption(
             t(
@@ -599,14 +651,23 @@ with tab_design:
 
     mins = np.where(np.isfinite(tmap), tmap / 60, np.nan)
     fig = go.Figure()
-    fig.add_trace(heat(np.vectorize(CODE_Z.get)(layout).astype(float)))
-    fig.add_trace(
-        go.Heatmap(
+    top = float(np.nanmax(mins)) if np.isfinite(mins).any() else 1.0
+    step = next(v for v in (1, 2, 5, 10, 15, 20, 30, 60) if top / v <= 9)
+    fig.add_trace(  # isochrones: filled translucent bands + labelled lines, as on a fire-engineering drawing
+        go.Contour(
             z=mins,
+            contours={
+                "start": 0,
+                "end": top,
+                "size": step,
+                "showlabels": True,
+                "labelfont": {"color": "#fff6e0", "size": 11, "family": "Space Grotesk, sans-serif"},
+            },
             colorscale=[[0, "#fff1a8"], [0.25, "#ffb627"], [0.55, "#ff5a1f"], [0.8, "#9e2a1b"], [1, "#3b1414"]],
             reversescale=goal == "anywhere",
-            xgap=1,
-            ygap=1,
+            opacity=0.62,
+            line={"width": 1.4, "color": "rgba(255,240,210,0.85)"},
+            connectgaps=False,
             colorbar={
                 "title": {"text": t("min"), "font": {"color": "#cfd6e4"}},
                 "tickfont": {"color": "#cfd6e4"},
@@ -639,7 +700,7 @@ with tab_design:
                 showlegend=False,
             )
         )
-    dark_layout(fig, 420)
+    sheet(fig, layout, 440)
     fig.update_layout(title={"text": map_title, "font": {"color": "#e8ecf4", "size": 14}, "x": 0.01})
     st.plotly_chart(fig, use_container_width=True)
     (st.success if fb is not None else st.info)(msg)

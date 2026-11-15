@@ -49,10 +49,10 @@ Source code, data and documentation: https://github.com/ruska51/prometheus-0g
 **What it does.** Prometheus-0g is a public web dashboard that summarizes, ranks and interprets NASA's microgravity
 combustion experiments and turns them into fire-safety advice for crewed habitats, above all the planned Moon base.
 Its home page opens with the answer: "Fire on the Moon: faster, hotter, and less likely to go out by itself." Take a 3
-mm fuel droplet, the size NASA burned in its FLEX experiment. In Moon-base air it burns 32 % faster than in ISS air
-(our model; 95 % band -2 % to +77 %, marked as extrapolation), it is gone in 14.1 s instead of 18.5 s, and the flame
-is 238 K hotter. Most important, in NASA's own tests at 30 % oxygen or more the flame went out by itself in 46 % of
-cases, compared with 86 % at 21 % or less.
+mm methanol droplet, the size NASA burned in its FLEX experiment. In Moon-base air it burns 32 % faster than in ISS
+air (our model; 95 % band -2 % to +77 %, marked as extrapolation), it is gone in 14.1 s instead of 18.5 s, and the
+flame is 238 K hotter. Most important, in NASA's own tests at 30 % oxygen or more the flame went out by itself in 46 %
+of cases, compared with 86 % at 21 % or less.
 
 **How it works.** We started with the data. The PSI tables of FLEX (droplets), ACME CFI-G (gas flames), BASS-II
 (burning solids) and SAME-R (smoke) are parsed and cleaned; anything odd is flagged, never quietly fixed, and every
@@ -199,7 +199,7 @@ the Space Apps Project Submission Guide).
 | High-Level Project Summary | 180 | 1016 |
 | Link to Project Demo | 24 | 234 |
 | Link to Final Project | 7 | 115 |
-| Detailed Project Description | 1173 | 6888 |
+| Detailed Project Description | 1173 | 6892 |
 | NASA Data | 295 | 1891 |
 | Space Agency Partner & Other Data | 85 | 627 |
 | Use of Artificial Intelligence | 190 | 1177 |

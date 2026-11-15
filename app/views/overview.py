@@ -30,7 +30,7 @@ with st.container(border=True):
         f"{t('Faster, hotter, and less likely to go out by itself.')}</div>",
         unsafe_allow_html=True,
     )
-    fuels = {t("Methanol"): "Methanol", t("Heptane"): "Heptane"}  # translated labels as options (no format_func)
+    fuels = {t("Heptane"): "Heptane", t("Methanol"): "Methanol"}  # heptane first (Ruslan, 2026-11-15); translated labels
     fuel = fuels[pick.radio(t("Fuel"), list(fuels), horizontal=True)]
     a = moon(fuel)
     st.caption(

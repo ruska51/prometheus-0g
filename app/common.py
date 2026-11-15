@@ -27,7 +27,7 @@ EVIDENCE_COLORS = {
 }
 STATUS_COLORS = {"in range": "#15803D", "extrapolation": "#B45309", "unreliable": "#B91C1C"}
 STAGE_LABEL = {"prevention": "Prevention", "detection": "Detection", "suppression": "Suppression"}
-PLOT_TEMPLATE = "plotly_white"
+PLOT_TEMPLATE = "plotly_dark"
 RESULT_SCHEMA = 2  # 2: Russian fields reasons_ru / notes_ru (ADR-041)
 
 

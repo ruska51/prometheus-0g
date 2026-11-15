@@ -260,16 +260,16 @@ RU = {
     ),
     # risk map
     "Risk map: oxygen x pressure": "Карта риска: кислород x давление",
-    "Colour = predicted burning rate relative to ISS cabin air (hybrid model, 3 mm droplet, N2 balance). Grey cells are "
-    "outside the conditions NASA tested for that fuel (O2 within ±0.02 at that pressure); dark dots are the FLEX tests, "
+    "Colour = predicted burning rate relative to ISS cabin air (hybrid model, 3 mm droplet, N2 balance). Dimmed cells are "
+    "outside the conditions NASA tested for that fuel (O2 within ±0.02 at that pressure); light dots are the FLEX tests, "
     "stars are real or planned cabin atmospheres.": (
         "Цвет - прогнозная скорость горения относительно воздуха кабины МКС (гибридная модель, капля 3 мм, остальное N2). "
-        "Серые клетки - вне условий, испытанных NASA для этого топлива (O2 в пределах ±0.02 при этом давлении); тёмные "
+        "Затемнённые клетки - вне условий, испытанных NASA для этого топлива (O2 в пределах ±0.02 при этом давлении); светлые "
         "точки - тесты FLEX, звёзды - реальные или планируемые атмосферы кабин."
     ),
     "Cabin pressure, psi": "Давление в кабине, psi",
     "outside tested conditions": "вне испытанных условий",
-    "outside tested conditions (grey)": "вне испытанных условий (серое)",
+    "outside tested conditions (dimmed)": "вне испытанных условий (затемнено)",
     "NASA FLEX tests (N2)": "Тесты NASA FLEX (N2)",
     "Spacesuit (100 % O2, {p:.1f} psi) lies far outside this map and all tested data.": (
         "Скафандр (100 % O2, {p:.1f} psi) лежит далеко за пределами этой карты и всех испытанных данных."

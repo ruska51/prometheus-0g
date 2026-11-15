@@ -533,3 +533,15 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   LUCI; PHYSICS.md section 10b), five verbatim NASA findings on solids at lunar gravity, 7-item checklist with the
   evidence for each item. Applicable as a sketch only: rates exist for thin fabric and acrylic in air, not for 30 % O2.
 - Sources: https://www.spaceappschallenge.org/resources/project-submission-guide/ (read 2026-11-15)
+
+## ADR-050: Dark "Fire on the Moon" style, same as the demo slides (replaces ADR-034 style B)
+- Date/time: 2026-11-15 18:51-18:54
+- Stage: post-12
+- Context: Ruslan asked to make the app more beautiful; options offered at 18:37 included "one style with the slides:
+  dark space theme, orange accents, Space Grotesk / Inter".
+- Options: keep ADR-034 "Clean science" (light) / slide style (dark).
+- Claude's recommendation: slide style - the demo PDF and the app then look like one product.
+- Decision (Ruslan): slide style (chosen with assistant suggestions, phone check and a nicer home page).
+- Consequences: .streamlit/config.toml dark theme (#0D1322 / #151D33, accent #F0843F, text #EDE9E1, fonts Inter and
+  Space Grotesk from Google Fonts, SIL OFL); Plotly template plotly_dark; risk-map colours adapted (dimmed out-of-range
+  cells, light FLEX dots) and its legend text changed; all pages checked by screenshot, no exceptions.

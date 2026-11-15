@@ -14,8 +14,8 @@ st.title(t("Risk map: oxygen x pressure"))
 st.markdown(
     t(
         "Colour = predicted burning rate relative to ISS cabin air (hybrid model, 3 mm droplet, N2 balance). "
-        "Grey cells are outside the conditions NASA tested for that fuel (O2 within ±0.02 at that pressure); dark dots are "
-        "the FLEX tests, stars are real or planned cabin atmospheres."
+        "Dimmed cells are outside the conditions NASA tested for that fuel (O2 within ±0.02 at that pressure); light dots "
+        "are the FLEX tests, stars are real or planned cabin atmospheres."
     )
 )
 fuel = st.radio(t("Fuel"), ["Methanol", "Heptane"], horizontal=True, format_func=t)
@@ -43,7 +43,7 @@ fig.add_trace(
         x=o2,
         y=p * 14.696,
         z=veil,
-        colorscale=[[0, "rgba(120,120,120,0.55)"], [1, "rgba(120,120,120,0.55)"]],
+        colorscale=[[0, "rgba(21,29,51,0.72)"], [1, "rgba(21,29,51,0.72)"]],
         showscale=False,
         hoverinfo="skip",
         name=t("outside tested conditions"),
@@ -54,8 +54,8 @@ fig.add_trace(
         x=[None],
         y=[None],
         mode="markers",
-        marker=dict(size=12, color="rgba(120,120,120,0.55)", symbol="square"),
-        name=t("outside tested conditions (grey)"),
+        marker=dict(size=12, color="rgba(90,100,125,0.9)", symbol="square"),
+        name=t("outside tested conditions (dimmed)"),
     )
 )
 f = flex()
@@ -65,7 +65,7 @@ fig.add_trace(
         x=f["x_o2"],
         y=f["p_atm"] * 14.696,
         mode="markers",
-        marker=dict(size=7, color="#111827", line=dict(width=1, color="white")),
+        marker=dict(size=7, color="#EDE9E1", line=dict(width=1, color="#0D1322")),
         name=t("NASA FLEX tests (N2)"),
         hovertemplate="FLEX %{text}<extra></extra>",
         text=f["flex_identifier"],
@@ -80,8 +80,8 @@ for name, a in PRESETS.items():
                 mode="markers+text",
                 text=[f"<b>{t(SHORT.get(name, name))}</b>"],
                 textposition="top center",
-                textfont=dict(size=14, color="#111827"),
-                marker=dict(size=18, symbol="star", color="#2563EB", line=dict(width=2, color="white")),
+                textfont=dict(size=14, color="#EDE9E1"),
+                marker=dict(size=18, symbol="star", color="#7FA6FF", line=dict(width=2, color="#0D1322")),
                 name=t(name),
             )
         )

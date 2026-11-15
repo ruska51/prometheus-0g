@@ -1,11 +1,16 @@
-# Style B "Clean science" (ADR-034)
+# Style "Fire on the Moon" (ADR-050): same palette and fonts as the demo slides (replaces ADR-034 "Clean science").
 [theme]
-base = "light"
-primaryColor = "#1D4ED8"
-backgroundColor = "#FFFFFF"
-secondaryBackgroundColor = "#F5F7FA"
-textColor = "#111827"
-font = "sans serif"
+base = "dark"
+primaryColor = "#F0843F"
+backgroundColor = "#0D1322"
+secondaryBackgroundColor = "#151D33"
+textColor = "#EDE9E1"
+linkColor = "#7FA6FF"
+borderColor = "#26304A"
+font = "Inter:https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap, sans-serif"
+headingFont = "Space Grotesk:https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap, sans-serif"
+baseRadius = "0.6rem"
+chartCategoricalColors = ["#F0843F", "#7FA6FF", "#38E8FF", "#C9D4FF", "#FFB627", "#2FD27A", "#E86BB5"]
 
 [server]
 headless = true

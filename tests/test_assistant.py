@@ -314,3 +314,13 @@ def test_offline_answer_numbers_come_from_the_cited_blocks():
     for q in ["Does helium dilution slow burning?", "How much CO did BASS-II produce?", "Moon base burn time"]:
         r = offline_answer(q)
         assert unsupported_numbers(r["answer"], r["sources"]) == [], q
+
+
+def test_latex_from_the_model_is_shown_as_plain_text():
+    from fif.assistant.llm import plain_math, render_citations
+
+    raw = r"K is $K = 0.64\ \text{mm}^2/\text{s}$ in $0\text{ g}$, factor $1.46\times$, CO$_2$, $$T \approx 2462\,\text{K}$$ [D:core]."
+    out, order = render_citations(raw, {"D:core"})
+    assert out == "K is K = 0.64 mm²/s in 0 g, factor 1.46×, CO₂, T ≈ 2462 K¹."
+    assert "$" not in out and order == ["D:core"]
+    assert plain_math("costs 5 dollars") == "costs 5 dollars"

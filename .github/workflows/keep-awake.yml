@@ -1,6 +1,6 @@
 # Keep the public Streamlit app awake (ADR-048): Community Cloud puts an app to sleep after 12 h without traffic.
 # A headless browser opens the Overview page every 4 hours (at minute 17, away from the busy start of the hour) and
-# wakes the app if needed. It never opens the assistant page, so it does not use the Gemini quota.
+# wakes the app if needed, then opens the assistant page to warm it up (no question is asked: no Gemini quota used).
 # Note (GitHub docs): in a public repository, scheduled workflows are disabled after 60 days without repository
 # activity; re-enable in the Actions tab ("Enable workflow").
 name: keep-awake

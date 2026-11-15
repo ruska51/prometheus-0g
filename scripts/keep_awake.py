@@ -3,7 +3,7 @@
 Community Cloud puts an app to sleep after 12 hours without traffic; a visitor then sees "This app has gone to sleep"
 and must click "Yes, get this app back up!". This script visits the app like a person, with a headless browser (a
 plain HTTP request does not open an app session), wakes it if it is asleep, and checks that the Overview headline is
-shown. It does not open the assistant page, so it never uses the Gemini quota. Run by
+shown, then opens the assistant page (no question is asked, so no Gemini quota is used) to warm it up. Run by
 .github/workflows/keep-awake.yml every few hours; exit code 1 if the app did not come up.
 
 Usage: python scripts/keep_awake.py [URL]   (KEEP_AWAKE_CHANNEL=msedge to use an installed Edge)
@@ -50,6 +50,10 @@ def main() -> int:
                 print("app was asleep: wake-up clicked", flush=True)
             if find(page, lambda f: f.get_by_text(HEADLINE)) is not None:
                 page.wait_for_timeout(5_000)  # stay a moment, like a visitor
+                # open the assistant page too: it prepares the model list and search index (no question is asked,
+                # so no Gemini quota is used) and keeps the first real question fast
+                page.goto(URL.rstrip("/") + "/assistant", timeout=120_000)
+                page.wait_for_timeout(15_000)
                 print(f"app is up ({time.time() - t0:.0f} s{', after wake-up' if woke else ''})", flush=True)
                 browser.close()
                 return 0

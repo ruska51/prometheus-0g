@@ -270,7 +270,7 @@ def render_citations(text: str, known: set[str]) -> tuple[str, list[str]]:
                 nums.append(str(order.index(p) + 1))
         return ",".join(dict.fromkeys(nums)).translate(SUP)
 
-    out = CITE.sub(sub, text)
+    out = CITE.sub(sub, plain_math(text))
     out = re.sub(r"[ \t]+([⁰¹²³⁴⁵⁶⁷⁸⁹])", r"\1", out)  # "fact [D:x]." -> "fact¹."
     out = re.sub(r"[ \t]+([.,;:!?)])", r"\1", out)
     return out, order
@@ -282,7 +282,47 @@ def render_partial(text: str, known: set[str]) -> str:
     cut = text.rfind("[")
     if cut > text.rfind("]"):
         text = text[:cut]
+    if text.count("$") % 2:  # an unfinished $...$ formula: hold it back too
+        text = text[: text.rfind("$")]
     return render_citations(text, known)[0].rstrip()
+
+
+SUPER = str.maketrans("0123456789-", "⁰¹²³⁴⁵⁶⁷⁸⁹⁻")
+SUB = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
+LATEX_SYMBOLS = {
+    r"\times": "×",
+    r"\approx": "≈",
+    r"\cdot": "·",
+    r"\pm": "±",
+    r"\leq": "≤",
+    r"\geq": "≥",
+    r"\le": "≤",
+    r"\ge": "≥",
+    r"\sim": "~",
+    r"\rightarrow": "→",
+    r"\to": "→",
+    r"\%": "%",
+    r"\,": " ",
+    r"\;": " ",
+    r"\ ": " ",
+}
+
+
+def _latex_to_text(s: str) -> str:
+    s = re.sub(r"\\(?:text|mathrm|mathit|mathbf|operatorname|textrm)\s*\{([^{}]*)\}", r"\1", s)
+    for k in sorted(LATEX_SYMBOLS, key=len, reverse=True):
+        s = s.replace(k, LATEX_SYMBOLS[k])
+    s = re.sub(r"\^\{?(-?\d+)\}?", lambda m: m.group(1).translate(SUPER), s)
+    s = re.sub(r"_\{?(\d+)\}?", lambda m: m.group(1).translate(SUB), s)
+    s = re.sub(r"\\[A-Za-z]+", "", s)
+    return s.replace("{", "").replace("}", "")
+
+
+def plain_math(text: str) -> str:
+    """LaTeX formulas ($...$, $$...$$) that the model writes despite the prompt become plain text for display
+    ("$K = 0.64\\ \\text{mm}^2/\\text{s}$" -> "K = 0.64 mm²/s"), so Streamlit does not render a formula block."""
+    text = re.sub(r"\$\$(.+?)\$\$", lambda m: _latex_to_text(m.group(1)), text, flags=re.S)
+    return re.sub(r"\$([^$\n]{1,200})\$", lambda m: _latex_to_text(m.group(1)), text)
 
 
 FACTOR = re.compile(r"(?<![A-Za-z])[x×](?=\d)")  # "x1.46" / "×1.46": a factor, the number is 1.46

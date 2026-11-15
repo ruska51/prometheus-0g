@@ -477,6 +477,7 @@ RU = {
     "This answer has no source citations - treat it with caution.": "В этом ответе нет ссылок на источники - относитесь к нему осторожно.",
     "Sources ({n})": "Источники ({n})",
     "Source excerpts ({n})": "Фрагменты источников ({n})",
+    "The same 3 mm droplet burning in real time: ISS cabin air on the left, Moon-base air on the right (both weightless; the animation is driven by the model, the flame shape is illustrative).": "Одна и та же капля 3 мм горит в реальном времени: слева воздух кабины МКС, справа воздух лунной базы (оба случая в невесомости; анимацию ведёт модель, форма пламени условная).",
     "Or tap a question:": "Или нажмите на вопрос:",
     "How much faster would a droplet burn on a Moon base?": "Насколько быстрее сгорит капля на лунной базе?",
     "Does helium dilution slow burning?": "Замедляет ли гелий горение?",

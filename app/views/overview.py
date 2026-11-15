@@ -4,8 +4,11 @@ import math
 
 import pandas as pd
 import streamlit as st
-from common import ORANGE, ROOT, evidence_badge, flex, insights, investigations, moon, status_badge, validation
-from i18n import t, tr_insight
+from common import ORANGE, ROOT, evidence_badge, flame_sim, flex, insights, investigations, moon, status_badge, validation
+from flame_view import render as render_flame
+from i18n import flame_labels, t, tr_insight
+
+from fif.insights.flame_sim import ATMOSPHERES
 
 st.title(t("Prometheus-0g - Fire on the Moon"))
 st.markdown(
@@ -115,6 +118,23 @@ with st.container(border=True):
     l2.page_link("views/module.py", label=t("Fire in a Moon-base module"), icon=":material/home_work:")
     l3.page_link("views/assistant.py", label=t("Ask the data"), icon=":material/forum:")
     l4.page_link("views/validation.py", label=t("How sure are we?"), icon=":material/fact_check:")
+
+# ---- see it burn, right on the home page: the same droplet in ISS air and in Moon-base air (both microgravity)
+_iss, _mb = ATMOSPHERES["ISS cabin air (microgravity)"], ATMOSPHERES["Moon base / rover (planned)"]
+render_flame(
+    [
+        flame_sim(fuel, round(_iss["p_atm"], 4), _iss["x_o2"], 0.0, 0.0, 3.0, 0, t("ISS cabin air (microgravity)")),
+        flame_sim(fuel, round(_mb["p_atm"], 4), _mb["x_o2"], 0.0, 0.0, 3.0, 0, t("Moon base / rover (planned)")),
+    ],
+    flame_labels(),
+    height=470,
+)
+st.caption(
+    t(
+        "The same 3 mm droplet burning in real time: ISS cabin air on the left, Moon-base air on the right (both "
+        "weightless; the animation is driven by the model, the flame shape is illustrative)."
+    )
+)
 
 st.markdown(
     t(

@@ -152,6 +152,10 @@ the hatch is replaced by metal and the hatch time recomputed; for a fire startin
 hatch gives every cell's time to the hatch, and the strip that most reduces the area that can reach the hatch is kept.
 Ventilation (microgravity case only): its direction decides where the concurrent (1.8 mm/s) and opposed (1.3 mm/s)
 Saffire rates apply; with fans off no spread rate was measured, so none is assumed.
+Atmosphere (ADR-051, physics theory): all rates are multiplied by (T_f - T_v)/(T_f,air - T_v), the ratio implied by
+NASA/TM-20210011385 Eq. (2.2) for the same material and flow, with T_v = 673 K (same report) and T_f the stoichiometric
+equilibrium flame temperature of n-heptane vapour (entering at T_v) in the chosen O2/N2 mixture and pressure
+(fif.physics.flame). Not validated against spread measurements above 22 % O2 (none in our sources).
 
 ## 11. References
 

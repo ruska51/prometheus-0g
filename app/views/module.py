@@ -75,9 +75,11 @@ def dark_layout(fig: go.Figure, height: int, axes: bool = False) -> None:
         fig.update_yaxes(visible=False, autorange="reversed", scaleanchor="x")
 
 
-def env_obj(env: str, vent: int) -> mf.Environment:
-    """Measured rates for the gravity; in microgravity the ventilation direction decides which way is 'with the flow'."""
-    return mf.iss_with_flow(vent) if env == "iss" else mf.ENVIRONMENTS[env]
+def env_obj(env: str, vent: int, factor: float = 1.0) -> mf.Environment:
+    """Measured rates for the gravity; in microgravity the ventilation direction decides which way is 'with the flow';
+    ``factor`` scales all rates for another atmosphere (physics theory, ADR-051)."""
+    base = mf.iss_with_flow(vent) if env == "iss" else mf.ENVIRONMENTS[env]
+    return base if factor == 1.0 else mf.scaled(base, factor)
 
 
 def _grid(key: tuple[str, ...]) -> np.ndarray:
@@ -85,23 +87,23 @@ def _grid(key: tuple[str, ...]) -> np.ndarray:
 
 
 @st.cache_data(show_spinner=False, max_entries=64)
-def _arrival(key: tuple[str, ...], ign: tuple[int, int], env: str, vent: int) -> np.ndarray:
-    return mf.arrival_times(_grid(key), ign, env_obj(env, vent))
+def _arrival(key: tuple[str, ...], ign: tuple[int, int], env: str, vent: int, fac: float = 1.0) -> np.ndarray:
+    return mf.arrival_times(_grid(key), ign, env_obj(env, vent, fac))
 
 
 @st.cache_data(show_spinner=False, max_entries=64)
-def _to_hatch(key: tuple[str, ...], env: str, vent: int) -> np.ndarray:
-    return mf.time_to_hatch(_grid(key), env_obj(env, vent))
+def _to_hatch(key: tuple[str, ...], env: str, vent: int, fac: float = 1.0) -> np.ndarray:
+    return mf.time_to_hatch(_grid(key), env_obj(env, vent, fac))
 
 
 @st.cache_data(show_spinner=t("Trying every 50 cm strip..."), max_entries=32)
-def _firebreak(key: tuple[str, ...], ign: tuple[int, int], env: str, vent: int):
-    return mf.best_firebreak(_grid(key), ign, env_obj(env, vent))
+def _firebreak(key: tuple[str, ...], ign: tuple[int, int], env: str, vent: int, fac: float = 1.0):
+    return mf.best_firebreak(_grid(key), ign, env_obj(env, vent, fac))
 
 
 @st.cache_data(show_spinner=t("Trying every 50 cm strip..."), max_entries=32)
-def _firebreak_anywhere(key: tuple[str, ...], env: str, vent: int):
-    return mf.best_firebreak_anywhere(_grid(key), env_obj(env, vent))
+def _firebreak_anywhere(key: tuple[str, ...], env: str, vent: int, fac: float = 1.0):
+    return mf.best_firebreak_anywhere(_grid(key), env_obj(env, vent, fac))
 
 
 def minutes(s: float) -> str:
@@ -118,7 +120,7 @@ st.markdown(
 )
 st.caption(
     t(
-        "Evidence: model (sketch on measured NASA rates). Rates measured in air (21-22 % O2): in Moon-base air (30 % O2) a fire is expected to spread faster, so the times are upper bounds."
+        "Evidence: model (sketch on NASA rates measured in air, 21-22 % O2). For another cabin atmosphere the rates are scaled with NASA's flame-spread theory (physics theory, not measured)."
     )
 )
 
@@ -216,10 +218,46 @@ st.caption(
     )
 )
 
+# ---- atmosphere (ADR-051): measured rates in test air, other air by NASA's flame-spread theory -----------------
+ATM = {
+    "air": (0.21, 1.0),
+    "moon": (0.30, 10.2 / 14.696),
+    "sea": (0.34, 8.2 / 14.696),
+}
+ATM_LABEL = {
+    "air": lambda: t("Test air / ISS cabin air (21 % O2, 14.7 psi) - measured rates"),
+    "moon": lambda: t("Moon base / rover air (30 % O2, 10.2 psi) - challenge"),
+    "sea": lambda: t("Exploration atmosphere (34 % O2, 8.2 psi) - NASA FM2 poster"),
+    "custom": lambda: t("Your own atmosphere"),
+}
+a1, a2, a3 = st.columns([1.6, 1, 1])
+atm = a1.selectbox(t("Cabin atmosphere"), list(ATM_LABEL), format_func=lambda k: ATM_LABEL[k]())
+if atm == "custom":
+    x_o2 = a2.slider(t("Oxygen, %"), 17, 40, 30) / 100
+    p_atm = a3.slider(t("Pressure, psi"), 5.0, 15.0, 10.2, step=0.1) / 14.696
+else:
+    x_o2, p_atm = ATM[atm]
+fac = round(mf.atmosphere_factor(x_o2, p_atm), 4)
+tf, ta = mf.flame_temperature_K(round(x_o2, 4), round(p_atm, 4)), mf.flame_temperature_K(*mf.AIR)
+if atm == "air":
+    st.caption(t("Spread rates as NASA measured them (air, 21-22 % O2)."))
+else:
+    st.caption(
+        t(
+            "Flame temperature {tf} K vs {ta} K in the test air, so every spread rate is multiplied by {f} - NASA's "
+            "flame-spread theory for thin solids (BASS-II report NTRS 20210011385, Eq. 2.2: rate proportional to flame "
+            "temperature minus 673 K); flame temperature from chemical equilibrium for a hydrocarbon stand-in. Evidence: "
+            "physics theory, not measured.",
+            tf=f"{tf:.0f}",
+            ta=f"{ta:.0f}",
+            f=f"x{fac:.2f}",
+        )
+    )
+
 # ---- the same fire in three gravities ---------------------------------------------------------------------------
 ign = tuple(state["ignition"])
 key = tuple("".join(r) for r in layout)
-times = {k: _arrival(key, ign, k, vent) for k in ENV_ORDER}
+times = {k: _arrival(key, ign, k, vent, fac) for k in ENV_ORDER}
 summ = {k: mf.summary(layout, times[k]) for k in ENV_ORDER}
 
 st.subheader(t("How the fire spreads"))
@@ -354,7 +392,7 @@ goal = d2.radio(
 )
 if goal == "here":
     tmap = times[denv]
-    fb = _firebreak(key, ign, denv, vent)
+    fb = _firebreak(key, ign, denv, vent, fac)
     before = summ[denv]["hatch_s"]
     if fb is None:
         msg = (
@@ -375,8 +413,8 @@ if goal == "here":
         )
     map_title = t("When the flame arrives (minutes after ignition)")
 else:
-    tmap = _to_hatch(key, denv, vent)
-    fb = _firebreak_anywhere(key, denv, vent)
+    tmap = _to_hatch(key, denv, vent, fac)
+    fb = _firebreak_anywhere(key, denv, vent, fac)
     area = mf.hatch_catchment_m2(tmap)
     if fb is None:
         msg = t("No fire on this wall can reach the hatch.") if area == 0 else t("No single strip helps here.")

@@ -545,3 +545,24 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
 - Consequences: .streamlit/config.toml dark theme (#0D1322 / #151D33, accent #F0843F, text #EDE9E1, fonts Inter and
   Space Grotesk from Google Fonts, SIL OFL); Plotly template plotly_dark; risk-map colours adapted (dimmed out-of-range
   cells, light FLEX dots) and its legend text changed; all pages checked by screenshot, no exceptions.
+
+## ADR-051: Cabin atmosphere on the module page by NASA's flame-spread theory; Earth panel on the home page
+- Date/time: 2026-11-15 19:07-19:19
+- Stage: post-12
+- Context: Ruslan: the atmosphere also affects burning - let the module page set it; on the home page add Earth gravity
+  with its air for comparison. Our NASA sources have no solid flame-spread rates above 21-22 % O2 (BASS-II varied O2
+  only between 16 and 21 %). NASA/TM-20210011385 (BASS-II report) gives the thermal-limit spread rate over thin solids,
+  Eq. (2.2): V_f = F lambda_g (T_f - T_v) / (rho_s c_s tau (T_v - T_inf)), with "a vaporization temperature of 673 K"
+  for thin PMMA; NASA's thermodynamic data set has no PMMA monomer or cellulose.
+- Options: A) scale the measured rates by (T_f - 673 K)/(T_f,air - 673 K), T_f from the project's equilibrium flame
+  temperature for a hydrocarbon stand-in (n-heptane vapour entering at 673 K), labelled physics theory; B) atmosphere
+  selector with a warning only, times unchanged.
+- Claude's recommendation: A, labelled "physics theory, not measured".
+- Decision (Ruslan): A.
+- Consequences: module page "Cabin atmosphere" (test air = measured rates, default; Moon base 30 % O2 / 10.2 psi; 34 %
+  O2 / 8.2 psi from the FM2 poster NTRS 20240008623; custom O2 17-40 %, 5-15 psi). Factors: Moon-base air x1.17
+  (T_f 2566 K vs 2298 K), 34 %/8.2 psi x1.20, 17 % x0.87; pressure enters only through dissociation. Our T_f in air
+  (2298 K, stoichiometric equilibrium) differs from the report's "linearized flame temperature of 2,199 K"; only the
+  ratio is used. The home page animation gets a third panel: the same droplet in Earth sea-level air at 1 g
+  (burning rate at 1 g = physics extrapolation, as on the scenario page).
+- Sources: https://ntrs.nasa.gov/citations/20210011385 ; https://ntrs.nasa.gov/citations/20240008623

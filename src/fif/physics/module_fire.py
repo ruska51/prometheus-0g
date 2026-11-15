@@ -27,6 +27,7 @@ Units: cells of CELL_MM, times in s, rates in mm/s.
 from __future__ import annotations
 
 import dataclasses
+import functools
 import heapq
 import math
 from dataclasses import dataclass
@@ -379,3 +380,36 @@ def best_firebreak_anywhere(layout: np.ndarray, env: Environment, length: int = 
     if best is None or best.reached_m2 >= base_area:
         return None
     return best
+
+
+# ---- atmosphere (ADR-051): physics-theory scaling of the measured rates ------------------------------------------
+# NASA/TM-20210011385 (BASS-II summary report), Eq. (2.2), thermal limit of flame spread over a thin solid (de Ris):
+# V_f = F * lambda_g * (T_f - T_v) / (rho_s * c_s * tau * (T_v - T_inf)). For the same material and flow, a change of
+# atmosphere changes V_f through the flame temperature only: V / V_air = (T_f - T_v) / (T_f,air - T_v); pressure does not
+# enter this regime (lambda_g does not depend on pressure). T_v = 673 K is the "vaporization temperature" the report
+# uses for thin PMMA; T_f comes from the project's equilibrium flame temperature (fif.physics.flame, Cantera with NASA
+# thermodynamic data) for a hydrocarbon surrogate (n-heptane vapour entering at T_v), because NASA's data set has no
+# PMMA monomer or cellulose. Label: physics theory, not measured (no NASA spread data above 21-22 % O2 in our sources).
+T_V_K = 673.0
+T_AMB_K = 298.15
+AIR = (0.21, 1.0)  # O2 mole fraction, atm: the air of the Saffire / LUCI tests (21-22 % O2 at about 1 atm)
+
+
+@functools.lru_cache(maxsize=256)
+def flame_temperature_K(x_o2: float, p_atm: float) -> float:
+    from .flame import adiabatic_flame_temperature
+
+    x = np.array([x_o2, 1.0 - x_o2, 0.0, 0.0])
+    return adiabatic_flame_temperature("heptane", T_V_K, x, T_AMB_K, p_atm * 101325.0)
+
+
+def atmosphere_factor(x_o2: float, p_atm: float) -> float:
+    """Spread-rate multiplier relative to the test air (1.0 at 21 % O2, 1 atm); 0 if the flame would be colder than T_v."""
+    tf, ta = flame_temperature_K(round(x_o2, 4), round(p_atm, 4)), flame_temperature_K(*AIR)
+    return max(0.0, (tf - T_V_K) / (ta - T_V_K))
+
+
+def scaled(env: Environment, factor: float) -> Environment:
+    """The same environment with every measured rate multiplied by ``factor``."""
+    rates = {m: (a * factor, b * factor) for m, (a, b) in env.rates.items()}
+    return dataclasses.replace(env, rates=rates)

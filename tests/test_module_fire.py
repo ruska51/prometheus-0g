@@ -130,3 +130,20 @@ def test_ventilation_direction_swaps_the_measured_concurrent_and_opposed_rates()
     towards = mf.hatch_time(crew, mf.arrival_times(crew, mf.IGNITION["crew"], mf.iss_with_flow(1)))
     away = mf.hatch_time(crew, mf.arrival_times(crew, mf.IGNITION["crew"], mf.iss_with_flow(-1)))
     assert towards < away  # air blowing towards the hatch brings the fire there sooner
+
+
+def test_atmosphere_scaling_follows_the_nasa_formula_and_its_constants():
+    bass = _text("20210011385")
+    assert "a vaporization temperature of 673 K" in bass and mf.T_V_K == 673.0
+    assert mf.atmosphere_factor(*mf.AIR) == pytest.approx(1.0)
+    fs = [mf.atmosphere_factor(x, 1.0) for x in (0.17, 0.21, 0.25, 0.30, 0.35)]
+    assert all(a < b for a, b in zip(fs, fs[1:], strict=False))  # more oxygen, hotter flame, faster spread
+    moon = mf.atmosphere_factor(0.30, 10.2 / 14.696)
+    tf, ta = mf.flame_temperature_K(0.30, round(10.2 / 14.696, 4)), mf.flame_temperature_K(*mf.AIR)
+    assert moon == pytest.approx((tf - 673.0) / (ta - 673.0), rel=1e-3) and moon > 1
+    e = mf.scaled(mf.ENVIRONMENTS["moon"], 2.0)
+    assert e.rates["F"] == (2.2, 1.8)
+    g, ign = strip(11), (0, 0)
+    t1 = mf.arrival_times(g, ign, mf.iss_with_flow(1))[0, -1]
+    t2 = mf.arrival_times(g, ign, mf.scaled(mf.iss_with_flow(1), moon))[0, -1]
+    assert t2 == pytest.approx(t1 / moon)

@@ -120,19 +120,25 @@ with st.container(border=True):
     l4.page_link("views/validation.py", label=t("How sure are we?"), icon=":material/fact_check:")
 
 # ---- see it burn, right on the home page: the same droplet in ISS air and in Moon-base air (both microgravity)
-_iss, _mb = ATMOSPHERES["ISS cabin air (microgravity)"], ATMOSPHERES["Moon base / rover (planned)"]
+_iss, _mb, _earth = (
+    ATMOSPHERES["ISS cabin air (microgravity)"],
+    ATMOSPHERES["Moon base / rover (planned)"],
+    ATMOSPHERES["Earth sea-level air (1 g)"],
+)
 render_flame(
     [
         flame_sim(fuel, round(_iss["p_atm"], 4), _iss["x_o2"], 0.0, 0.0, 3.0, 0, t("ISS cabin air (microgravity)")),
         flame_sim(fuel, round(_mb["p_atm"], 4), _mb["x_o2"], 0.0, 0.0, 3.0, 0, t("Moon base / rover (planned)")),
+        flame_sim(fuel, round(_earth["p_atm"], 4), _earth["x_o2"], 0.0, 0.0, 3.0, _earth["g"], t("Earth sea-level air (1 g)")),
     ],
     flame_labels(),
     height=470,
 )
 st.caption(
     t(
-        "The same 3 mm droplet burning in real time: ISS cabin air on the left, Moon-base air on the right (both "
-        "weightless; the animation is driven by the model, the flame shape is illustrative)."
+        "The same 3 mm droplet burning in real time: ISS cabin air and Moon-base air (both weightless), and ordinary "
+        "air on Earth at 1 g for comparison. The animation is driven by the model; the flame shape is illustrative and "
+        "the 1 g burning rate is a physics extrapolation."
     )
 )
 

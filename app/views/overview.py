@@ -110,10 +110,11 @@ with st.container(border=True):
         + "**\n"
         + "\n".join(f"- {tr_insight(by_id[k], 'action')}" for k in ("S4", "D1", "P6") if k in by_id)
     )
-    l1, l2, l3 = st.columns(3)
+    l1, l2, l3, l4 = st.columns([1.55, 1.25, 0.9, 1.1])
     l1.page_link("views/scenario.py", label=t("See it burn: Moon vs ISS animation"), icon=":material/local_fire_department:")
-    l2.page_link("views/assistant.py", label=t("Ask the data"), icon=":material/forum:")
-    l3.page_link("views/validation.py", label=t("How sure are we?"), icon=":material/fact_check:")
+    l2.page_link("views/module.py", label=t("Fire in a Moon-base module"), icon=":material/home_work:")
+    l3.page_link("views/assistant.py", label=t("Ask the data"), icon=":material/forum:")
+    l4.page_link("views/validation.py", label=t("How sure are we?"), icon=":material/fact_check:")
 
 st.markdown(
     t(

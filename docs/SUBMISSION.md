@@ -72,8 +72,9 @@ firefighters on Earth, complete the picture.
 
 **What users get.** You can build your own Moon-base atmosphere (any oxygen, pressure, diluent and droplet size) and
 see the burning rate, how reliable the prediction is and which real NASA tests are closest. You can watch the same
-droplet burn side by side in two atmospheres, with the animation driven by the model. On the Module fire page you draw
-a wall of a Moon-base module - fabric stowage bags, acrylic panels, metal racks, the hatch - pick where a fire starts
+droplet burn side by side in two atmospheres, with the animation driven by the model. The Moon-base fire designer
+puts the whole design on one page: you lay out the base from modules (type and size class; areas and air volumes
+are computed), see to scale which module a fire would threaten first, then draw a wall of a Moon-base module - fabric stowage bags, acrylic panels, metal racks, the hatch - pick where a fire starts
 and watch it spread at the flame-spread rates NASA measured for those materials in microgravity (Saffire), at lunar
 gravity (the LUCI sounding rocket) and on Earth, in test air or, scaled with NASA's flame-spread theory, in any cabin
 atmosphere; the same fire burns side by side in the three gravities, the page shows when the flame reaches the hatch
@@ -87,12 +88,12 @@ rates, not a fire simulation, and says so. There is a risk map of oxygen against
 catalog with a comparison matrix of all 24 PSI combustion investigations, and a data explorer where every raw NASA row
 can be downloaded. And you can simply ask: "Ask the data" is an AI assistant that answers with numbers from our
 results and 12 public NASA reports, shows the source of every statement, and says plainly when the data do not cover a
-question. A Detection & suppression tab places detectors and extinguishers on the wall and gives the time until a
-CO2 alarm sounds, and a Moon-base planner lays out a whole base of modules to scale and shows which module to fix
-first. An AI pilot on every page turns a request such as "detectors in the lab module in Moon-base air" into the
+question. In the designer a Protect tab also places detectors and extinguishers on the wall and gives the time until
+a CO2 alarm sounds, and a Report tab collects the base, the module, fire, air, protection, checklist and sources in
+one downloadable report. An AI pilot, a glowing button in the corner of every page, on every page turns a request such as "detectors in the lab module in Moon-base air" into the
 right page with its inputs set, from a fixed list the code checks. Pages are grouped into Start here, Moon base and
 Evidence, each ends with a link to the next step, a
-glossary explains every term, and a scenario or a module wall can be shared as a link or downloaded as a report. The
+glossary explains every term, and a scenario or a design can be shared as a link. The
 app opens in English and switches to Russian, and its dark style matches the demo slides.
 
 **Benefits and impact.** Habitat and rover designers get measured, sourced reasons to plan for fires that are less

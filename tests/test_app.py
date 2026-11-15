@@ -15,7 +15,6 @@ PAGES = [
     "assistant",
     "scenario",
     "module",
-    "base",
     "risk_map",
     "investigations",
     "data_explorer",
@@ -118,7 +117,7 @@ def test_pilot_opens_the_module_with_settings(monkeypatch):
     assert not at.exception, [e.value for e in at.exception]
     assert at.selectbox(key="mod_wall").value == "lab"
     assert at.selectbox(key="mod_atm").value == "custom" and at.slider(key="mod_o2").value == 34
-    assert "Module fire" in at.session_state["pilot_say"]
+    assert "Fire designer" in at.session_state["pilot_say"]
 
 
 def test_pilot_rejects_values_outside_the_app():

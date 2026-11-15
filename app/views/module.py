@@ -8,6 +8,7 @@ import math
 from datetime import UTC
 from pathlib import Path
 
+import base_view as bv
 import blueprint as bp
 import numpy as np
 import plotly.graph_objects as go
@@ -16,6 +17,7 @@ from common import choice, external_params, next_step, qp_get, share_link, sourc
 from i18n import t, tr_insight
 from module_view import render as render_fire
 from plotly.subplots import make_subplots
+from theme import kicker
 
 from fif.insights.moon import moon_answer
 from fif.physics import module_fire as mf
@@ -193,13 +195,28 @@ def minutes(s: float) -> str:
     return t("not reached") if not math.isfinite(s) else t("{m} min", m=f"{s / 60:.0f}" if s >= 600 else f"{s / 60:.1f}")
 
 
-st.title(t("Fire in a Moon-base module"))
+kicker(t("Moon base · fire design studio"))
+st.title(t("Moon-base fire designer"))
 st.markdown(
     t(
-        "Draw a wall of a module, choose where a fire starts and watch it spread. Every material spreads fire at the "
-        "rate NASA measured for it in that gravity (Saffire on the ISS, LUCI at lunar gravity, the same samples on "
-        "Earth). This is a sketch on measured rates, not a fire simulation: its limits are in the Safer design tab."
+        "Everything on one page: lay out the base, pick a module, draw its wall, light a fire and watch it spread at the "
+        "rates NASA measured (Saffire on the ISS, LUCI at lunar gravity, the same samples on Earth), protect the hatch "
+        "with a firebreak, detectors and extinguishers - and download one report. A sketch on measured rates, not a fire "
+        "simulation: its limits are in the Protect tab."
     )
+)
+STEPS = ["Base", "Module wall", "Fire", "Protect", "Report"]
+st.markdown(
+    "<div style='display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px'>"
+    + "".join(
+        f"<span style='display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;"
+        f"border:1px solid rgba(56,232,255,.35);background:rgba(56,232,255,.06);font-weight:600;font-size:.9rem'>"
+        f"<b style='display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;"
+        f"background:linear-gradient(135deg,#ffb627,#ff5a1f);color:#140a04;font-size:.8rem'>{i}</b>{t(name)}</span>"
+        for i, name in enumerate(STEPS, 1)
+    )
+    + "</div>",
+    unsafe_allow_html=True,
 )
 st.caption(
     t(
@@ -250,6 +267,97 @@ if "mod_wall" not in ss or external_params("module"):  # first visit or a link (
         if not (len(ign0) == 2 and 0 <= ign0[0] < shape[0] and 0 <= ign0[1] < shape[1] and lay[ign0] in mf.FLAMMABLE):
             ign0 = mf.IGNITION[wall]  # an unreadable or non-flammable point falls back to the wall's default
         ss["module"] = {"preset": wall, "layout": lay.tolist(), "ignition": tuple(ign0), "selection": None}
+_linked = external_params("module")
+
+# ---- step 1: the base (ADR-059) -----------------------------------------------------------------------------------
+st.subheader(t("1 · Your base"))
+st.caption(
+    t(
+        "One cabin atmosphere for the whole base; each module has a type (sets its wall layout and racks) and a size "
+        "class - no areas to compute. Sizes, racks and layouts are design inputs, not NASA numbers; each module is "
+        "assessed on its own at lunar gravity, hatches closed."
+    )
+)
+# ---- atmosphere (ADR-051): measured rates in test air, other air by NASA's flame-spread theory -----------------
+ATM = {
+    "air": (0.21, 1.0),
+    "moon": (0.30, 10.2 / 14.696),
+    "sea": (0.34, 8.2 / 14.696),
+}
+ATM_LABEL = {
+    "air": lambda: t("Test air / ISS cabin air (21 % O2, 14.7 psi) - measured rates"),
+    "moon": lambda: t("Moon base / rover air (30 % O2, 10.2 psi) - challenge"),
+    "sea": lambda: t("Exploration atmosphere (34 % O2, 8.2 psi) - NASA FM2 poster"),
+    "custom": lambda: t("Your own atmosphere"),
+}
+a1, a2, a3 = st.columns([1.6, 1, 1])
+atm = choice(a1.selectbox, t("Cabin atmosphere"), list(ATM_LABEL), "mod_atm", format_func=lambda k: ATM_LABEL[k]())
+if atm == "custom":
+    # Streamlit forgets the state of a widget that was not shown on the last run: restore the defaults, not the minimum
+    ss.setdefault("mod_o2", 30)
+    ss.setdefault("mod_psi", 10.2)
+    x_o2 = a2.slider(t("Oxygen, %"), 17, 40, key="mod_o2") / 100
+    p_atm = a3.slider(t("Pressure, psi"), 5.0, 15.0, step=0.1, key="mod_psi") / 14.696
+else:
+    x_o2, p_atm = ATM[atm]
+fac = round(mf.atmosphere_factor(x_o2, p_atm), 4)
+tf, ta = mf.flame_temperature_K(round(x_o2, 4), round(p_atm, 4)), mf.flame_temperature_K(*mf.AIR)
+if atm == "air":
+    st.caption(t("Spread rates as NASA measured them (air, 21-22 % O2)."))
+else:
+    st.caption(
+        t(
+            "Flame temperature {tf} K vs {ta} K in the test air, so every spread rate is multiplied by {f} - NASA's "
+            "flame-spread theory for thin solids (BASS-II report NTRS 20210011385, Eq. 2.2: rate proportional to flame "
+            "temperature minus 673 K); flame temperature from chemical equilibrium for a hydrocarbon stand-in. Evidence: "
+            "physics theory, not measured.",
+            tf=f"{tf:.0f}",
+            ta=f"{ta:.0f}",
+            f=f"x{fac:.2f}",
+        )
+    )
+
+base_rows = bv.modules_table(x_o2, p_atm, fac)
+sel = None
+if base_rows:
+    st.plotly_chart(bv.side_view(base_rows, ss.get("base_pick")), use_container_width=True)
+    st.caption(t("Side view to scale; colour: redder = the flame reaches that module's hatch sooner; green bars = hatches."))
+    with st.expander(t("All modules: areas, air and detectors"), expanded=False):
+        st.dataframe(bv.summary_table(base_rows), hide_index=True, use_container_width=True)
+    fin = [r for r in base_rows if math.isfinite(r["hatch_s"])]
+    worst = min(fin, key=lambda r: r["hatch_s"]) if fin else base_rows[0]
+    names = [r["name"] for r in base_rows]
+    if fin:
+        st.warning(
+            t(
+                "Fix first: {m} - a fire on one of its walls reaches the hatch in {h}.",
+                m=worst["name"],
+                h=bv.mins(worst["hatch_s"]),
+            )
+        )
+    pick = choice(st.selectbox, t("2 · Module to design"), names, "base_pick", default=worst["name"])
+    sel = next(r for r in base_rows if r["name"] == pick)
+    if ss.get("_last_pick") != pick:  # a new module: load its wall type (unless a link or the pilot just set one)
+        if not _linked:
+            ss["mod_wall"] = sel["wall"]
+        ss["_last_pick"] = pick
+    st.caption(
+        t(
+            "{m}: {k}, {l:.0f} m long, {d:.1f} m across - floor {f:.0f} m², interior wall {w:.0f} m² (about {n:.0f} walls "
+            "like the one below), free air {v:.0f} m³ after {r:.0f} % racks.",
+            m=sel["name"],
+            k=t(sel["kind"]).lower(),
+            l=sel["length_m"],
+            d=sel["diameter_m"],
+            f=sel["floor_m2"],
+            w=sel["wall_m2"],
+            n=sel["sections"],
+            v=sel["free_volume_m3"],
+            r=sel["racks"] * 100,
+        )
+    )
+else:
+    st.info(t("Add at least one module to the table."))
 
 c1, c2 = st.columns([1.1, 1.9])
 preset = choice(c1.selectbox, t("Module wall"), WALLS, "mod_wall", format_func=lambda k: PRESET_LABEL[k]())
@@ -345,45 +453,6 @@ st.caption(
     )
 )
 
-# ---- atmosphere (ADR-051): measured rates in test air, other air by NASA's flame-spread theory -----------------
-ATM = {
-    "air": (0.21, 1.0),
-    "moon": (0.30, 10.2 / 14.696),
-    "sea": (0.34, 8.2 / 14.696),
-}
-ATM_LABEL = {
-    "air": lambda: t("Test air / ISS cabin air (21 % O2, 14.7 psi) - measured rates"),
-    "moon": lambda: t("Moon base / rover air (30 % O2, 10.2 psi) - challenge"),
-    "sea": lambda: t("Exploration atmosphere (34 % O2, 8.2 psi) - NASA FM2 poster"),
-    "custom": lambda: t("Your own atmosphere"),
-}
-a1, a2, a3 = st.columns([1.6, 1, 1])
-atm = choice(a1.selectbox, t("Cabin atmosphere"), list(ATM_LABEL), "mod_atm", format_func=lambda k: ATM_LABEL[k]())
-if atm == "custom":
-    # Streamlit forgets the state of a widget that was not shown on the last run: restore the defaults, not the minimum
-    ss.setdefault("mod_o2", 30)
-    ss.setdefault("mod_psi", 10.2)
-    x_o2 = a2.slider(t("Oxygen, %"), 17, 40, key="mod_o2") / 100
-    p_atm = a3.slider(t("Pressure, psi"), 5.0, 15.0, step=0.1, key="mod_psi") / 14.696
-else:
-    x_o2, p_atm = ATM[atm]
-fac = round(mf.atmosphere_factor(x_o2, p_atm), 4)
-tf, ta = mf.flame_temperature_K(round(x_o2, 4), round(p_atm, 4)), mf.flame_temperature_K(*mf.AIR)
-if atm == "air":
-    st.caption(t("Spread rates as NASA measured them (air, 21-22 % O2)."))
-else:
-    st.caption(
-        t(
-            "Flame temperature {tf} K vs {ta} K in the test air, so every spread rate is multiplied by {f} - NASA's "
-            "flame-spread theory for thin solids (BASS-II report NTRS 20210011385, Eq. 2.2: rate proportional to flame "
-            "temperature minus 673 K); flame temperature from chemical equilibrium for a hydrocarbon stand-in. Evidence: "
-            "physics theory, not measured.",
-            tf=f"{tf:.0f}",
-            ta=f"{ta:.0f}",
-            f=f"x{fac:.2f}",
-        )
-    )
-
 # ---- the same fire in three gravities ---------------------------------------------------------------------------
 ign = tuple(state["ignition"])
 key = tuple("".join(r) for r in layout)
@@ -402,24 +471,26 @@ sh1, sh2, _ = st.columns([1.2, 1.5, 1.5])
 with sh1:
     share_link(shared, "module")
 report_slot = sh2.empty()  # filled at the end of the page, when all results are known
-vol = 30  # module volume, m3; the Module air tab has the slider
+vol = round(sel["free_volume_m3"], 1) if sel else 30.0  # free air of the module picked in step 1
 times = {k: _arrival(key, ign, k, vent, fac) for k in ENV_ORDER}
 summ = {k: mf.summary(layout, times[k]) for k in ENV_ORDER}
 
 t_end = max(summ[k]["time_all_s"] for k in ENV_ORDER)
 
+st.subheader(t("3 · Fire, protection and report"))
 TAB_LABELS = [
     t("🔥 Fire spread"),
     t("🫁 Module air"),
-    t("🛡️ Safer design"),
-    t("🚨 Detection & suppression"),
+    t("🛡️ Protect"),
     t("🌙 Lunar gravity & checklist"),
+    t("📄 Report"),
 ]
-TAB_KEYS = ["spread", "air", "design", "detect", "moon"]
-_tab = st.query_params.get("tab")  # set by the AI pilot or a link
-tab_spread, tab_air, tab_design, tab_detect, tab_moon = st.tabs(
+TAB_KEYS = ["spread", "air", "protect", "moon", "report"]
+_tab = {"design": "protect", "detect": "protect"}.get(st.query_params.get("tab"), st.query_params.get("tab"))
+tab_spread, tab_air, tab_protect, tab_moon, tab_report = st.tabs(
     TAB_LABELS, default=TAB_LABELS[TAB_KEYS.index(_tab)] if _tab in TAB_KEYS else None
 )
+tab_design = tab_detect = tab_protect
 with tab_spread:
     st.subheader(t("How the fire spreads"))
     st.caption(
@@ -501,21 +572,8 @@ with tab_air:
             )
         )
         z1, z2 = st.columns([1, 2])
-        z1.markdown("**" + t("Module size") + "**")
-        mlen = z1.slider(t("Length, m"), 2.0, 15.0, 5.0, 0.5, key="mod_len")
-        mdia = z1.slider(t("Inner diameter, m"), 2.0, 8.0, 3.5, 0.1, key="mod_dia")
-        mout = z1.slider(t("Space taken by racks and equipment, %"), 0, 80, 40, 5, key="mod_out")
-        geo = mf.module_geometry(mlen, mdia, mout / 100)
-        vol = round(geo["free_volume_m3"], 1)
-        z1.caption(
-            t(
-                "Free gas volume {v} m3; interior wall {a} m2 = about {n} walls of 4 m x 2 m like the one above. Size and "
-                "racks are design inputs - no module dimensions are given in our sources.",
-                v=f"{vol:.0f}",
-                a=f"{geo['wall_m2']:.0f}",
-                n=f"{geo['sections']:.0f}",
-            )
-        )
+        z1.metric(t("Free air in the module"), f"{vol:.0f} m³")
+        z1.caption(t("From the module type and size in step 1."))
         tz = np.linspace(0, t_end, 160)
         zones = {k: mf.zone_history(layout, times[k], tz, float(vol), x_o2, p_atm) for k in ENV_ORDER}
         zk = zones["moon"]
@@ -1023,76 +1081,119 @@ with tab_moon:
 
 # ---- downloadable report (ADR-055) ------------------------------------------------------------------------------
 def module_report() -> str:
-    """Plain-text (Markdown) summary of this wall: inputs, results in three gravities, module air, firebreak, sources."""
+    """One Markdown report for the whole design: base, the module designed, fire, air, firebreak, detectors,
+    suppression, checklist, sources and limits (ADR-059)."""
     from datetime import datetime
     from urllib.parse import urlencode
 
-    rows = [
-        "# Module fire report - Prometheus-0g",
+    out = [
+        "# Moon-base fire design report - Prometheus-0g",
         "",
-        f"Generated {datetime.now(UTC):%Y-%m-%d %H:%M} UTC by https://prometheus-0g.streamlit.app/ (Module fire page).",
-        "Evidence: model - a sketch on NASA-measured flame-spread rates, not a fire simulation.",
+        f"Generated {datetime.now(UTC):%Y-%m-%d %H:%M} UTC by https://prometheus-0g.streamlit.app/ (Moon-base fire designer).",
+        "Evidence: model - a sketch on NASA-measured flame-spread rates, not a fire simulation. Module sizes, racks,",
+        "detector radius, suppression reach and alarm threshold are design inputs, not NASA numbers.",
         "",
-        "## Inputs",
+        "## 1. Base",
+        f"Cabin atmosphere: {x_o2 * 100:.0f} % O2 at {p_atm * 14.696:.1f} psi; spread rates x{fac:.2f} (NASA flame-spread",
+        "theory, NTRS 20210011385 Eq. 2.2; 1.00 = measured rates). Each module: one wall, fire at its default point,",
+        "lunar gravity, hatches closed.",
+        "",
+        "| Module | Type | Size, m | Floor, m2 | Free air, m3 | Flame at the hatch | Peak fire power, kW | O2 at the end, % | Detectors for 90 % of fires in 1 min |",
+        "|---|---|---|---|---|---|---|---|---|",
+    ]
+    for r in base_rows:
+        det_n = str(r["detectors"] or "> 8") if r["flammable_m2"] > 0 else "-"
+        out.append(
+            f"| {r['name']} | {r['kind']} | {r['length_m']:.0f} x {r['diameter_m']:.1f} | {r['floor_m2']:.1f} | "
+            f"{r['free_volume_m3']:.1f} | {bv.mins(r['hatch_s'])} | {r['peak_kW']:.1f} | {r['o2_end'] * 100:.1f} | {det_n} |"
+        )
+    out += [
+        "",
+        f"## 2. Module designed: {sel['name'] if sel else '-'}",
         f"- Wall: {PRESET_LABEL[preset]()} (4 m x 2 m, 10 cm cells){' - edited by the user' if 'L' in shared else ''}",
-        f"- Ignition cell (row, column): {ign[0]}, {ign[1]}",
+        f"- Ignition point: {ign[1] / 10:.1f} m from the left, {ign[0] / 10:.1f} m from the top",
         f"- Ventilation in microgravity: {'towards' if vent == 1 else 'away from'} the hatch, 20 cm/s",
-        f"- Cabin atmosphere: {x_o2 * 100:.0f} % O2 at {p_atm * 14.696:.1f} psi; spread rates x{fac:.2f} "
-        "(NASA flame-spread theory, NTRS 20210011385 Eq. 2.2; 1.00 = measured rates)",
-        f"- Free gas volume for the air model: {vol} m3",
+        f"- Free air for the air model: {vol:.0f} m3",
         "",
-        "## Results",
         "| Gravity | Flame at the hatch | Material reached, m2 | All of it burning after |",
         "|---|---|---|---|",
     ]
     for k in ENV_ORDER:
         sm = summ[k]
-        rows.append(
+        out.append(
             f"| {env_label(k)} | {minutes(sm['hatch_s'])} | {sm['reached_m2']:.2f} of {sm['flammable_m2']:.2f} | "
             f"{minutes(sm['time_all_s'])} |"
         )
     if t_end > 0:
         tz = np.linspace(0, t_end, 160)
-        rows += [
+        out += [
             "",
-            "## Module air (well-mixed zone model)",
+            "### Module air (well-mixed zone model)",
             "| Gravity | Heat, MJ | Peak fire power, kW | O2 at the end, % | CO2 at the end, % |",
             "|---|---|---|---|---|",
         ]
         for k in ENV_ORDER:
             z = mf.zone_history(layout, times[k], tz, float(vol), x_o2, p_atm)
-            rows.append(
+            out.append(
                 f"| {env_label(k)} | {z['heat_MJ'][-1]:.1f} | {max(z['hrr_kW'].max(), 0):.1f} | {z['x_o2'][-1] * 100:.1f} | "
                 f"{z['x_co2'][-1] * 100:.2f} |"
             )
         fbm = _firebreak(key, ign, "moon", vent, fac)
-        rows += ["", "## Firebreak (lunar gravity)"]
+        out += ["", "## 3. Protection", "### Firebreak (lunar gravity)"]
         if fbm is None:
-            rows.append("- No single 50 cm metal strip changes when the flame reaches the hatch from this ignition point.")
+            out.append("- No single 50 cm metal strip changes when the flame reaches the hatch from this ignition point.")
         else:
-            cells = ", ".join(f"({r}, {c})" for r, c in fbm.cells)
+            cells = ", ".join(f"({c / 10:.1f} m, {r / 10:.1f} m)" for r, c in fbm.cells)
             after = "never" if not math.isfinite(fbm.hatch_s) else minutes(fbm.hatch_s)
-            rows.append(f"- Metal strip on cells {cells}: flame at the hatch {minutes(summ['moon']['hatch_s'])} -> {after}.")
-    rows += [
+            out.append(f"- Metal strip at {cells}: flame at the hatch {minutes(summ['moon']['hatch_s'])} -> {after}.")
+    out += [
+        "",
+        f"### Detectors ({env_label(genv)}, coverage radius {rad_cm} cm)",
+        *[f"- D{i + 1}: {c / 10:.1f} m from the left, {r / 10:.1f} m from the top" for i, (r, c) in enumerate(det["cells"])],
+        f"- Mean time to detect {minutes(det['mean_s'])}, slowest {minutes(det['worst_s'])}, fires seen within 1 min "
+        f"{det['share_1min'] * 100:.0f} %, never seen {(1 - det['share_detected']) * 100:.0f} % of the material.",
+        "",
+        f"### Suppression points (reach {reach_cm} cm)",
+        *[f"- S{i + 1}: {c / 10:.1f} m from the left, {r / 10:.1f} m from the top" for i, (r, c) in enumerate(sup["cells"])],
+        f"- Hatch-critical material covered: {sup['covered_share'] * 100:.0f} %" if n_sup else "- none placed",
+    ]
+    if t_end > 0:
+        out += ["", f"### CO2 alarm (rise of {rise_pct:.2f} %-points in {vol:.0f} m3)"]
+        out += [f"- {lab}: {val}" for lab, val in rows_]
+    out += ["", "## 4. Checklist"]
+    out += [f"{i}. {action} ({ev})" for i, (action, _why, ev, _ref) in enumerate(CHECK, 1)]
+    out += [
         "",
         "## Sources and limits",
         "- Flame-spread rates: Saffire (NTRS 20170008805), LUCI sounding rocket (NTRS 20250010653).",
         "- Oxygen use of SIBAL fabric: NTRS 20210020516; heat per gram of O2: NASA BASS-II report (NTRS 20210011385).",
+        "- A detector counts a fire when the flame reaches material within its radius (conservative stand-in).",
         "- Not included: heating of nearby materials, the fire's effect on its own oxygen supply, smoke and toxic gases,",
-        "  suppression, flames jumping across gaps, the 3-D shape of a module.",
+        "  suppression itself, flames jumping across gaps or hatches, the 3-D shape of a module.",
         "",
-        "Link to reopen this wall: " + "https://prometheus-0g.streamlit.app/module?" + urlencode(shared),
+        "Link to reopen this design: https://prometheus-0g.streamlit.app/module?" + urlencode(shared),
     ]
-    return "\n".join(rows) + "\n"
+    return "\n".join(out) + "\n"
 
 
+REPORT = module_report()
 report_slot.download_button(
-    t("Download a report of this module"),
-    module_report(),
-    "module_fire_report.md",
-    "text/markdown",
-    icon=":material/download:",
+    t("Download the design report"), REPORT, "moon_base_fire_report.md", "text/markdown", icon=":material/download:"
 )
+with tab_report:
+    st.markdown("### " + t("One report for the whole design"))
+    st.caption(t("Base, the module you designed, fire, air, firebreak, detectors, extinguishers, checklist and sources."))
+    st.download_button(
+        t("Download the design report"),
+        REPORT,
+        "moon_base_fire_report.md",
+        "text/markdown",
+        icon=":material/download:",
+        type="primary",
+        key="report_dl_tab",
+    )
+    with st.container(border=True):
+        st.markdown(REPORT.replace("# Moon-base fire design report - Prometheus-0g", "#### Moon-base fire design report", 1))
 
 source_note(
     t(

@@ -64,8 +64,7 @@ pages = {  # three groups: start here, explore the Moon base, check the evidence
     ],
     t("Moon base"): [
         st.Page("views/scenario.py", title=t("Moon-base scenario"), icon=":material/science:"),
-        st.Page("views/module.py", title=t("Module fire"), icon=":material/local_fire_department:"),
-        st.Page("views/base.py", title=t("Base planner"), icon=":material/hub:"),
+        st.Page("views/module.py", title=t("Fire designer"), icon=":material/local_fire_department:"),
         st.Page("views/risk_map.py", title=t("Risk map"), icon=":material/map:"),
     ],
     t("Evidence"): [

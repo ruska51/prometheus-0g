@@ -16,7 +16,7 @@ PAGES = {
     "assistant": "views/assistant.py",
     "scenario": "views/scenario.py",
     "module": "views/module.py",
-    "base": "views/base.py",
+    "base": "views/module.py",  # the base is step 1 of the fire designer (ADR-059)
     "risk_map": "views/risk_map.py",
     "insights": "views/insights.py",
     "investigations": "views/investigations.py",
@@ -29,7 +29,7 @@ FUELS = ["Methanol", "Heptane"]
 DILUENTS = ["none", "CO2", "He"]
 WALLS = ["crew", "lab", "stowage", "blank"]
 ATMS = ["air", "moon", "sea", "custom"]
-TABS = ["spread", "air", "design", "detect", "moon"]
+TABS = ["spread", "air", "design", "detect", "protect", "moon", "report"]
 
 SYSTEM = """You are the pilot of Prometheus-0g, a dashboard on NASA microgravity fire data. You do not answer science
 questions yourself: you open the right page and set its inputs. Reply with ONE JSON object and nothing else:
@@ -38,8 +38,8 @@ questions yourself: you open the right page and set its inputs. Reply with ONE J
 - "page": one of overview, assistant, scenario, module, base, risk_map, insights, investigations, data_explorer,
   validation, method.
   overview = headline answer; scenario = one fuel droplet in a chosen cabin atmosphere (burning rate, flame temperature,
-  animation); module = a 4 m x 2 m module wall, fire spread in three gravities, module air, firebreak, detectors and
-  suppression; base = a whole Moon base of modules; risk_map = burning rate over oxygen x pressure; insights = ranked
+  animation); module = the Moon-base fire designer: the base of modules, a 4 m x 2 m module wall, fire spread in three gravities, module air, firebreak, detectors and
+  suppression and one report (also for "plan a base"); risk_map = burning rate over oxygen x pressure; insights = ranked
   fire-safety findings; investigations = the 24 NASA PSI investigations; data_explorer = raw NASA rows; validation =
   how accurate the model is; method = method, sources, glossary; assistant = questions about the data.
 - "scenario" (only for page scenario): preset one of "ISS cabin air", "Moon base / rover (planned)",
@@ -47,8 +47,8 @@ questions yourself: you open the right page and set its inputs. Reply with ONE J
   psi (3-45, needs Custom); dil "none"|"CO2"|"He"; xdil (0-0.7); d0 (droplet diameter mm, 1-5).
 - "module" (only for page module): wall "crew"|"lab"|"stowage"|"blank"; atm "air"|"moon"|"sea"|"custom"
   (air = ISS/test air 21 % O2 14.7 psi, moon = Moon base 30 % O2 10.2 psi, sea = 34 % O2 8.2 psi); o2 (percent 17-40,
-  needs atm custom); psi (5-15, needs custom); vent 1 (towards the hatch) | -1; tab "spread"|"air"|"design"|"detect"|"moon"
-  (design = firebreak, detect = detectors and suppression, moon = lunar-gravity facts and checklist).
+  needs atm custom); psi (5-15, needs custom); vent 1 (towards the hatch) | -1; tab "spread"|"air"|"design"|"detect"|"moon"|"report"
+  (design or detect = the Protect tab: firebreak, detectors and suppression; moon = lunar-gravity facts and checklist; report = the design report).
 - "question": if the user asks a factual question about fires, data or NASA results, copy it here and set page
   "assistant" - the data assistant will answer it with sources.
 Leave out anything the user did not ask for."""

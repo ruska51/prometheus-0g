@@ -49,19 +49,19 @@ ranked recommendations - for cabin-materials engineers, crew-safety planners and
   and the nearest real NASA tests.
 - **See it burn:** an animation of the same droplet in two atmospheres (for example microgravity vs the lunar surface);
   droplet shrinkage, burn time, extinction and flame temperature come from the model.
-- **Fire in a Moon-base module:** draw a module wall (fabric, acrylic, metal, hatch), set the ignition point and
+- **Moon-base fire designer (one page, one report):** lay out the base from modules - type and size class only, the
+  areas and air volumes are computed - and see to scale which module a fire would threaten first; then pick a
+  module, draw its wall (fabric, acrylic, metal, hatch), set the ignition point and
   watch the flame spread at the rates NASA measured for those materials in microgravity (Saffire), at lunar gravity
   (LUCI sounding rocket) and on Earth, in test air or any cabin atmosphere (scaled with NASA's flame-spread
   theory); a smooth animation of the same fire in all three, the time until it reaches the hatch, a well-mixed zone
   model of the module air (oxygen, CO2, heat, fire power), a search for the best 50 cm firebreak, what NASA has found about
-  solids at lunar gravity (quoted), and a 7-item fire-safety checklist with the evidence for each item. A
-  *Detection & suppression* tab places detectors (shortest average time to see a fire starting anywhere) and
-  extinguishers / fire ports (covering first the material from which a fire reaches the hatch soonest), and gives
-  the time until a CO2 alarm in the module air; module length, diameter and racks set the air volume. The wall is
-  drawn like an engineering sheet (metres, hatching, isochrones).
-- **Moon-base planner:** lay out a whole base of modules in an editable table; a to-scale side view shows, for
-  each module, how soon a fire reaches its hatch, what it does to the air and how many detectors it needs, and
-  which module to fix first.
+  solids at lunar gravity (quoted), and a 7-item fire-safety checklist with the evidence for each item. The
+  *Protect* tab places detectors (shortest average time to see a fire starting anywhere) and extinguishers / fire
+  ports (covering first the material from which a fire reaches the hatch soonest) and gives the time until a CO2
+  alarm; the *Report* tab collects the base, the module, fire, air, firebreak, detectors, extinguishers, checklist
+  and sources in one downloadable report. The wall is drawn like an engineering sheet (metres, hatching,
+  isochrones).
 - **20 ranked insights** for prevention, detection and suppression, plus lessons from Apollo 1, Apollo 13 and Mir and
   benefits on Earth (NASA spinoffs).
 - **All 24 PSI combustion investigations** ranked by relevance to crew fire safety, with a comparison matrix of what
@@ -78,7 +78,7 @@ ranked recommendations - for cabin-materials engineers, crew-safety planners and
 
 ![Fire in a Moon-base module: the same crew-quarters wall and the same spark at lunar gravity, in microgravity and on Earth (flame front white-yellow to red, embers, char; hatch green)](docs/figures/ui/module_fire.png)
 
-![Moon-base planner: modules to scale, coloured by how soon a fire reaches each hatch](docs/figures/ui/base_desktop.png)
+![Moon-base fire designer, step 1: the base to scale, coloured by how soon a fire reaches each hatch](docs/figures/ui/base_desktop.png)
 
 ## Key insights (Moon-base set)
 
@@ -187,7 +187,7 @@ needs a free Google Gemini key in the environment (`GEMINI_API_KEY`); everything
 ## Project structure
 
 ```
-app/                Streamlit dashboard: main.py, views/ (11 pages), animations, AI pilot, glossary, EN/RU texts
+app/                Streamlit dashboard: main.py, views/ (10 pages), animations, AI pilot, glossary, EN/RU texts
 src/fif/
   data/             parsers, schema, cleaning, raw-file registry
   physics/          droplet burning (Law & Williams), properties, mixing rules, flame temperature

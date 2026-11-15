@@ -152,8 +152,7 @@ def moon(fuel: str, schema: int = RESULT_SCHEMA) -> dict:
 TOUR = [
     ("views/overview.py", "Overview"),
     ("views/scenario.py", "Moon-base scenario"),
-    ("views/module.py", "Module fire"),
-    ("views/base.py", "Base planner"),
+    ("views/module.py", "Fire designer"),
     ("views/risk_map.py", "Risk map"),
     ("views/insights.py", "Insights"),
     ("views/investigations.py", "Investigations"),

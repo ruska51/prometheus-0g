@@ -5,11 +5,13 @@ Stage 8 (2026-11-14), approved by Ruslan (ADR-034): structure and order as below
 Evidence badges everywhere: `NASA data` / `model` / `physics theory` / `NASA literature` / `NASA history` / `NASA spinoff`; reliability badges: `in range` / `extrapolation` / `unreliable` (ADR-031).
 
 ## Navigation (ADR-054)
-Sidebar in three groups: **Start here** (Overview, Ask the data), **Moon base** (Moon-base scenario, Module fire, Risk
-map), **Evidence** (Insights, Investigations, Data explorer, Validation, Method & sources). Every page ends with Back /
-Next step links along one tour: Overview -> Scenario -> Module fire -> Risk map -> Insights -> Investigations -> Data
-explorer -> Validation -> Method -> Ask the data. The Module fire page puts the set-up (wall, ventilation, atmosphere)
-above four tabs: Fire spread, Module air, Safer design, Lunar gravity & checklist.
+Sidebar in three groups: **Start here** (Overview, Ask the data), **Moon base** (Moon-base scenario, Fire designer,
+Risk map), **Evidence** (Insights, Investigations, Data explorer, Validation, Method & sources). Every page ends with Back /
+Next step links along one tour: Overview -> Scenario -> Fire designer -> Risk map -> Insights -> Investigations -> Data
+explorer -> Validation -> Method -> Ask the data. The Fire designer (ADR-059) is one page in steps: 1 base (atmosphere,
+modules by type and size class, to-scale side view, fix-first module), 2 module to design (wall editor,
+ventilation), 3 tabs: Fire spread, Module air, Protect (firebreak, detectors, extinguishers, CO2 alarm), Lunar gravity
+& checklist, Report (one downloadable report). The AI pilot is a floating button in the bottom-right corner.
 
 ## Pages (proposed order)
 

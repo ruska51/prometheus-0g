@@ -680,3 +680,20 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   a sparkle). app/pilot_ui.py: box in the sidebar, st.switch_page with query parameters; pages reload inputs from a
   link (ADR-057); the Module page opens the requested tab; "Ask the data" asks a handed-over question once. Limit 20
   pilot requests per visitor session.
+
+## ADR-059: One-page Moon-base fire designer with one report; floating AI pilot; Prometheus logo
+- Date/time: 2026-11-15 21:21-21:38
+- Stage: post-12
+- Context: Ruslan: the base, its design, how it burns, where the detectors go and the rest should be on one page with one
+  report - the user experience was too complicated, and computing areas felt hard; the AI assistant should be visible in
+  a corner at once; the logo should show Prometheus carrying fire.
+- Decision (Ruslan): as asked.
+- Consequences: the Module fire page becomes the "Fire designer": 1 base (atmosphere for the whole base, modules by type
+  and size class S / M / L - areas and air volumes computed; to-scale side view; fix-first module), 2 module to design
+  (its wall type follows the module type; wall editor), 3 tabs Fire spread / Module air (air volume from the module) /
+  Protect (firebreak + detectors + extinguishers + CO2 alarm) / Lunar gravity & checklist / Report (one Markdown report
+  for the whole design, preview and download). The separate Base planner page is removed (its code moved to
+  app/base_view.py); the pilot sends "plan a base" to the designer. Size classes (3 x 2.5, 6 x 4, 9 x 4.5 m), rack
+  shares per type and the type-to-wall mapping are design inputs. The AI pilot is a glowing floating button in the
+  bottom-right corner (raised above the Streamlit Cloud "Manage app" badge). New logo: an original drawing of Prometheus
+  striding with a raised torch.

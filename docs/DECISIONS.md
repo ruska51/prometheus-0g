@@ -736,7 +736,7 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   paper colours, dark logo ink; the fire animations stay dark windows like photographs in a report.
 
 ## ADR-063: Editorial layout - top menu, serif headings, figures without boxes
-- Date/time: 2026-11-15 22:10-22:20
+- Date/time: 2026-11-15 22:10-22:18
 - Stage: post-12
 - Context: Ruslan: the site still does not look human - it looks like a Streamlit template; colours and fonts; the text
   is laid out "like an AI page".

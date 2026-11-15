@@ -83,9 +83,26 @@ tests alone, since NASA researchers expect lunar gravity to be nearly the most f
 Researchers get a verified, reproducible FLEX dataset and an honest map of where the data stop. Students get an
 interactive way to see how flames behave without gravity.
 
+**How it is creative.** Many dashboards summarize NASA's data; ours also predicts beyond it, and measures how well.
+The backbone is the classic theory of a burning droplet, and machine learning only learns the correction, so the
+model stays sensible in atmospheres nobody has tested yet. We found no paper or public tool that trains a
+physics-informed model on NASA's FLEX data and tests it on atmospheres it never saw. We also turned the data into the
+question a habitat designer actually asks - what would a fire do on a Moon base? - and answer it with numbers and with
+a flame you can watch burning in both atmospheres side by side, driven by the model.
+
+**What we considered.** Scientific honesty first: the model uses only what is known before ignition, repeats of
+the same test regime never sit in both the training and the test set, every finding carries its type of evidence and
+its number of tests, predictions outside the tested range are marked as extrapolation, and the model's failures are
+shown in the app. Trust in the AI part: the assistant may use only our verified results and NASA reports, every
+statement links to its source, and numbers that cannot be found in the sources are flagged. Access: a free public web
+app that works on a phone, in English and Russian, with every raw NASA row downloadable; a limit of 10 assistant
+questions per visitor keeps the free API quota shared fairly. Reproducibility and rights: one command rebuilds
+everything from the raw NASA files; NASA data are public domain, our code is Apache-2.0, and no NASA logos or branding
+are used.
+
 **Tools.** Python 3.12, pandas, NumPy, SciPy, scikit-learn (Gaussian processes, logistic regression, gradient
 boosting), Cantera, pdfplumber, Streamlit, Plotly, WebGL (flame animation), Google Gemini API (assistant), Playwright
-(screenshots, slide PDF), pytest and ruff (159 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
+(screenshots, slide PDF), pytest and ruff (165 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
 Apache-2.0; NASA data CC0 / public domain. One command rebuilds data, models, insights and tests from the raw NASA
 files.
 
@@ -171,7 +188,7 @@ the Space Apps Project Submission Guide).
 | High-Level Project Summary | 161 | 912 |
 | Link to Project Demo | 24 | 234 |
 | Link to Final Project | 7 | 115 |
-| Detailed Project Description | 705 | 4190 |
+| Detailed Project Description | 981 | 5777 |
 | NASA Data | 295 | 1891 |
 | Space Agency Partner & Other Data | 85 | 627 |
 | Use of Artificial Intelligence | 190 | 1177 |

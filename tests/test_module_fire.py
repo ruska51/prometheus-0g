@@ -165,3 +165,13 @@ def test_zone_model_constants_are_quoted_and_balances_hold():
     assert z["heat_MJ"][-1] == pytest.approx(z["area_m2"][-1] * 0.28 / 18e-4 * 13.1 / 1000)
     big = mf.zone_history(g, tt, tg, volume_m3=40.0, x_o2=0.30, p_atm=0.694)
     assert big["dT_K"][-1] == pytest.approx(z["dT_K"][-1] / 2, rel=1e-6)  # twice the air, half the warming
+
+
+def test_fire_power_is_the_one_minute_average_of_the_heat_release():
+    g = mf.grid(mf.PRESETS["crew"])
+    tt = mf.arrival_times(g, mf.IGNITION["crew"], mf.ENVIRONMENTS["iss"])
+    tg = np.linspace(0, 1200, 241)
+    z = mf.zone_history(g, tt, tg, 30.0, 0.21, 1.0)
+    i = 120  # t = 600 s
+    assert z["hrr_kW"][i] == pytest.approx((z["heat_MJ"][i] - np.interp(540, tg, z["heat_MJ"])) * 1e3 / 60)
+    assert z["hrr_kW"].min() >= 0

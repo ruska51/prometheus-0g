@@ -445,7 +445,7 @@ def _cv_air_J_per_mol_K(x_o2: float) -> float:
 def zone_history(layout: np.ndarray, times: np.ndarray, t_grid: np.ndarray, volume_m3: float, x_o2: float, p_atm: float) -> dict:
     """Cabin air over time for a well-mixed module of ``volume_m3`` (free gas volume) at (x_o2, p_atm), from the fabric
     area the flame has reached by each time of ``t_grid``. Returns arrays: burnt fabric m2, heat MJ, heat release rate
-    kW, O2 and CO2 mole fractions, temperature rise K (upper bound)."""
+    kW (averaged over the last 60 s), O2 and CO2 mole fractions, temperature rise K (upper bound)."""
     cell_m2 = (CELL_MM / 1000) ** 2
     fab = np.sort(times[(layout == "F") & np.isfinite(times)])
     area = np.searchsorted(fab, t_grid, side="right") * cell_m2
@@ -456,5 +456,8 @@ def zone_history(layout: np.ndarray, times: np.ndarray, t_grid: np.ndarray, volu
     x_o2_t = np.maximum(0.0, (x_o2 * n_gas - n_o2_used) / n_gas)
     x_co2_t = n_o2_used / n_gas
     dT = heat_J / (n_gas * _cv_air_J_per_mol_K(x_o2))
-    hrr_kW = np.gradient(heat_J, t_grid) / 1000 if len(t_grid) > 1 else np.zeros_like(t_grid)
+    # fire power averaged over the last minute: the burnt area grows in 10 cm steps, so a point derivative would spike
+    window = 60.0
+    heat_before = np.interp(t_grid - window, t_grid, heat_J, left=0.0)
+    hrr_kW = (heat_J - heat_before) / window / 1000
     return {"area_m2": area, "heat_MJ": heat_J / 1e6, "hrr_kW": hrr_kW, "x_o2": x_o2_t, "x_co2": x_co2_t, "dT_K": dT}

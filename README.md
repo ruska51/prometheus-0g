@@ -52,7 +52,8 @@ ranked recommendations - for cabin-materials engineers, crew-safety planners and
 - **Fire in a Moon-base module:** draw a module wall (fabric, acrylic, metal, hatch), set the ignition point and
   watch the flame spread at the rates NASA measured for those materials in microgravity (Saffire), at lunar gravity
   (LUCI sounding rocket) and on Earth, in test air or any cabin atmosphere (scaled with NASA's flame-spread
-  theory); time until the flame reaches the hatch in all three, a search for the best 50 cm firebreak, what NASA has found about
+  theory); a smooth animation of the same fire in all three, the time until it reaches the hatch, a well-mixed zone
+  model of the module air (oxygen, CO2, heat, fire power), a search for the best 50 cm firebreak, what NASA has found about
   solids at lunar gravity (quoted), and a 7-item fire-safety checklist with the evidence for each item.
 - **20 ranked insights** for prevention, detection and suppression, plus lessons from Apollo 1, Apollo 13 and Mir and
   benefits on Earth (NASA spinoffs).

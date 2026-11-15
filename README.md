@@ -57,9 +57,9 @@ ranked recommendations - for cabin-materials engineers, crew-safety planners and
   theory); a smooth animation of the same fire in all three, the time until it reaches the hatch, a well-mixed zone
   model of the module air (oxygen, CO2, heat, fire power), a search for the best 50 cm firebreak, what NASA has found about
   solids at lunar gravity (quoted), and a 7-item fire-safety checklist with the evidence for each item. The
-  *Protect* tab places detectors (shortest average time to see a fire starting anywhere) and extinguishers / fire
+  *Protect* step places detectors (shortest average time to see a fire starting anywhere) and extinguishers / fire
   ports (covering first the material from which a fire reaches the hatch soonest) and gives the time until a CO2
-  alarm; the *Report* tab collects the base, the module, fire, air, firebreak, detectors, extinguishers, checklist
+  alarm; the *Report* step collects the base, the module, fire, air, firebreak, detectors, extinguishers, checklist
   and sources in one downloadable report. The wall is drawn like an engineering sheet (metres, hatching,
   isochrones).
 - **20 ranked insights** for prevention, detection and suppression, plus lessons from Apollo 1, Apollo 13 and Mir and

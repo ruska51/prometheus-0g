@@ -710,3 +710,16 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   #0F1115, panels #151820, thin rules, one safety-orange accent #E8743B, IBM Plex Sans / Plex Mono (numbers and labels
   in mono), no starfield, gradients, glow, pulse or emoji; the AI pilot is a plain orange button in the corner;
   animation controls restyled to match. The fire itself and the engineering drawing are unchanged.
+
+## ADR-061: Logical order of the Fire designer
+- Date/time: 2026-11-15 21:50-21:53
+- Stage: post-12
+- Context: Ruslan: on the Fire designer page the parts are mixed up and it is not clear; think out the right order.
+- Options considered by Claude: follow the engineer's path - what is built, what burns, what it does, how to protect,
+  what to do, the report, then the evidence behind it.
+- Decision (Ruslan): asked for a logical order; the order below is Claude's proposal, shown on the page.
+- Consequences: 01 Base, 02 Module wall (module, wall layout, editor - the ventilation switch moved out), 03 Fire (the
+  ventilation switch and its explanation sit with the fire they change), 04 Module air (only the results; the science
+  check moved), 05 Protect (one gravity choice for everything, then A firebreak, B detectors and extinguishers, C CO2
+  alarm), 06 Recommendations (checklist), 07 Report (share link and download moved here from the middle of the page),
+  08 Evidence & limits (BASS-II check, equations, rates and limits, NASA quotes on solids at lunar gravity).

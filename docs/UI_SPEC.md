@@ -8,10 +8,13 @@ Evidence badges everywhere: `NASA data` / `model` / `physics theory` / `NASA lit
 Sidebar in three groups: **Start here** (Overview, Ask the data), **Moon base** (Moon-base scenario, Fire designer,
 Risk map), **Evidence** (Insights, Investigations, Data explorer, Validation, Method & sources). Every page ends with Back /
 Next step links along one tour: Overview -> Scenario -> Fire designer -> Risk map -> Insights -> Investigations -> Data
-explorer -> Validation -> Method -> Ask the data. The Fire designer (ADR-059) is one page in steps: 1 base (atmosphere,
-modules by type and size class, to-scale side view, fix-first module), 2 module to design (wall editor,
-ventilation), 3 tabs: Fire spread, Module air, Protect (firebreak, detectors, extinguishers, CO2 alarm), Lunar gravity
-& checklist, Report (one downloadable report). The AI pilot is a floating button in the bottom-right corner.
+explorer -> Validation -> Method -> Ask the data. The Fire designer (ADR-059, ADR-061) is one column of numbered
+steps with a table of contents: 01 Base (atmosphere, modules by type and size class, to-scale side view, fix-first
+module), 02 Module wall (module, wall layout, editor), 03 Fire (ventilation for the ISS case, hatch times, animation,
+burnt area), 04 Module air, 05 Protect (one gravity choice; A firebreak, B detectors and extinguishers, C CO2 alarm),
+06 Recommendations (checklist), 07 Report (share link, download, preview), 08 Evidence & limits (BASS-II check,
+equations, rates and limits, NASA findings on solids at lunar gravity). The AI pilot is a button in the bottom-right
+corner.
 
 ## Pages (proposed order)
 

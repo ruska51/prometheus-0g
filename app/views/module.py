@@ -202,10 +202,10 @@ st.markdown(
         "Everything on one page: lay out the base, pick a module, draw its wall, light a fire and watch it spread at the "
         "rates NASA measured (Saffire on the ISS, LUCI at lunar gravity, the same samples on Earth), protect the hatch "
         "with a firebreak, detectors and extinguishers - and download one report. A sketch on measured rates, not a fire "
-        "simulation: its limits are in step 05."
+        "simulation: its limits are in step 08."
     )
 )
-STEPS = ["Base", "Module wall", "Fire", "Module air", "Protect", "Lunar gravity & checklist", "Report"]
+STEPS = ["Base", "Module wall", "Fire", "Module air", "Protect", "Recommendations", "Report", "Evidence & limits"]
 st.markdown(
     "<nav class='toc'>"
     + "".join(f"<a href='#step-{i}'><b>{i:02d}</b>{t(name)}</a>" for i, name in enumerate(STEPS, 1))
@@ -380,13 +380,6 @@ paint = c2.radio(
 state = st.session_state.setdefault("module", {})
 if state.get("preset") != preset:
     state.update(preset=preset, layout=mf.grid(mf.PRESETS[preset]).tolist(), ignition=mf.IGNITION[preset], selection=None)
-vent = choice(
-    c1.radio,
-    t("Ventilation in microgravity (ISS case)"),
-    [1, -1],
-    "mod_vent",
-    format_func=lambda d: t("blows towards the hatch") if d == 1 else t("blows away from the hatch"),
-)
 if c1.button(t("Reset this wall")):
     state.update(layout=mf.grid(mf.PRESETS[preset]).tolist(), ignition=mf.IGNITION[preset], selection=None)
 layout = np.array(state["layout"])
@@ -443,10 +436,22 @@ if pts and state.get("selection") != sig:
             layout[r, c] = paint
         state["layout"] = layout.tolist()
     st.rerun()
-st.caption(
-    t("Each square is 10 x 10 cm; the wall is 4 m x 2 m. Up is up (gravity); the hatch is on the right.")
-    + " "
-    + t(
+st.caption(t("Each square is 10 x 10 cm; the wall is 4 m x 2 m. Up is up (gravity); the hatch is on the right."))
+
+# ---- steps 03-08 in reading order; each is filled below ------------------------------------------------------------
+c_fire, c_air, c_protect, c_reco, c_report, c_evid = (st.container() for _ in range(6))
+for n, box in zip(range(3, 9), (c_fire, c_air, c_protect, c_reco, c_report, c_evid), strict=True):
+    step(n, box)
+vent = choice(
+    c_fire.radio,
+    t("Ventilation in microgravity (ISS case)"),
+    [1, -1],
+    "mod_vent",
+    format_func=lambda d: t("blows towards the hatch") if d == 1 else t("blows away from the hatch"),
+    horizontal=True,
+)
+c_fire.caption(
+    t(
         "Ventilation: NASA measured how fire spreads with and against a 20 cm/s air flow in microgravity (Saffire), so "
         "its direction is used for the ISS case. With the fans off there is no measured spread rate for these materials; "
         "NASA's BASS-II tested the hypothesis that materials in microgravity, with adequate ventilation, burn as well if "
@@ -469,20 +474,23 @@ if not np.array_equal(layout, mf.grid(mf.PRESETS[preset])):
     shared["L"] = encode_wall(layout)
 elif "L" in st.query_params:
     del st.query_params["L"]
-sh1, sh2, _ = st.columns([1.2, 1.5, 1.5])
-with sh1:
-    share_link(shared, "module")
-report_slot = sh2.empty()  # filled at the end of the page, when all results are known
+with c_report:
+    sh1, sh2, _ = st.columns([1.2, 1.5, 1.5])
+    with sh1:
+        share_link(shared, "module")
+    report_slot = sh2.empty()  # filled at the end of the page, when all results are known
 vol = round(sel["free_volume_m3"], 1) if sel else 30.0  # free air of the module picked in step 1
 times = {k: _arrival(key, ign, k, vent, fac) for k in ENV_ORDER}
 summ = {k: mf.summary(layout, times[k]) for k in ENV_ORDER}
 
 t_end = max(summ[k]["time_all_s"] for k in ENV_ORDER)
 
-tab_spread, tab_air, tab_protect, tab_moon, tab_report = (st.container() for _ in range(5))
-for n, box in zip((3, 4, 5, 6, 7), (tab_spread, tab_air, tab_protect, tab_moon, tab_report), strict=True):
-    step(n, box)
-tab_design = tab_detect = tab_protect
+tab_spread, tab_air, tab_report = c_fire, c_air, c_report
+tab_design = tab_detect = c_protect
+with c_protect:  # one gravity for every protection result (firebreak, detectors, extinguishers)
+    pgrav = choice(
+        st.radio, t("Gravity for all protection results"), ENV_ORDER, "prot_env", format_func=env_label, horizontal=True
+    )
 with tab_spread:
     st.subheader(t("How the fire spreads"))
     st.caption(
@@ -605,107 +613,107 @@ with tab_air:
             )
         )
 
-        # ---- science check against NASA data and the equations (ADR-053) --------------------------------------------
-        st.subheader(t("Science check: does the oxygen balance hold?"))
-        chk = _bass2()
-        tb = chk["table"]
-        sc = go.Figure()
-        sc.add_trace(
-            go.Scatter(
-                x=tb["o2_used_pct"],
-                y=tb["co2_formed_pct"] + tb["co_formed_pct"].fillna(0),
-                mode="markers",
-                name=t("BASS-II burns: CO2 + CO formed"),
-                marker={"size": 9, "color": "#ffb627", "line": {"width": 1, "color": "#0d1322"}},
-                text=tb["material"],
-                hovertemplate="%{text}<br>O2 %{x:.1f} -> CO2+CO %{y:.2f}<extra></extra>",
-            )
-        )
-        xs = np.array([0, float(tb["o2_used_pct"].max()) * 1.05])
-        sc.add_trace(
-            go.Scatter(
-                x=xs,
-                y=xs * mf.PMMA_CO2_PER_O2,
-                mode="lines",
-                name=t("PMMA stoichiometry, 5/6"),
-                line={"color": "#38e8ff", "width": 3},
-            )
-        )
-        sc.add_trace(
-            go.Scatter(
-                x=xs,
-                y=xs * mf.CELLULOSE_CO2_PER_O2,
-                mode="lines",
-                name=t("cellulose (fabric), 1"),
-                line={"color": "#c9a66b", "width": 2, "dash": "dash"},
-            )
-        )
-        dark_layout(sc, 380, axes=True)
-        sc.update_layout(
-            xaxis_title=t("oxygen used, % of the glovebox air"),
-            yaxis_title=t("CO2 + CO formed, %"),
-            legend={"orientation": "h", "y": -0.3, "font": {"color": "#cfd6e4"}},
-        )
-        st.plotly_chart(sc, use_container_width=True)
-        st.markdown(
-            t(
-                "The zone model above turns the oxygen a fire uses into CO2 by chemistry: 1 CO2 per O2 for cellulose (fabric), "
-                "5/6 for PMMA. NASA's BASS-II measured O2, CO2 and CO before and after {n} solid burns in the ISS glovebox (almost "
-                "all PMMA). Fitted CO2 per O2: **{s:.3f}**; with the carbon in CO: **{sc:.3f}** - the PMMA chemistry predicts "
-                "**{p:.3f}**. The balance the model rests on is confirmed by NASA measurements. ({left} of 129 rows left out: O2 "
-                "drop below 0.3 points, unreadable, or O2 rising.) Evidence: NASA data.",
-                n=chk["n_used"],
-                s=chk["slope"],
-                sc=chk["slope_with_co"],
-                p=mf.PMMA_CO2_PER_O2,
-                left=chk["n_left_out"],
-            )
-        )
-        with st.expander(t("The equations behind this page")):
-            st.markdown(
-                t(
-                    "**1. Flame spread over the wall** (each 10 cm step at the rate NASA measured for that material, gravity and direction; earliest arrival by Dijkstra's shortest-path algorithm):"
+        with c_evid:
+            # ---- science check against NASA data and the equations (ADR-053) --------------------------------------------
+            st.subheader(t("Science check: does the oxygen balance hold?"))
+            chk = _bass2()
+            tb = chk["table"]
+            sc = go.Figure()
+            sc.add_trace(
+                go.Scatter(
+                    x=tb["o2_used_pct"],
+                    y=tb["co2_formed_pct"] + tb["co_formed_pct"].fillna(0),
+                    mode="markers",
+                    name=t("BASS-II burns: CO2 + CO formed"),
+                    marker={"size": 9, "color": "#ffb627", "line": {"width": 1, "color": "#0d1322"}},
+                    text=tb["material"],
+                    hovertemplate="%{text}<br>O2 %{x:.1f} -> CO2+CO %{y:.2f}<extra></extra>",
                 )
             )
-            st.latex(
-                r"t(c) = \min_{\text{paths } s \to c} \sum_{\text{steps}} \frac{\Delta \ell}{V_{\text{material, gravity, direction}}}"
-            )
-            st.markdown(
-                t(
-                    "**2. Another cabin atmosphere** (NASA/TM-20210011385, Eq. 2.2, thin solids, thermal regime; T_v = 673 K from the same report; T_f from chemical equilibrium):"
+            xs = np.array([0, float(tb["o2_used_pct"].max()) * 1.05])
+            sc.add_trace(
+                go.Scatter(
+                    x=xs,
+                    y=xs * mf.PMMA_CO2_PER_O2,
+                    mode="lines",
+                    name=t("PMMA stoichiometry, 5/6"),
+                    line={"color": "#38e8ff", "width": 3},
                 )
             )
-            st.latex(
-                r"V_f = \frac{F\,\lambda_g\,(T_f - T_v)}{\rho_s c_s \tau\,(T_v - T_\infty)} \;\Rightarrow\; \frac{V}{V_{\text{air}}} = \frac{T_f - T_v}{T_{f,\text{air}} - T_v}"
-            )
-            st.markdown(
-                t(
-                    "**3. Module air** (well-mixed zone; oxygen use of SIBAL fabric from NTRS 20210020516, 13.1 kJ per g O2 from the BASS-II report):"
+            sc.add_trace(
+                go.Scatter(
+                    x=xs,
+                    y=xs * mf.CELLULOSE_CO2_PER_O2,
+                    mode="lines",
+                    name=t("cellulose (fabric), 1"),
+                    line={"color": "#c9a66b", "width": 2, "dash": "dash"},
                 )
             )
-            st.latex(
-                r"m_{O_2}(t) = m^{\prime\prime}_{O_2}\,A_f(t),\quad Q(t) = 13.1\,\tfrac{\text{kJ}}{\text{g}}\;m_{O_2}(t),\quad \dot Q(t) = \frac{Q(t) - Q(t-60\,\text{s})}{60\,\text{s}}"
+            dark_layout(sc, 380, axes=True)
+            sc.update_layout(
+                xaxis_title=t("oxygen used, % of the glovebox air"),
+                yaxis_title=t("CO2 + CO formed, %"),
+                legend={"orientation": "h", "y": -0.3, "font": {"color": "#cfd6e4"}},
             )
-            st.latex(
-                r"x_{O_2}(t) = x_{O_2,0} - \frac{m_{O_2}(t)/M_{O_2}}{n},\quad x_{CO_2}(t) = \nu\,\frac{m_{O_2}(t)/M_{O_2}}{n},\quad n = \frac{pV}{RT}"
-            )
+            st.plotly_chart(sc, use_container_width=True)
             st.markdown(
                 t(
-                    "**4. Firebreak for a fire anywhere** (time from every cell to the hatch by Dijkstra run backwards from the hatch; the strip that most shrinks the area that can reach it):"
+                    "The zone model above turns the oxygen a fire uses into CO2 by chemistry: 1 CO2 per O2 for cellulose (fabric), "
+                    "5/6 for PMMA. NASA's BASS-II measured O2, CO2 and CO before and after {n} solid burns in the ISS glovebox (almost "
+                    "all PMMA). Fitted CO2 per O2: **{s:.3f}**; with the carbon in CO: **{sc:.3f}** - the PMMA chemistry predicts "
+                    "**{p:.3f}**. The balance the model rests on is confirmed by NASA measurements. ({left} of 129 rows left out: O2 "
+                    "drop below 0.3 points, unreadable, or O2 rising.) Evidence: NASA data.",
+                    n=chk["n_used"],
+                    s=chk["slope"],
+                    sc=chk["slope_with_co"],
+                    p=mf.PMMA_CO2_PER_O2,
+                    left=chk["n_left_out"],
                 )
             )
-            st.latex(
-                r"\tau(c) = \min_{\text{paths } c \to \text{hatch}} \sum \frac{\Delta \ell}{V},\qquad A_{\text{danger}} = \sum_{c:\,\tau(c) < \infty} A_{\text{cell}}"
-            )
+            with st.expander(t("The equations behind this page")):
+                st.markdown(
+                    t(
+                        "**1. Flame spread over the wall** (each 10 cm step at the rate NASA measured for that material, gravity and direction; earliest arrival by Dijkstra's shortest-path algorithm):"
+                    )
+                )
+                st.latex(
+                    r"t(c) = \min_{\text{paths } s \to c} \sum_{\text{steps}} \frac{\Delta \ell}{V_{\text{material, gravity, direction}}}"
+                )
+                st.markdown(
+                    t(
+                        "**2. Another cabin atmosphere** (NASA/TM-20210011385, Eq. 2.2, thin solids, thermal regime; T_v = 673 K from the same report; T_f from chemical equilibrium):"
+                    )
+                )
+                st.latex(
+                    r"V_f = \frac{F\,\lambda_g\,(T_f - T_v)}{\rho_s c_s \tau\,(T_v - T_\infty)} \;\Rightarrow\; \frac{V}{V_{\text{air}}} = \frac{T_f - T_v}{T_{f,\text{air}} - T_v}"
+                )
+                st.markdown(
+                    t(
+                        "**3. Module air** (well-mixed zone; oxygen use of SIBAL fabric from NTRS 20210020516, 13.1 kJ per g O2 from the BASS-II report):"
+                    )
+                )
+                st.latex(
+                    r"m_{O_2}(t) = m^{\prime\prime}_{O_2}\,A_f(t),\quad Q(t) = 13.1\,\tfrac{\text{kJ}}{\text{g}}\;m_{O_2}(t),\quad \dot Q(t) = \frac{Q(t) - Q(t-60\,\text{s})}{60\,\text{s}}"
+                )
+                st.latex(
+                    r"x_{O_2}(t) = x_{O_2,0} - \frac{m_{O_2}(t)/M_{O_2}}{n},\quad x_{CO_2}(t) = \nu\,\frac{m_{O_2}(t)/M_{O_2}}{n},\quad n = \frac{pV}{RT}"
+                )
+                st.markdown(
+                    t(
+                        "**4. Firebreak for a fire anywhere** (time from every cell to the hatch by Dijkstra run backwards from the hatch; the strip that most shrinks the area that can reach it):"
+                    )
+                )
+                st.latex(
+                    r"\tau(c) = \min_{\text{paths } c \to \text{hatch}} \sum \frac{\Delta \ell}{V},\qquad A_{\text{danger}} = \sum_{c:\,\tau(c) < \infty} A_{\text{cell}}"
+                )
     else:
         st.info(t("Nothing burns yet: paint some fabric or acrylic, then click on it to set the ignition point."))
 
 with tab_design:
     # ---- design a safer module -------------------------------------------------------------------------------------
-    st.subheader(t("Design a safer module"))
-    d1, d2 = st.columns([1.1, 1.9])
-    denv = d1.radio(t("Gravity for the map and the firebreak"), ENV_ORDER, format_func=env_label)
-    goal = d2.radio(
+    st.subheader(t("A · Firebreak"))
+    denv = pgrav
+    goal = st.radio(
         t("Find the 50 cm metal strip that best protects the hatch..."),
         ["here", "anywhere"],
         format_func=lambda g: t("from this fire") if g == "here" else t("from a fire that starts anywhere"),
@@ -810,32 +818,33 @@ with tab_design:
         )
     )
 
-    with st.expander(t("Rates used and the limits of this sketch")):
-        for k in ENV_ORDER:
-            e = mf.ENVIRONMENTS[k]
-            fab, acr = e.rates["F"], e.rates["A"]
+    with c_evid:
+        with st.expander(t("Rates used and the limits of this sketch")):
+            for k in ENV_ORDER:
+                e = mf.ENVIRONMENTS[k]
+                fab, acr = e.rates["F"], e.rates["A"]
+                st.markdown(
+                    t(
+                        "**{env}** - fabric {f1} mm/s along the flow, {f2} mm/s otherwise; acrylic {a1} / {a2} mm/s. Source: {src}.",
+                        env=env_label(k),
+                        f1=fab[0],
+                        f2=fab[1],
+                        a1=acr[0],
+                        a2=acr[1],
+                        src=e.source,
+                    )
+                )
             st.markdown(
                 t(
-                    "**{env}** - fabric {f1} mm/s along the flow, {f2} mm/s otherwise; acrylic {a1} / {a2} mm/s. Source: {src}.",
-                    env=env_label(k),
-                    f1=fab[0],
-                    f2=fab[1],
-                    a1=acr[0],
-                    a2=acr[1],
-                    src=e.source,
+                    "Not included: heating of nearby materials by the flame, the effect of the fire on its own oxygen supply, smoke and toxic gases, suppression, "
+                    "flames jumping across gaps, the 3-D shape of a module. The rates come from thin fabric and acrylic samples "
+                    "in air; other atmospheres are scaled with NASA's flame-spread theory, not measured. The sketch shows how layout and gravity "
+                    "change the timeline, not how long a real fire would take."
                 )
             )
-        st.markdown(
-            t(
-                "Not included: heating of nearby materials by the flame, the effect of the fire on its own oxygen supply, smoke and toxic gases, suppression, "
-                "flames jumping across gaps, the 3-D shape of a module. The rates come from thin fabric and acrylic samples "
-                "in air; other atmospheres are scaled with NASA's flame-spread theory, not measured. The sketch shows how layout and gravity "
-                "change the timeline, not how long a real fire would take."
-            )
-        )
 
 with tab_detect:
-    st.subheader(t("Where to put detectors and suppression"))
+    st.subheader(t("B · Detectors and extinguishers"))
     st.caption(
         t(
             "A design aid on the same NASA-measured spread rates. A detector counts a fire as seen when the flame reaches "
@@ -846,8 +855,8 @@ with tab_detect:
             "NASA numbers. Evidence: model."
         )
     )
-    q1, q2, q3 = st.columns(3)
-    genv = choice(q1.radio, t("Gravity"), ENV_ORDER, "det_env", format_func=env_label)
+    q2, q3 = st.columns(2)
+    genv = pgrav
     n_det = q2.slider(t("Detectors"), 1, 8, 3, key="det_n")
     rad_cm = q2.slider(t("Detector coverage radius, cm"), 20, 150, 50, step=10, key="det_r")
     n_sup = q3.slider(t("Suppression points"), 0, 4, 1, key="sup_n")
@@ -944,7 +953,7 @@ with tab_detect:
     pos += "".join(f", S{i + 1} ({c / 10:.1f} m, {r / 10:.1f} m)" for i, (r, c) in enumerate(sup["cells"]))
     st.caption(t("Positions from the left and top edge of the wall:") + " " + pos)
 
-    st.markdown("**" + t("Gas sensor in the module air") + "**")
+    st.subheader(t("C · Gas alarm in the module air"))
     g1, g2 = st.columns([1, 2])
     rise_pct = g1.slider(t("CO2 alarm: rise above the start, %-points"), 0.02, 0.5, 0.1, step=0.02, key="gas_rise")
     g1.caption(t("A design input; the well-mixed air model gives the CO2 rise from the burnt fabric (step 04)."))
@@ -961,7 +970,7 @@ with tab_detect:
     else:
         g2.info(t("Nothing burns yet: paint some fabric or acrylic, then click on it to set the ignition point."))
 
-with tab_moon:
+with c_evid:
     # ---- solids at lunar gravity -------------------------------------------------------------------------------------
     st.subheader(t("Solid materials at lunar gravity: what NASA has found"))
     FACTS = [
@@ -1002,6 +1011,7 @@ with tab_moon:
         )
     )
 
+with c_reco:
     # ---- checklist ---------------------------------------------------------------------------------------------------
     st.subheader(t("Fire-safety checklist for a Moon-base module"))
     ins = {x["id"]: x for x in json.loads((ROOT / "docs" / "insights.json").read_text(encoding="utf-8"))["ranked"]}

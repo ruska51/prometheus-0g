@@ -88,8 +88,8 @@ rates, not a fire simulation, and says so. There is a risk map of oxygen against
 catalog with a comparison matrix of all 24 PSI combustion investigations, and a data explorer where every raw NASA row
 can be downloaded. And you can simply ask: "Ask the data" is an AI assistant that answers with numbers from our
 results and 12 public NASA reports, shows the source of every statement, and says plainly when the data do not cover a
-question. In the designer a Protect tab also places detectors and extinguishers on the wall and gives the time until
-a CO2 alarm sounds, and a Report tab collects the base, the module, fire, air, protection, checklist and sources in
+question. In the designer a Protect step also places detectors and extinguishers on the wall and gives the time until
+a CO2 alarm sounds, and a Report step collects the base, the module, fire, air, protection, checklist and sources in
 one downloadable report. An AI pilot, a glowing button in the corner of every page, on every page turns a request such as "detectors in the lab module in Moon-base air" into the
 right page with its inputs set, from a fixed list the code checks. Pages are grouped into Start here, Moon base and
 Evidence, each ends with a link to the next step, a

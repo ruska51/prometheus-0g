@@ -22,8 +22,8 @@ but the results are scattered across 24 investigations in its Physical Sciences 
 of a burning droplet and lets machine learning correct only what theory misses; on atmospheres it never saw, it is
 1.2-1.9 times more accurate than machine learning alone. The answer: in Moon-base air a fire burns about a third
 faster, runs hotter and goes out on its own less often. Our public dashboard shows the numbers, animates the flame,
-lets you sketch a Moon-base module and watch a fire spread at the rates NASA measured at lunar gravity, ranks 20
-findings and 24 investigations, and has an AI assistant that answers only from NASA data.
+lets you lay out a Moon base module by module, watch a fire spread at the rates NASA measured at lunar gravity and place detectors, extinguishers and firebreaks, ranks 20
+findings and 24 investigations, and has AI that sets up the pages for you and answers only from NASA data.
 
 ---
 
@@ -205,7 +205,7 @@ the Space Apps Project Submission Guide).
 | Field | Words | Characters |
 |---|---|---|
 | Project Name | 1 | 13 |
-| High-Level Project Summary | 180 | 1016 |
+| High-Level Project Summary | 194 | 1091 |
 | Link to Project Demo | 24 | 234 |
 | Link to Final Project | 7 | 115 |
 | Detailed Project Description | 1371 | 7967 |

@@ -147,6 +147,11 @@ fabric 1.8 / 1.3, thick PMMA 0 (flames anchored) - NTRS 20170008805 (Saffire); l
 preheating, oxygen depletion, smoke, suppression, jumps across gaps, 3-D geometry. Rates were measured in air
 (21-22 % O2): spread in Moon-base air (30 % O2) is expected to be faster, so times are upper bounds. Code:
 src/fif/physics/module_fire.py; tests check every rate against the report text (tests/test_module_fire.py).
+Firebreak search: for a given ignition point, every straight 5-cell (50 cm) strip on cells the flame reaches before
+the hatch is replaced by metal and the hatch time recomputed; for a fire starting anywhere, a reverse Dijkstra from the
+hatch gives every cell's time to the hatch, and the strip that most reduces the area that can reach the hatch is kept.
+Ventilation (microgravity case only): its direction decides where the concurrent (1.8 mm/s) and opposed (1.3 mm/s)
+Saffire rates apply; with fans off no spread rate was measured, so none is assumed.
 
 ## 11. References
 

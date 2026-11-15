@@ -26,6 +26,7 @@ Units: cells of CELL_MM, times in s, rates in mm/s.
 
 from __future__ import annotations
 
+import dataclasses
 import heapq
 import math
 from dataclasses import dataclass
@@ -79,6 +80,13 @@ ENVIRONMENTS = {
         "Acrylic: the flame base stayed in place, only the tip spread upward.",
     ),
 }
+
+
+def iss_with_flow(direction: int) -> Environment:
+    """Microgravity case with the ventilation blowing left -> right (direction 1) or right -> left (-1): the measured
+    concurrent rate (1.8 mm/s for fabric) applies downstream, the opposed rate (1.3 mm/s) upstream."""
+    return dataclasses.replace(ENVIRONMENTS["iss"], fast_axis=(1 if direction >= 0 else -1, 0))
+
 
 # Layouts: one string per row, top row first ("up" = towards row 0). 40 x 20 cells = a 4 m x 2 m wall section.
 PRESETS = {
@@ -150,7 +158,29 @@ PRESETS = {
     ],
 }
 
-IGNITION = {"crew": (14, 24), "lab": (16, 14), "stowage": (12, 3)}  # default ignition cell (row, col)
+PRESETS["blank"] = [
+    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "M.....................................HM",
+    "MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM",
+]  # draw your own: frame and hatch only
+IGNITION = {"crew": (14, 24), "lab": (16, 14), "stowage": (12, 3), "blank": (10, 5)}  # default ignition cell (row, col)
 
 
 def grid(rows: list[str]) -> np.ndarray:
@@ -229,3 +259,123 @@ def burned_area_curve(times: np.ndarray, t_grid: np.ndarray) -> np.ndarray:
     cell_m2 = (CELL_MM / 1000) ** 2
     reached = np.sort(times[np.isfinite(times)])
     return np.searchsorted(reached, t_grid, side="right") * cell_m2
+
+
+@dataclass(frozen=True)
+class Firebreak:
+    cells: tuple[tuple[int, int], ...]  # (row, col) of flammable cells replaced by metal
+    hatch_s: float  # time to reach the hatch with the firebreak (inf = never)
+    reached_m2: float
+
+
+def with_metal(layout: np.ndarray, cells) -> np.ndarray:
+    out = layout.copy()
+    for r, c in cells:
+        out[r, c] = "M"
+    return out
+
+
+def best_firebreak(layout: np.ndarray, ignition: tuple[int, int], env: Environment, length: int = 5) -> Firebreak | None:
+    """The straight metal strip of ``length`` cells (vertical or horizontal) that delays the flame at the hatch most;
+    ties broken by the smaller burnt area. Only strips that lie on cells the flame reaches before the hatch are tried
+    (a strip elsewhere cannot change the hatch time); the ignition cell itself is never covered. None if the flame does
+    not reach the hatch in the first place or no candidate helps."""
+    base = arrival_times(layout, ignition, env)
+    t_hatch = hatch_time(layout, base)
+    if not math.isfinite(t_hatch):
+        return None
+    h, w = layout.shape
+    on_path = [(r, c) for r, c in zip(*np.where(base <= t_hatch), strict=True) if (r, c) != tuple(ignition)]
+    best = None
+    seen = set()
+    for r, c in on_path:
+        for dr, dc in ((1, 0), (0, 1)):
+            for shift in range(length):
+                cells = tuple(
+                    (r + (k - shift) * dr, c + (k - shift) * dc)
+                    for k in range(length)
+                    if 0 <= r + (k - shift) * dr < h and 0 <= c + (k - shift) * dc < w
+                )
+                cells = tuple((int(a), int(b)) for a, b in cells if layout[a, b] in FLAMMABLE and (a, b) != tuple(ignition))
+                if not cells or cells in seen:
+                    continue
+                seen.add(cells)
+                lay = with_metal(layout, cells)
+                tt = arrival_times(lay, ignition, env)
+                cand = Firebreak(cells, hatch_time(lay, tt), float(np.isfinite(tt).sum() * (CELL_MM / 1000) ** 2))
+                key = (cand.hatch_s, -cand.reached_m2)
+                if best is None or key > (best.hatch_s, -best.reached_m2):
+                    best = cand
+    if best is None or best.hatch_s <= t_hatch:
+        return None
+    return best
+
+
+def time_to_hatch(layout: np.ndarray, env: Environment) -> np.ndarray:
+    """For every cell: the time (s) a fire that starts there needs to reach a cell touching the hatch (inf = never).
+    Same rates and steps as ``arrival_times``, run backwards from the hatch (reverse Dijkstra)."""
+    h, w = layout.shape
+    t = np.full((h, w), math.inf)
+    heap = []
+    for r, c in zip(*np.where(layout == "H"), strict=True):
+        for dr in (-1, 0, 1):
+            for dc in (-1, 0, 1):
+                rr, cc = r + dr, c + dc
+                if 0 <= rr < h and 0 <= cc < w and layout[rr, cc] in FLAMMABLE and t[rr, cc] > 0:
+                    t[rr, cc] = 0.0
+                    heap.append((0.0, rr, cc))
+    heapq.heapify(heap)
+    steps = [(dr, dc) for dr in (-1, 0, 1) for dc in (-1, 0, 1) if dr or dc]
+    while heap:
+        tv, r, c = heapq.heappop(heap)
+        if tv > t[r, c]:
+            continue
+        for dr, dc in steps:  # predecessor u = (r - dr, c - dc) spreads into v = (r, c) with the step (dr, dc)
+            ur, uc = r - dr, c - dc
+            if not (0 <= ur < h and 0 <= uc < w) or layout[ur, uc] not in FLAMMABLE:
+                continue
+            v = _rate(env, layout[r, c], dc, dr)
+            if v <= 0:
+                continue
+            tu = tv + CELL_MM * math.hypot(dr, dc) / v
+            if tu < t[ur, uc]:
+                t[ur, uc] = tu
+                heapq.heappush(heap, (tu, ur, uc))
+    return t
+
+
+def hatch_catchment_m2(times_to_hatch: np.ndarray) -> float:
+    """Area (m2) of material from which a fire can reach the hatch."""
+    return float(np.isfinite(times_to_hatch).sum() * (CELL_MM / 1000) ** 2)
+
+
+def best_firebreak_anywhere(layout: np.ndarray, env: Environment, length: int = 5) -> Firebreak | None:
+    """The straight metal strip of ``length`` cells (vertical or horizontal, centred on a cell) that most reduces the
+    area of material from which a fire, wherever it starts, can reach the hatch; ties broken by the longer median time
+    to the hatch. ``hatch_s`` = that median time, ``reached_m2`` = the remaining area. None if nothing improves."""
+    base = time_to_hatch(layout, env)
+    base_area = hatch_catchment_m2(base)
+    if base_area == 0:
+        return None
+    h, w = layout.shape
+    best, best_key, seen = None, None, set()
+    half = length // 2
+    for r, c in zip(*np.where(np.isfinite(base)), strict=True):
+        for dr, dc in ((1, 0), (0, 1)):
+            cells = tuple(
+                (int(r + k * dr), int(c + k * dc))
+                for k in range(-half, length - half)
+                if 0 <= r + k * dr < h and 0 <= c + k * dc < w and layout[r + k * dr, c + k * dc] in FLAMMABLE
+            )
+            if not cells or cells in seen:
+                continue
+            seen.add(cells)
+            tt = time_to_hatch(with_metal(layout, cells), env)
+            area = hatch_catchment_m2(tt)
+            med = float(np.median(tt[np.isfinite(tt)])) if np.isfinite(tt).any() else math.inf
+            key = (-area, med)
+            if best_key is None or key > best_key:
+                best_key, best = key, Firebreak(cells, med, area)
+    if best is None or best.reached_m2 >= base_area:
+        return None
+    return best

@@ -90,11 +90,10 @@ can be downloaded. And you can simply ask: "Ask the data" is an AI assistant tha
 results and 12 public NASA reports, shows the source of every statement, and says plainly when the data do not cover a
 question. In the designer a Protect step also places detectors and extinguishers on the wall and gives the time until
 a CO2 alarm sounds, and a Report step collects the base, the module, fire, air, protection, checklist and sources in
-one downloadable report. An AI pilot, a glowing button in the corner of every page, on every page turns a request such as "detectors in the lab module in Moon-base air" into the
+one downloadable report. An AI pilot, a button in the corner of every page, turns a request such as "detectors in the lab module in Moon-base air" into the
 right page with its inputs set, from a fixed list the code checks. Pages are grouped into Start here, Moon base and
 Evidence, each ends with a link to the next step, a
-glossary explains every term, and a scenario or a design can be shared as a link. The
-app opens in English and switches to Russian, and its dark style matches the demo slides.
+glossary explains every term, and a scenario or a design can be shared as a link. The app opens in English and switches to Russian.
 
 **Benefits and impact.** Habitat and rover designers get measured, sourced reasons to plan for fires that are less
 likely to go out on their own: suppress at once, sense CO alongside smoke, and do not rely on Earth-gravity material
@@ -122,7 +121,7 @@ logos or branding are used.
 
 **Tools.** Python 3.12, pandas, NumPy, SciPy, scikit-learn (Gaussian processes, logistic regression, gradient
 boosting), Cantera, pdfplumber, Streamlit, Plotly, WebGL (flame animation), Google Gemini API (assistant), Playwright
-(screenshots, slide PDF), pytest and ruff (199 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
+(screenshots, slide PDF), pytest and ruff (198 tests, lint), GitHub, Streamlit Community Cloud (hosting). Code
 Apache-2.0; NASA data CC0 / public domain. One command rebuilds data, models, insights and tests from the raw NASA
 files.
 
@@ -173,7 +172,7 @@ decision - the level of theory, the property data, the model, the validation rul
 interface. Each decision is logged in docs/DECISIONS.md and each AI-assisted step in docs/AI_USAGE.md. Every number in
 the dashboard comes from deterministic, tested code, not from a language model. Second, inside the product, Google
 Gemini runs an AI pilot that opens pages and sets their inputs (it may only choose from a fixed list of pages and
-allowed values, which the code checks, and it states no results itself), and the optional "Ask the data" assistant. It sees only excerpts of our verified results and of 12 public
+allowed values, which the code checks, and it states no results itself), and the optional "Ask the data" assistant. The assistant sees only excerpts of our verified results and of 12 public
 NASA technical reports (found by keyword search), must name a source for every statement and must say when the data
 do not cover a question; the app then checks every citation and flags any number it cannot find in the sources. How it
 behaves on 10 test questions, including off-topic and prompt-injection attempts, is documented in
@@ -209,10 +208,10 @@ the Space Apps Project Submission Guide).
 | High-Level Project Summary | 180 | 1016 |
 | Link to Project Demo | 24 | 234 |
 | Link to Final Project | 7 | 115 |
-| Detailed Project Description | 1383 | 8033 |
+| Detailed Project Description | 1371 | 7967 |
 | NASA Data | 295 | 1891 |
 | Space Agency Partner & Other Data | 85 | 627 |
-| Use of Artificial Intelligence | 224 | 1356 |
+| Use of Artificial Intelligence | 225 | 1367 |
 <!-- COUNTS:END -->
 
 ## Form link lists (Link Text + Link Url)

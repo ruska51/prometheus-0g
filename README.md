@@ -199,7 +199,7 @@ data/raw/           NASA files as downloaded (sha256 in data/catalog.yaml)
 data/processed/     clean tables used by models and app
 models/             trained models (joblib)
 scripts/            reproducible steps (build, train, validate, insights, screenshots)
-tests/              199 tests: data, physics, models, validation, insights, app (EN/RU), assistant
+tests/              198 tests: data, physics, models, validation, insights, app (EN/RU), assistant
 docs/               PHYSICS, MODEL_CARD, VALIDATION, INSIGHTS, DECISIONS (ADR log), WORKLOG, SUBMISSION, ...
 ```
 

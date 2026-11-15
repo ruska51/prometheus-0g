@@ -193,3 +193,70 @@ the Space Apps Project Submission Guide).
 | Space Agency Partner & Other Data | 85 | 627 |
 | Use of Artificial Intelligence | 190 | 1177 |
 <!-- COUNTS:END -->
+
+## Form link lists (Link Text + Link Url)
+
+The form asks for these two fields as lists of links. All URLs were opened on 2026-11-15 (HTTP 200; PSI pages checked in a browser to show the right investigation).
+
+### NASA Data
+
+| Link Text | Link Url |
+|---|---|
+| NASA Physical Sciences Informatics (PSI) - Combustion Science investigations (24 used for catalog and ranking) | https://psi.nasa.gov/physci/repo/search?q=combustion |
+| PSI-69 FLEX - Flame Extinguishment Experiment, ISS droplet tests (models and insights) | https://psi.nasa.gov/physci/repo/data/investigations/PSI-69 |
+| PSI-159 ACME CFI-G - gaseous flame tests (ignition and self-extinction insights) | https://psi.nasa.gov/physci/repo/data/investigations/PSI-159 |
+| PSI-25 BASS-II - burning solids tests (CO insight) | https://psi.nasa.gov/physci/repo/data/investigations/PSI-25 |
+| PSI-101 SAME-R - smoke tests (detection insight) | https://psi.nasa.gov/physci/repo/data/investigations/PSI-101 |
+| NASA/TP-2015-216046 - Detailed Results from FLEX (used to verify every FLEX cell) | https://ntrs.nasa.gov/citations/20150023456 |
+| Apollo 1 - NASA Safety & Mission Assurance (lesson) | https://sma.nasa.gov/sma-disciplines/accllp/apollo-1 |
+| Apollo 13 - NASA Safety & Mission Assurance (lesson) | https://sma.nasa.gov/sma-disciplines/accllp/apollo-13 |
+| Fire aboard Space Station Mir - NASA History (lesson) | https://www.nasa.gov/history/25-years-ago-fire-aboard-space-station-mir/ |
+| NASA Spinoff - Fireman's Air Tanks (benefits on Earth) | https://spinoff.nasa.gov/node/9582 |
+| NASA Spinoff - Fire Detector (benefits on Earth) | https://spinoff.nasa.gov/node/9407 |
+| NASA Spinoff - New Technology for the Fire Attire, Project FIRES (benefits on Earth) | https://spinoff.nasa.gov/node/9918 |
+| NASA Technical Reports Server (NTRS) - report search for physics checks and the assistant | https://ntrs.nasa.gov |
+| NTRS 20130014061 - Methanol Droplet Combustion in Oxygen-Inert Environments in Microgravity | https://ntrs.nasa.gov/citations/20130014061 |
+| NTRS 20205008449 - Inert Gas Properties and Cool-Flame Combustion of Alkane Droplets | https://ntrs.nasa.gov/citations/20205008449 |
+| NTRS 20210011385 - BASS-II Summary Report | https://ntrs.nasa.gov/citations/20210011385 |
+| NTRS 20210021781 - Recent Research on Flames of Gaseous Fuel Aboard the ISS | https://ntrs.nasa.gov/citations/20210021781 |
+| NTRS 20130000422 - Smoke Aerosol Measurement Experiment-2 results | https://ntrs.nasa.gov/citations/20130000422 |
+| NTRS 20170007283 - Spacecraft Fire Safety Research at NASA Glenn | https://ntrs.nasa.gov/citations/20170007283 |
+| NTRS 20170008805 - Results of Large-Scale Spacecraft Flammability Tests (Saffire) | https://ntrs.nasa.gov/citations/20170008805 |
+| NTRS 20210020516 - Fire on the Moon: Solid Fuel Combustion Experiments | https://ntrs.nasa.gov/citations/20210020516 |
+| NTRS 20260000646 - Material Flammability at Lunar and Martian Gravity | https://ntrs.nasa.gov/citations/20260000646 |
+| NTRS 20250010653 - Lunar Combustion Investigation (LUCI) | https://ntrs.nasa.gov/citations/20250010653 |
+| NTRS 20240008623 - Flammability of Materials on the Moon | https://ntrs.nasa.gov/citations/20240008623 |
+| NTRS 20250004015 - lunar gravity 1/6 g (value used for the lunar-surface case) | https://ntrs.nasa.gov/citations/20250004015 |
+| NASA TR R-132 - Svehla 1962, gas viscosities and conductivities | https://ntrs.nasa.gov/citations/19630012982 |
+| NASA RP-1311 - Gordon & McBride 1994, mixture property rules | https://ntrs.nasa.gov/citations/19950013764 |
+| NASA TM-4513 - McBride, Gordon & Reno 1993, thermodynamic data | https://ntrs.nasa.gov/citations/19940013151 |
+| NASA Glenn photo GRC-1998-C-00485 - visual reference for the flame drawing (not embedded) | https://images.nasa.gov/details/GRC-1998-C-00485 |
+
+### Space Agency Partner & Other Data
+
+| Link Text | Link Url |
+|---|---|
+| No Space Agency Partner data used - NIST Chemistry WebBook (fuel and gas properties) | https://webbook.nist.gov |
+| Law & Williams 1972, Combustion and Flame 19 - droplet property rules (cited, not redistributed) | https://doi.org/10.1016/0010-2180(72)90009-0 |
+| Wyman, Sloan & Shirley 2013, JCGT - CIE colour approximation (flame colour) | https://jcgt.org/published/0002/02/01/ |
+| Cantera - chemical equilibrium (flame temperature) | https://cantera.org |
+| Python libraries: NumPy | https://numpy.org |
+| pandas | https://pandas.pydata.org |
+| SciPy | https://scipy.org |
+| scikit-learn (Gaussian processes, classifiers) | https://scikit-learn.org |
+| pandera (data schema checks) | https://pandera.readthedocs.io |
+| pdfplumber (reading NASA report tables) | https://github.com/jsvine/pdfplumber |
+| Matplotlib | https://matplotlib.org |
+| Plotly (charts) | https://plotly.com/python/ |
+| Streamlit (web app) | https://streamlit.io |
+| Streamlit Community Cloud (hosting) | https://streamlit.io/cloud |
+| Google Gemini API (Ask-the-data assistant) | https://ai.google.dev/gemini-api/docs |
+| Claude Code by Anthropic (AI coding and writing assistant) | https://www.anthropic.com/claude-code |
+| Playwright (screenshots, slide PDF) | https://playwright.dev/python/ |
+| pytest (tests) | https://docs.pytest.org |
+| Ruff (lint) | https://docs.astral.sh/ruff/ |
+| segno (QR code on the slides) | https://github.com/heuer/segno |
+| OpenCV (QR code check) | https://opencv.org |
+| Google Fonts - Space Grotesk (slides) | https://fonts.google.com/specimen/Space+Grotesk |
+| Google Fonts - Inter (slides) | https://fonts.google.com/specimen/Inter |
+| GitHub (code repository) | https://github.com |

@@ -12,7 +12,7 @@ import streamlit.components.v1 as components
 from blueprint import data_uri
 
 _HTML = r"""<!doctype html><html><head><meta charset="utf-8"><style>
-body{margin:0;background:transparent;font-family:Inter,system-ui,sans-serif;color:#e8ecf4}
+body{margin:0;background:#0f1115;padding:8px;border-radius:6px;box-sizing:border-box;font-family:Inter,system-ui,sans-serif;color:#e8ecf4}
 #panels{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .p{position:relative;border-radius:6px;overflow:hidden;background:#0a0f1c;justify-self:center;width:max-content;border:1px solid rgba(140,170,255,.18);transition:box-shadow .4s,border-color .4s}.p.hot{border-color:#e8743b}.p.lost{border-color:#ff4d3a}
 .p.big{grid-column:1 / span 2}
@@ -152,7 +152,7 @@ document.getElementById('seek').oninput=(ev)=>{ T=TEND*ev.target.value/1000; pla
 document.querySelectorAll('button.s').forEach(b=>b.onclick=()=>{ speed=+b.dataset.s; document.querySelectorAll('button.s').forEach(q=>q.classList.toggle('on',q===b)); });
 // size the panels from the frame height so everything (three panels + controls) is always visible
 function fit(){
-  const bar=document.querySelector('.bar'), avail=window.innerHeight-bar.offsetHeight-22;
+  const bar=document.querySelector('.bar'), avail=window.innerHeight-bar.offsetHeight-38;
   const one=window.innerWidth<=600, bigH=one? Math.floor((avail-20)/3) : Math.floor((avail-10)*0.58), smallH=one? bigH : avail-10-bigH;
   const full=document.getElementById('panels').clientWidth, half=one? full : (full-10)/2;
   panels.forEach((p,i)=>{ const hh=i===0?bigH:smallH, cw=(i===0||one)? full : half;

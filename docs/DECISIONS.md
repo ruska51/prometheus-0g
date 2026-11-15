@@ -723,3 +723,14 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   check moved), 05 Protect (one gravity choice for everything, then A firebreak, B detectors and extinguishers, C CO2
   alarm), 06 Recommendations (checklist), 07 Report (share link and download moved here from the middle of the page),
   08 Evidence & limits (BASS-II check, equations, rates and limits, NASA quotes on solids at lunar gravity).
+
+## ADR-062: "Technical report" light style
+- Date/time: 2026-11-15 22:01-22:09
+- Stage: post-12
+- Context: Ruslan still did not like the dark design.
+- Options: A) light technical report, B) blueprint, C) Swiss poster, D) keep dark and fix details.
+- Claude's recommendation: A - most unlike the usual dark AI dashboards, reads like a NASA technical report.
+- Decision (Ruslan): A.
+- Consequences: Streamlit light theme (paper #FBFAF7, ink #1C1E22, rules #DAD6CE, accent #D2571F, IBM Plex), light chart
+  template, wall drawing on white paper (blueprint.render_rgb(light=True)) in the editor and maps, base side view in
+  paper colours, dark logo ink; the fire animations stay dark windows like photographs in a report.

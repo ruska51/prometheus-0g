@@ -27,7 +27,7 @@ EVIDENCE_COLORS = {
 }
 STATUS_COLORS = {"in range": "#15803D", "extrapolation": "#B45309", "unreliable": "#B91C1C"}
 STAGE_LABEL = {"prevention": "Prevention", "detection": "Detection", "suppression": "Suppression"}
-PLOT_TEMPLATE = "prometheus"  # plotly_dark on a transparent background, so charts sit on the glass cards (ADR-056)
+PLOT_TEMPLATE = "prometheus"  # plotly_white on a transparent background, so charts sit on the glass cards (ADR-056)
 
 
 def _register_template() -> None:
@@ -36,13 +36,13 @@ def _register_template() -> None:
 
     if PLOT_TEMPLATE in pio.templates:
         return
-    tpl = go.layout.Template(pio.templates["plotly_dark"])
+    tpl = go.layout.Template(pio.templates["plotly_white"])
     tpl.layout.paper_bgcolor = "rgba(0,0,0,0)"
     tpl.layout.plot_bgcolor = "rgba(0,0,0,0)"
-    tpl.layout.font = {"family": "IBM Plex Sans, sans-serif", "color": "#cfd2d8"}
-    tpl.layout.colorway = ["#E8743B", "#7FA6FF", "#38E8FF", "#C9D4FF", "#FFB627", "#2FD27A", "#E86BB5"]
-    tpl.layout.xaxis.gridcolor = tpl.layout.yaxis.gridcolor = "rgba(255,255,255,0.06)"
-    tpl.layout.xaxis.zerolinecolor = tpl.layout.yaxis.zerolinecolor = "rgba(255,255,255,0.12)"
+    tpl.layout.font = {"family": "IBM Plex Sans, sans-serif", "color": "#2b2e34"}
+    tpl.layout.colorway = ["#D2571F", "#7FA6FF", "#38E8FF", "#C9D4FF", "#FFB627", "#2FD27A", "#E86BB5"]
+    tpl.layout.xaxis.gridcolor = tpl.layout.yaxis.gridcolor = "rgba(0,0,0,0.07)"
+    tpl.layout.xaxis.zerolinecolor = tpl.layout.yaxis.zerolinecolor = "rgba(0,0,0,0.15)"
     pio.templates[PLOT_TEMPLATE] = tpl
 
 

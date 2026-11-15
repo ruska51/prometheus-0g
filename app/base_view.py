@@ -109,9 +109,9 @@ def side_view(rows: list[dict], selected: str | None) -> go.Figure:
         x0, x1, y0, y1 = x, x + L, -D / 2, D / 2
         if math.isfinite(r["hatch_s"]):
             f = min(1.0, (r["hatch_s"] / 60) / max(hi, 1e-9))
-            fill = f"rgba(255,{int(70 + 140 * f)},{int(40 + 40 * f)},0.40)"
+            fill = f"rgba(232,{int(110 + 110 * f)},{int(70 + 90 * f)},0.55)"
         else:
-            fill = "rgba(47,210,122,0.30)"
+            fill = "rgba(47,160,100,0.25)"
         sel = r["name"] == selected
         fig.add_shape(
             type="rect",
@@ -121,25 +121,25 @@ def side_view(rows: list[dict], selected: str | None) -> go.Figure:
             y1=y1,
             fillcolor=fill,
             layer="below",
-            line={"color": "#38e8ff" if sel else "#c9d4ff", "width": 4 if sel else 2},
+            line={"color": "#D2571F" if sel else "#5b616b", "width": 3.5 if sel else 1.5},
         )
         for k in range(1, int(L)):
-            fig.add_shape(type="line", x0=x0 + k, x1=x0 + k, y0=y0, y1=y1, line={"color": "rgba(201,212,255,0.18)", "width": 1})
+            fig.add_shape(type="line", x0=x0 + k, x1=x0 + k, y0=y0, y1=y1, line={"color": "rgba(0,0,0,0.10)", "width": 1})
         fig.add_annotation(
-            x=(x0 + x1) / 2, y=0.3, text=f"<b>{r['name']}</b>", showarrow=False, font={"size": 14, "color": "#fff"}
+            x=(x0 + x1) / 2, y=0.3, text=f"<b>{r['name']}</b>", showarrow=False, font={"size": 14, "color": "#1c1e22"}
         )
         fig.add_annotation(
             x=(x0 + x1) / 2,
             y=-0.35,
             showarrow=False,
-            font={"size": 11, "color": "#e6ebf7"},
+            font={"size": 11, "color": "#2b2e34"},
             text=f"{t('hatch')}: {mins(r['hatch_s'])}<br>{r['free_volume_m3']:.0f} m³",
         )
         fig.add_annotation(
             x=(x0 + x1) / 2,
             y=-hmax / 2 - 0.45,
             showarrow=False,
-            font={"size": 11, "color": "#8f9bb8"},
+            font={"size": 11, "color": "#6a6f78"},
             text=f"{L:.0f} m x {D:.1f} m",
         )
         x = x1
@@ -150,8 +150,8 @@ def side_view(rows: list[dict], selected: str | None) -> go.Figure:
                 x1=x + gap,
                 y0=-0.6,
                 y1=0.6,
-                line={"color": "#7f8aa6", "width": 1.5},
-                fillcolor="rgba(92,102,120,0.45)",
+                line={"color": "#9aa0a8", "width": 1.2},
+                fillcolor="rgba(150,155,165,0.35)",
             )
             for xx in (x, x + gap):
                 fig.add_shape(type="rect", x0=xx - 0.08, x1=xx + 0.08, y0=-0.5, y1=0.5, fillcolor="#2fd27a", line={"width": 0})

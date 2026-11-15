@@ -1,17 +1,17 @@
-# Style "Engineering sheet" (ADR-060): calm dark surface, one safety-orange accent, IBM Plex type (replaces ADR-050).
+# Style "Technical report" (ADR-062): white paper, dark ink, thin grey rules, one orange accent, IBM Plex type.
 [theme]
-base = "dark"
-primaryColor = "#E8743B"
-backgroundColor = "#0F1115"
-secondaryBackgroundColor = "#151820"
-textColor = "#E7E5E0"
-linkColor = "#7CC4D8"
-borderColor = "#272C36"
+base = "light"
+primaryColor = "#D2571F"
+backgroundColor = "#FBFAF7"
+secondaryBackgroundColor = "#F2F0EB"
+textColor = "#1C1E22"
+linkColor = "#1F5FA8"
+borderColor = "#DAD6CE"
 font = "IBM Plex Sans:https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&display=swap, sans-serif"
 headingFont = "IBM Plex Sans:https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@500;600&display=swap, sans-serif"
 baseRadius = "0.35rem"
 codeFont = "IBM Plex Mono:https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap, monospace"
-chartCategoricalColors = ["#F0843F", "#7FA6FF", "#38E8FF", "#C9D4FF", "#FFB627", "#2FD27A", "#E86BB5"]
+chartCategoricalColors = ["#D2571F", "#1F5FA8", "#2A9D8F", "#6B7280", "#E9A23B", "#2F855A", "#B83280"]
 
 [server]
 headless = true

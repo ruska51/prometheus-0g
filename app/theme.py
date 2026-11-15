@@ -1,6 +1,5 @@
-"""Visual layer "Engineering sheet" (ADR-060): calm dark surface, one safety-orange accent, thin rules, IBM Plex type,
-numbers in a monospaced face, no glow, no gradients, no animation. Replaces the "Mission control" layer of ADR-056
-(Ruslan: it looked machine-made). Pure CSS; no content, no numbers.
+"""Visual layer "Technical report" (ADR-062): white paper, dark ink, thin grey rules, one orange accent, IBM Plex type,
+numbers in a monospaced face; the fire animations stay dark windows, like photographs in a report. Pure CSS.
 """
 
 from __future__ import annotations
@@ -13,8 +12,8 @@ LOGO = Path(__file__).resolve().parent / "static" / "logo.svg"
 
 CSS = """
 <style>
-:root{--bg:#0f1115; --panel:#151820; --line:#272c36; --line-hi:#3a414e; --ink:#e7e5e0; --muted:#9097a3;
-  --accent:#e8743b; --accent-ink:#1a0d05; --cyan:#7cc4d8}
+:root{--bg:#fbfaf7; --panel:#ffffff; --line:#e3e0d9; --line-hi:#c9c4ba; --ink:#1c1e22; --muted:#6a6f78;
+  --accent:#d2571f; --accent-ink:#ffffff; --cyan:#1f5fa8}
 .stApp{background:var(--bg) !important}
 [data-testid="stAppViewContainer"],[data-testid="stHeader"]{background:transparent !important}
 [data-testid="stMainBlockContainer"]{max-width:1180px; padding-top:2.4rem}
@@ -64,7 +63,7 @@ hr{border-color:var(--line) !important}
 iframe{border-radius:6px}
 
 /* sidebar */
-[data-testid="stSidebar"]{background:#0c0e12 !important; border-right:1px solid var(--line)}
+[data-testid="stSidebar"]{background:#f4f2ed !important; border-right:1px solid var(--line)}
 [data-testid="stSidebarNav"] a{border-radius:4px}
 [data-testid="stSidebarNav"] a[aria-current="page"]{background:var(--panel) !important; box-shadow:inset 2px 0 0 var(--accent)}
 [data-testid="stNavSectionHeader"]{font-family:'IBM Plex Mono',monospace !important; letter-spacing:.12em; text-transform:uppercase;
@@ -74,7 +73,7 @@ iframe{border-radius:6px}
 .st-key-pilot_fab{position:fixed !important; right:24px; bottom:84px; z-index:1000; width:auto !important}
 .st-key-pilot_fab [data-testid="stPopover"] > div > button{background:var(--accent) !important; color:var(--accent-ink) !important;
   border:0 !important; border-radius:6px !important; padding:.65rem 1.05rem !important; font-weight:600 !important;
-  box-shadow:0 6px 20px rgba(0,0,0,.45) !important}
+  box-shadow:0 4px 14px rgba(0,0,0,.18) !important}
 [data-testid="stPopoverBody"]{min-width:340px}
 @media (max-width:640px){.st-key-pilot_fab{right:12px; bottom:76px} [data-testid="stMainBlockContainer"]{padding-top:1.2rem}
   .toc a{flex:1 1 45%}}

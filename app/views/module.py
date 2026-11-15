@@ -29,7 +29,7 @@ FLAME = ["#fff1a8", "#ffb627", "#ff5a1f", "#9e2a1b", "#120c0b"]  # new flame -> 
 CODE_Z = {".": 0, "M": 1, "F": 2, "A": 3, "H": 4}
 _PALETTE = [COLORS["."], COLORS["M"], COLORS["F"], COLORS["A"], COLORS["H"], *FLAME]
 DISCRETE = [x for i, c in enumerate(_PALETTE) for x in ([i / len(_PALETTE), c], [(i + 1) / len(_PALETTE), c])]
-ENV_COLOR = {"moon": "#c9d4ff", "iss": "#38e8ff", "earth": "#ff7a1a"}
+ENV_COLOR = {"moon": "#1F5FA8", "iss": "#2A9D8F", "earth": "#D2571F"}
 ENV_ORDER = ["moon", "iss", "earth"]
 
 
@@ -73,18 +73,21 @@ def heat(z: np.ndarray) -> go.Heatmap:
 def sheet(fig: go.Figure, layout_: np.ndarray, height: int) -> None:
     """The wall as an engineering drawing: blueprint image, axes in metres, transparent background."""
     hh, ww = layout_.shape
-    fig.add_trace(go.Image(source=bp.data_uri(layout_), x0=-0.5, dx=1 / bp.PX, y0=-0.5, dy=1 / bp.PX, hoverinfo="skip"), row=None)
+    fig.add_trace(
+        go.Image(source=bp.data_uri(layout_, light=True), x0=-0.5, dx=1 / bp.PX, y0=-0.5, dy=1 / bp.PX, hoverinfo="skip"),
+        row=None,
+    )
     fig.data = (fig.data[-1], *fig.data[:-1])  # drawing below everything else
     tick = {
-        "color": "#8f9bb8",
+        "color": "#5b616b",
         "tickfont": {"size": 11, "family": "Space Grotesk, sans-serif"},
         "showgrid": False,
         "zeroline": False,
         "ticks": "outside",
         "ticklen": 5,
-        "tickcolor": "#3a4a72",
+        "tickcolor": "#9aa0a8",
         "showline": True,
-        "linecolor": "#3a4a72",
+        "linecolor": "#9aa0a8",
     }
     fig.update_xaxes(
         **tick,
@@ -111,21 +114,23 @@ def sheet(fig: go.Figure, layout_: np.ndarray, height: int) -> None:
 def legend_html() -> str:
     chips = "".join(
         f"<span style='display:inline-flex;align-items:center;gap:6px;margin-right:16px'>"
-        f"<span style='width:14px;height:14px;border-radius:3px;background:rgb{bp.FILL[c]};"
-        f"border:1.5px solid rgb{bp.EDGE[c]}'></span>{MATERIAL_SHORT[c]()}</span>"
+        f"<span style='width:14px;height:14px;border-radius:3px;background:rgb{bp.FILL_L[c]};"
+        f"border:1.5px solid rgb{bp.EDGE_L[c]}'></span>{MATERIAL_SHORT[c]()}</span>"
         for c in ["F", "A", "M", "H"]
     )
     return (
-        f"<div style='font-size:.85rem;color:#c9d2e6;margin:-6px 0 6px 44px'>{chips}"
-        f"<span style='color:#ffd27a'>★ {t('Ignition')}</span></div>"
+        f"<div style='font-size:.85rem;color:#3b3f46;margin:-6px 0 6px 44px'>{chips}"
+        f"<span style='color:#d2571f'>★ {t('Ignition')}</span></div>"
     )
 
 
 def dark_layout(fig: go.Figure, height: int, axes: bool = False) -> None:
-    fig.update_layout(height=height, margin={"l": 10, "r": 10, "t": 36, "b": 10}, paper_bgcolor=BG, plot_bgcolor=BG)
+    fig.update_layout(
+        height=height, margin={"l": 10, "r": 10, "t": 36, "b": 10}, paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)"
+    )
     if axes:
-        fig.update_xaxes(color="#cfd6e4", gridcolor="#26304a", zeroline=False)
-        fig.update_yaxes(color="#cfd6e4", gridcolor="#26304a", zeroline=False)
+        fig.update_xaxes(color="#3b3f46", gridcolor="#e6e2da", zeroline=False)
+        fig.update_yaxes(color="#3b3f46", gridcolor="#e6e2da", zeroline=False)
     else:
         fig.update_xaxes(visible=False, range=[-0.6, 39.6])
         fig.update_yaxes(visible=False, autorange="reversed", scaleanchor="x")
@@ -553,7 +558,7 @@ with tab_spread:
         curve.update_layout(
             xaxis_title=t("minutes after ignition"),
             yaxis_title=t("area reached by the flame, m2"),
-            legend={"orientation": "h", "y": -0.3, "font": {"color": "#cfd6e4"}},
+            legend={"orientation": "h", "y": -0.3, "font": {"color": "#3b3f46"}},
         )
         st.plotly_chart(curve, use_container_width=True)
     else:
@@ -599,9 +604,9 @@ with tab_air:
                 col=2,
             )
         dark_layout(air, 320, axes=True)
-        air.update_annotations(font={"color": "#e8ecf4", "size": 13})
+        air.update_annotations(font={"color": "#1c1e22", "size": 13})
         air.update_xaxes(title_text=t("minutes after ignition"))
-        air.update_layout(legend={"orientation": "h", "y": -0.35, "font": {"color": "#cfd6e4"}})
+        air.update_layout(legend={"orientation": "h", "y": -0.35, "font": {"color": "#3b3f46"}})
         st.plotly_chart(air, use_container_width=True)
         st.caption(
             t(
@@ -653,7 +658,7 @@ with tab_air:
             sc.update_layout(
                 xaxis_title=t("oxygen used, % of the glovebox air"),
                 yaxis_title=t("CO2 + CO formed, %"),
-                legend={"orientation": "h", "y": -0.3, "font": {"color": "#cfd6e4"}},
+                legend={"orientation": "h", "y": -0.3, "font": {"color": "#3b3f46"}},
             )
             st.plotly_chart(sc, use_container_width=True)
             st.markdown(
@@ -774,8 +779,8 @@ with tab_design:
             line={"width": 1.4, "color": "rgba(255,240,210,0.85)"},
             connectgaps=False,
             colorbar={
-                "title": {"text": t("min"), "font": {"color": "#cfd6e4"}},
-                "tickfont": {"color": "#cfd6e4"},
+                "title": {"text": t("min"), "font": {"color": "#3b3f46"}},
+                "tickfont": {"color": "#3b3f46"},
                 "thickness": 12,
             },
             hovertemplate=t("{m} min").replace("{m}", "%{z:.1f}") + "<extra></extra>",
@@ -806,7 +811,7 @@ with tab_design:
             )
         )
     sheet(fig, layout, 440)
-    fig.update_layout(title={"text": map_title, "font": {"color": "#e8ecf4", "size": 14}, "x": 0.01})
+    fig.update_layout(title={"text": map_title, "font": {"color": "#1c1e22", "size": 14}, "x": 0.01})
     st.plotly_chart(fig, use_container_width=True)
     (st.success if fb is not None else st.info)(msg)
     if fb is not None and st.button(t("Put this firebreak into the wall")):
@@ -901,8 +906,8 @@ with tab_detect:
             opacity=0.6,
             line={"width": 1.2, "color": "rgba(220,250,255,0.8)"},
             colorbar={
-                "title": {"text": t("min"), "font": {"color": "#cfd6e4"}},
-                "tickfont": {"color": "#cfd6e4"},
+                "title": {"text": t("min"), "font": {"color": "#3b3f46"}},
+                "tickfont": {"color": "#3b3f46"},
                 "thickness": 12,
             },
             hovertemplate=t("seen after {m} min").replace("{m}", "%{z:.1f}") + "<extra></extra>",
@@ -944,7 +949,7 @@ with tab_detect:
     dfig.update_layout(
         title={
             "text": t("How soon a fire starting here is seen (minutes); D = detector, S = suppression point"),
-            "font": {"color": "#e8ecf4", "size": 14},
+            "font": {"color": "#1c1e22", "size": 14},
             "x": 0.01,
         }
     )

@@ -34,7 +34,7 @@ def _refresh_code() -> None:
         for n in list(sys.modules)
         if n == "fif"
         or n.startswith("fif.")
-        or n in ("i18n", "common", "flame_view", "module_view", "glossary", "theme", "blueprint")
+        or n in ("i18n", "common", "flame_view", "module_view", "glossary", "theme", "blueprint", "pilot_ui")
     ]
     for n in reversed(names):  # sys.modules keeps import order: reversed = dependencies before their importers
         try:
@@ -56,9 +56,6 @@ from theme import inject as inject_theme  # noqa: E402
 
 inject_theme()
 
-from glossary import sidebar_glossary  # noqa: E402
-
-sidebar_glossary()
 
 pages = {  # three groups: start here, explore the Moon base, check the evidence (ADR-054)
     t("Start here"): [
@@ -79,4 +76,11 @@ pages = {  # three groups: start here, explore the Moon base, check the evidence
         st.Page("views/method.py", title=t("Method & sources"), icon=":material/menu_book:"),
     ],
 }
-st.navigation(pages).run()
+nav = st.navigation(pages)
+
+from glossary import sidebar_glossary  # noqa: E402
+from pilot_ui import sidebar_pilot  # noqa: E402
+
+sidebar_pilot()  # AI pilot on every page (ADR-058); needs the pages registered for st.switch_page
+sidebar_glossary()
+nav.run()

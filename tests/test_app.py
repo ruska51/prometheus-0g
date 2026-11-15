@@ -51,7 +51,8 @@ def test_scenario_moon_preset_shows_extrapolation():
 def test_assistant_without_key_answers_from_the_data(monkeypatch):
     monkeypatch.delenv("GEMINI_API_KEY", raising=False)
     at = _run("assistant")
-    at.chat_input[0].set_value("How much faster does a droplet burn on a Moon base?").run()
+    chat = next(c for c in at.chat_input if c.key != "pilot_cmd")  # the sidebar also holds the AI pilot box
+    chat.set_value("How much faster does a droplet burn on a Moon base?").run()
     assert not at.exception, [e.value for e in at.exception]
     md = " ".join(m.value for m in at.markdown)
     assert "+32 %" in md
@@ -106,3 +107,27 @@ def test_module_custom_atmosphere_starts_at_moon_base_values():
     at.selectbox(key="mod_atm").set_value("custom").run()
     assert not at.exception, [e.value for e in at.exception]
     assert at.slider(key="mod_o2").value == 30 and at.slider(key="mod_psi").value == 10.2
+
+
+def test_pilot_opens_the_module_with_settings(monkeypatch):
+    """ADR-058: without a key the rule parser decides; the pilot switches page and the page reads the settings."""
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+    at = _run("overview")
+    at.chat_input(key="pilot_cmd").set_value("detectors in the lab module at 34 % oxygen").run()
+    assert not at.exception, [e.value for e in at.exception]
+    assert at.selectbox(key="mod_wall").value == "lab"
+    assert at.selectbox(key="mod_atm").value == "custom" and at.slider(key="mod_o2").value == 34
+    assert "Module fire" in at.session_state["pilot_say"]
+
+
+def test_pilot_rejects_values_outside_the_app():
+    from fif.assistant.pilot import validate
+
+    out = validate({"page": "mars", "module": {"wall": "reactor"}})
+    assert out["page"] is None and out["params"] == {}
+    out = validate({"page": "module", "module": {"wall": "lab", "o2": 95, "tab": "detect"}})
+    assert out["params"] == {"wall": "lab", "o2": "40", "atm": "custom", "tab": "detect"}
+    out = validate({"page": "scenario", "scenario": {"fuel": "Kerosene", "o2": 0.3}})
+    assert out["params"] == {"o2": "0.30", "preset": "Custom"}
+    q = validate({"page": "overview", "question": "Does helium slow burning?"})
+    assert q["page"] == "assistant" and q["params"] == {"q": "Does helium slow burning?"}

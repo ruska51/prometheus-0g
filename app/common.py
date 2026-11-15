@@ -193,7 +193,7 @@ def qp_get(name: str, cast, default):
 def external_params(page: str) -> bool:
     """True when the address holds settings this page did not write itself: a shared link, a link from another page or
     the AI pilot. Then the page reloads its inputs from the address."""
-    cur = {k: st.query_params[k] for k in st.query_params if k != "lang"}
+    cur = {k: st.query_params[k] for k in st.query_params if k not in ("lang", "tab", "q")}
     return bool(cur) and cur != st.session_state.get(f"_written_{page}")
 
 

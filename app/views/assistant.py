@@ -124,6 +124,10 @@ if left > 0:
     picked = st.pills(" ", [t(x) for x in SUGGESTIONS], key=f"suggest-{len(chat)}", label_visibility="collapsed")
     if picked and not q:
         q = picked
+_pq = st.query_params.get("q")  # a question handed over by the AI pilot (ADR-058), asked once
+if _pq and not q and left > 0 and st.session_state.get("_pilot_q") != _pq:
+    st.session_state["_pilot_q"] = _pq
+    q = _pq
 if st.query_params.get("debug") == "1" and "gen_failed" in st.session_state:  # diagnosis of model fall-through
     st.caption("debug: " + ("; ".join(f"{m}: {r}" for m, r in st.session_state["gen_failed"]) or "no failures"))
 if q:

@@ -18,7 +18,7 @@ PAGES = ["overview", "insights", "assistant", "scenario", "risk_map", "investiga
 
 def _literal_keys() -> dict[str, str]:
     keys = {}
-    for f in [ROOT / "app" / "main.py", ROOT / "app" / "common.py", *(ROOT / "app" / "views").glob("*.py")]:
+    for f in [*(ROOT / "app").glob("*.py"), *(ROOT / "app" / "views").glob("*.py")]:
         for n in ast.walk(ast.parse(f.read_text(encoding="utf-8"))):
             if (
                 isinstance(n, ast.Call)

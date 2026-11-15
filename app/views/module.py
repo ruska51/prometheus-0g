@@ -406,14 +406,17 @@ summ = {k: mf.summary(layout, times[k]) for k in ENV_ORDER}
 
 t_end = max(summ[k]["time_all_s"] for k in ENV_ORDER)
 
+TAB_LABELS = [
+    t("🔥 Fire spread"),
+    t("🫁 Module air"),
+    t("🛡️ Safer design"),
+    t("🚨 Detection & suppression"),
+    t("🌙 Lunar gravity & checklist"),
+]
+TAB_KEYS = ["spread", "air", "design", "detect", "moon"]
+_tab = st.query_params.get("tab")  # set by the AI pilot or a link
 tab_spread, tab_air, tab_design, tab_detect, tab_moon = st.tabs(
-    [
-        t("🔥 Fire spread"),
-        t("🫁 Module air"),
-        t("🛡️ Safer design"),
-        t("🚨 Detection & suppression"),
-        t("🌙 Lunar gravity & checklist"),
-    ]
+    TAB_LABELS, default=TAB_LABELS[TAB_KEYS.index(_tab)] if _tab in TAB_KEYS else None
 )
 with tab_spread:
     st.subheader(t("How the fire spreads"))

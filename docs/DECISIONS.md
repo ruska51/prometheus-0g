@@ -663,3 +663,20 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   Detection radius, suppression reach, alarm threshold and module sizes are design inputs, not NASA numbers; a detector
   "seeing" the flame within its radius is a conservative proxy (labelled). Links into Scenario / Module from other pages
   now reload their settings (common.external_params).
+
+## ADR-058: AI pilot on every page
+- Date/time: 2026-11-15 20:59-21:04
+- Stage: post-12
+- Context: Ruslan: the AI should orchestrate the whole program - set things up, say where to go, enter the inputs
+  itself - not only answer about the data.
+- Options: A) pilot box on every page (sidebar) + the existing chat page; B) only on the chat page.
+- Claude's recommendation: A.
+- Decision (Ruslan): A.
+- Consequences: fif.assistant.pilot: Gemini (same model fall-through and timeouts as the data assistant) proposes one
+  JSON action - page, inputs for Scenario / Module (wall, atmosphere, O2, pressure, ventilation, tab), or a data
+  question for "Ask the data"; validate() keeps only real pages and allowed values and clips numbers to the slider
+  ranges, so the model cannot invent settings; the pilot states no numbers - results come from the pages. Without a
+  key or quota a rule-based English / Russian parser handles the common requests (labelled with a gear icon instead of
+  a sparkle). app/pilot_ui.py: box in the sidebar, st.switch_page with query parameters; pages reload inputs from a
+  link (ADR-057); the Module page opens the requested tab; "Ask the data" asks a handed-over question once. Limit 20
+  pilot requests per visitor session.

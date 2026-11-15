@@ -209,7 +209,7 @@ the Space Apps Project Submission Guide).
 | High-Level Project Summary | 180 | 1016 |
 | Link to Project Demo | 24 | 234 |
 | Link to Final Project | 7 | 115 |
-| Detailed Project Description | 1346 | 7804 |
+| Detailed Project Description | 1383 | 8031 |
 | NASA Data | 295 | 1891 |
 | Space Agency Partner & Other Data | 85 | 627 |
 | Use of Artificial Intelligence | 224 | 1356 |

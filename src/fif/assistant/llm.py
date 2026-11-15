@@ -44,11 +44,12 @@ combustion data. Rules, in order of priority:
    general statements. If the context has numbers for a closely related case (for example measured FLEX burn times for
    the same fuel, or our model's prediction for a 3 mm droplet), give them and state their conditions.
 7. Copy every number together with its own label exactly as in the context (median, percentile, range, number of
-   tests, confidence interval); never move a number to a different label.
+   tests, confidence interval); never move a number to a different label. Never calculate new numbers (differences,
+   ratios, percentages) that are not written in the context.
 8. Lead with the answer: the first sentence gives the direct answer with its key numbers (value, unit, comparison).
    Then at most 3-4 short bullet points with further numbers. No introductions, no general background.
 9. Be concise: at most 120 words. Answer in the language of the question (English or Russian); keep block ids,
-   chemical formulas and units as they are."""
+   chemical formulas and units as they are. Plain text: no LaTeX or math markup."""
 
 
 def build_prompt(question: str, blocks: list[Block]) -> str:
@@ -228,14 +229,19 @@ def render_partial(text: str, known: set[str]) -> str:
     return render_citations(text, known)[0].rstrip()
 
 
+FACTOR = re.compile(r"(?<![A-Za-z])[x×](?=\d)")  # "x1.46" / "×1.46": a factor, the number is 1.46
 NUM = re.compile(r"(?<![\w.])[-+]?\d+(?:[.,]\d+)?")
 
 
 def unsupported_numbers(text: str, sources: list[Block]) -> list[str]:
     """Numbers in the answer (outside citation brackets) that appear in none of the cited blocks. Catches invented
     numbers; a number moved to a wrong label is not caught. Small integers (<= 12) are ignored (list markers, counts)."""
-    body = CITE.sub(" ", text)
-    pool = {n.replace(",", ".").lstrip("+") for b in [CORE_FACTS, *sources] for n in NUM.findall(b.title + " " + b.text)}
+    body = FACTOR.sub(" ", CITE.sub(" ", text))
+    pool = {
+        n.replace(",", ".").lstrip("+")
+        for b in [CORE_FACTS, *sources]
+        for n in NUM.findall(FACTOR.sub(" ", b.title + " " + b.text))
+    }
     out = []
     for n in NUM.findall(body):
         v = n.replace(",", ".").lstrip("+")

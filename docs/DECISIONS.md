@@ -482,4 +482,7 @@ All decisions are made by Ruslan Sharafutdinov (CLAUDE.md section 2.1). Claude r
   generator (shared by all visitors) kept the last working model for good. Now every call starts from the best-ranked
   model; a failed model is skipped for 10 min after a quota error, 2 min after other errors. ?debug=1 on the page shows
   the last call's key-free failure reasons.
+  Live check with ?debug=1: gemini-3.8-flash and 3.7-flash return 429 (no free quota), 3.6-flash answers. Its Moon answer
+  showed a false warning: the number check did not read factors written "x1.46" (fixed; test added), and the model had
+  computed "48 %" itself (prompt now forbids new differences/ratios/percentages and LaTeX markup).
 - Sources: src/fif/assistant/llm.py, app/views/assistant.py, tests/test_assistant.py

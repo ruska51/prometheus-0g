@@ -251,3 +251,12 @@ def test_best_model_is_retried_after_its_quota_pause(monkeypatch):
     tried.clear()
     gen("s", "p")  # pause over, quota back: the best model answers again
     assert tried == ["best-flash"] and gen.model == "best-flash"
+
+
+def test_factor_written_as_x_number_counts_as_supported():
+    from fif.assistant.llm import unsupported_numbers
+
+    b = next(b for b in kb.index()[0] if b.id == "D:moon-answer-methanol")
+    assert "x1.46" in b.text
+    assert unsupported_numbers("Коэффициент 1,46 [D:moon-answer-methanol], ×1.46, x1.46.", [b]) == []
+    assert unsupported_numbers("На 48 % быстрее [D:moon-answer-methanol].", [b]) == ["48"]

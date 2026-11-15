@@ -13,7 +13,7 @@ Combustion Data*. Team **The Catalyst** (Ruslan Sharafutdinov), Uralsk, Kazakhst
 | | |
 |---|---|
 | **Live dashboard** | https://prometheus-0g.streamlit.app/ (English; Russian: https://prometheus-0g.streamlit.app/?lang=ru) |
-| **Demo (7 slides)** | [docs/demo/prometheus-0g_slides.pdf](docs/demo/prometheus-0g_slides.pdf) (English; numbers and screenshots from the live app) |
+| **Demo (7 slides)** | [docs/demo/prometheus-0g_slides.pdf](docs/demo/prometheus-0g_slides.pdf) - direct link: https://github.com/ruska51/prometheus-0g/blob/main/docs/demo/prometheus-0g_slides.pdf (English; numbers and screenshots from the live app) |
 | **Source and data** | https://github.com/ruska51/prometheus-0g - code Apache-2.0, NASA data CC0 / public domain |
 
 ![Overview: the headline answer computed from NASA data](docs/figures/ui/overview_desktop.png)
